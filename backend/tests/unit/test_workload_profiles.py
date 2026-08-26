@@ -107,12 +107,125 @@ def test_workload_metric_profiles_metadata():
         WorkloadPreset.PREFILL_TTFT,
         WorkloadPreset.DECODE_THROUGHPUT,
         WorkloadPreset.REASONING_COT,
+        WorkloadPreset.AGENTIC_TOOL_CALLING,
+        WorkloadPreset.CODE_GENERATION,
         WorkloadPreset.RAG_SYNTHESIS,
+        WorkloadPreset.LONG_CONTEXT_RETRIEVAL,
+        WorkloadPreset.SUMMARIZATION_DISTILL,
         WorkloadPreset.STRUCTURED_JSON,
         WorkloadPreset.CHAT_INTERACTIVE,
+        WorkloadPreset.FEWSHOT_CLASSIFICATION,
+        WorkloadPreset.MULTIMODAL_VISION,
+        WorkloadPreset.MULTITURN_AGENTIC,
+        WorkloadPreset.KV_CACHE_REUSE,
+        WorkloadPreset.CUSTOM,
     ]:
         profile = WORKLOAD_METRIC_PROFILES.get(preset.value)
         assert profile is not None, f"Missing profile definition for {preset.value}"
         assert len(profile["target_metrics"]) >= 4
         assert "default_in_tokens" in profile
         assert "default_out_tokens" in profile
+        assert "default_concurrency" in profile
+        assert "default_max_tokens" in profile
+
+
+@pytest.mark.asyncio
+async def test_agentic_tool_calling_mock_stream():
+    """Verify tool calling preset streams valid JSON tool invocation."""
+    adapter = MockVendorAdapter()
+    config = BenchmarkConfig(
+        vendor=VendorType.MOCK,
+        model="gpt-4o",
+        workload_preset=WorkloadPreset.AGENTIC_TOOL_CALLING,
+        concurrency=2,
+        max_tokens=256,
+    )
+    tokens = []
+    async for event in adapter.stream_completion(None, config, "Call calculate_p95_metric"):
+        if event.token:
+            tokens.append(event.token)
+    full_output = "".join(tokens)
+    assert "calculate_p95_metric" in full_output
+    assert "arguments" in full_output
+
+
+@pytest.mark.asyncio
+async def test_code_generation_mock_stream():
+    """Verify code generation preset streams code tokens."""
+    adapter = MockVendorAdapter()
+    config = BenchmarkConfig(
+        vendor=VendorType.MOCK,
+        model="gpt-4o",
+        workload_preset=WorkloadPreset.CODE_GENERATION,
+        concurrency=2,
+        max_tokens=512,
+    )
+    tokens = []
+    async for event in adapter.stream_completion(None, config, "Write token bucket limiter"):
+        if event.token:
+            tokens.append(event.token)
+    full_output = "".join(tokens)
+    assert "TokenBucketLimiter" in full_output or "import" in full_output
+
+
+@pytest.mark.asyncio
+async def test_new_workload_presets_mock_stream():
+    """Verify fewshot classification, vision, multiturn, and kv reuse presets stream successfully."""
+    adapter = MockVendorAdapter()
+
+    # 1. Fewshot classification
+    cfg_fewshot = BenchmarkConfig(
+        vendor=VendorType.MOCK,
+        model="gpt-4o",
+        workload_preset=WorkloadPreset.FEWSHOT_CLASSIFICATION,
+        concurrency=2,
+        max_tokens=32,
+    )
+    fewshot_tokens = []
+    async for event in adapter.stream_completion(None, cfg_fewshot, "Classify ticket"):
+        if event.token:
+            fewshot_tokens.append(event.token)
+    assert "billing_dispute" in "".join(fewshot_tokens)
+
+    # 2. Multimodal vision
+    cfg_vision = BenchmarkConfig(
+        vendor=VendorType.MOCK,
+        model="gpt-4o",
+        workload_preset=WorkloadPreset.MULTIMODAL_VISION,
+        concurrency=2,
+        max_tokens=256,
+    )
+    vision_tokens = []
+    async for event in adapter.stream_completion(None, cfg_vision, "OCR diagram"):
+        if event.token:
+            vision_tokens.append(event.token)
+    assert "GPU" in "".join(vision_tokens) or "Optical" in "".join(vision_tokens)
+
+    # 3. Multi-turn agentic
+    cfg_multiturn = BenchmarkConfig(
+        vendor=VendorType.MOCK,
+        model="gpt-4o",
+        workload_preset=WorkloadPreset.MULTITURN_AGENTIC,
+        concurrency=2,
+        max_tokens=256,
+    )
+    multiturn_tokens = []
+    async for event in adapter.stream_completion(None, cfg_multiturn, "Turn 2"):
+        if event.token:
+            multiturn_tokens.append(event.token)
+    assert "ITL" in "".join(multiturn_tokens) or "batching" in "".join(multiturn_tokens)
+
+    # 4. KV cache reuse
+    cfg_cache = BenchmarkConfig(
+        vendor=VendorType.MOCK,
+        model="gpt-4o",
+        workload_preset=WorkloadPreset.KV_CACHE_REUSE,
+        concurrency=2,
+        max_tokens=256,
+    )
+    cache_tokens = []
+    async for event in adapter.stream_completion(None, cfg_cache, "Prefix cached"):
+        if event.token:
+            cache_tokens.append(event.token)
+    assert "Inter-Token Latency" in "".join(cache_tokens) or "decode" in "".join(cache_tokens)
+

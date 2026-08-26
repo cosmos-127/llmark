@@ -11,6 +11,10 @@ import {
   Layers,
   Braces,
   Clock,
+  CheckSquare,
+  Eye,
+  Database,
+  MessagesSquare,
 } from "lucide-react";
 import { MetricsSnapshot, WorkloadPreset } from "@/lib/types";
 import { formatMs, formatPct, formatUsd } from "@/lib/utils";
@@ -110,8 +114,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
     );
   }
 
-  // 2. Prefill Scaling & TTFT Profile
-  if (preset === "prefill_ttft") {
+  // 2. Prefill Scaling & TTFT / Long-Context Profile
+  if (preset === "prefill_ttft" || preset === "long_context_retrieval" || preset === "long_context") {
     const prefillTps95 = snapshot?.prefill_tps_p95;
     const prefillTps50 = snapshot?.prefill_tps_p50;
     const handshakeMs = (snapshot?.waterfall_avg?.dns_ms || 0) + (snapshot?.waterfall_avg?.tcp_ms || 0) + (snapshot?.waterfall_avg?.tls_ms || 0);
@@ -187,8 +191,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
     );
   }
 
-  // 3. Streaming Decode & Generation Jitter Profile
-  if (preset === "decode_throughput") {
+  // 3. Streaming Decode & Generation Jitter / Code Generation Profile
+  if (preset === "decode_throughput" || preset === "code_generation" || preset === "code") {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
         <KpiCard
@@ -338,8 +342,13 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
     );
   }
 
-  // 5. Structured JSON & Guided Grammar Profile
-  if (preset === "structured_json" || preset === "json_schema") {
+  // 5. Structured JSON / Tool Invocation Profile
+  if (
+    preset === "structured_json" ||
+    preset === "json_schema" ||
+    preset === "agentic_tool_calling" ||
+    preset === "tool_calling"
+  ) {
     const validityPct = snapshot?.schema_validity_pct ?? 100;
     const errors = snapshot?.schema_error_count || 0;
 
@@ -414,7 +423,299 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
     );
   }
 
-  // 6. Default / Interactive Conversational / RAG Synthesis / Custom Profile
+  // 6. Few-Shot In-Context Classification Profile
+  if (preset === "fewshot_classification") {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <KpiCard
+          title="Time to first token (TTFT)"
+          badge="P95"
+          badgeVariant="default"
+          value={formatMs(snapshot?.ttft_p95)}
+          subtext={`P50: ${formatMs(snapshot?.ttft_p50)} • P99: ${formatMs(snapshot?.ttft_p99)}`}
+          tooltip="Prefill ingestion latency over few-shot in-context exemplar prompt"
+          icon={Gauge}
+          accentColor="mulberry"
+        />
+
+        <KpiCard
+          title="Classification RPS"
+          badge="Decision Rate"
+          badgeVariant="emerald"
+          value={`${(snapshot?.current_rps || 0).toFixed(1)} eval/s`}
+          subtext={`${snapshot?.completed_requests || 0} classifications completed`}
+          tooltip="Total in-context classifications processed per second"
+          icon={CheckSquare}
+          accentColor="emerald"
+        />
+
+        <KpiCard
+          title="End-to-End Latency"
+          badge="Turnaround"
+          badgeVariant="violet"
+          value={formatMs(snapshot?.waterfall_avg?.total_e2e_ms || snapshot?.ttft_p95)}
+          subtext="Total duration per discrete classification"
+          tooltip="Full round-trip duration from submission to final classification decision"
+          icon={Clock}
+          accentColor="deepplum"
+        />
+
+        <KpiCard
+          title="Decode Throughput"
+          badge="Real-time"
+          badgeVariant="secondary"
+          value={`${(snapshot?.current_tps || 0).toFixed(1)} tok/s`}
+          subtext="Short token emission velocity"
+          tooltip="Rate of classification label token emission"
+          icon={Zap}
+          accentColor="charcoal"
+        />
+
+        <KpiCard
+          title="Classification Goodput Yield"
+          badge="Strict SLO"
+          badgeVariant={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "violet"}
+          value={formatPct(snapshot?.goodput_pct)}
+          subtext={`${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`}
+          tooltip="Percentage of classifications satisfying latency and accuracy SLO thresholds"
+          icon={CheckCircle2}
+          accentColor={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "deepplum"}
+        />
+
+        <KpiCard
+          title="Classification Spend"
+          badge="Real-time"
+          badgeVariant="default"
+          value={formatUsd(snapshot?.current_spend_usd)}
+          subtext="Low-decode cost efficiency"
+          tooltip="Accumulated dollar spend for in-context classification queries"
+          icon={DollarSign}
+          accentColor="mulberry"
+        />
+      </div>
+    );
+  }
+
+  // 7. Prompt Prefix Cache Warm / KV Reuse Profile
+  if (preset === "kv_cache_reuse") {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <KpiCard
+          title="Cached TTFT Responsiveness"
+          badge="P95 Cache Hit"
+          badgeVariant="emerald"
+          value={formatMs(snapshot?.ttft_p95)}
+          subtext={`P50: ${formatMs(snapshot?.ttft_p50)} • KV Cache accelerated`}
+          tooltip="Time to first token with warm prefix caching activated"
+          icon={Database}
+          accentColor="emerald"
+        />
+
+        <KpiCard
+          title="Prefill Processing Speed"
+          badge="P95 tok/s"
+          badgeVariant="default"
+          value={snapshot?.prefill_tps_p95 ? `${snapshot.prefill_tps_p95.toFixed(0)} tok/s` : "Measuring..."}
+          subtext="Effective prompt processing speed"
+          tooltip="Prompt token processing speed leveraging cached prefix blocks"
+          icon={Layers}
+          accentColor="mulberry"
+        />
+
+        <KpiCard
+          title="Decode Throughput"
+          badge="Real-time"
+          badgeVariant="violet"
+          value={`${(snapshot?.current_tps || 0).toFixed(1)} tok/s`}
+          subtext={`${(snapshot?.current_rps || 0).toFixed(1)} queries / sec`}
+          tooltip="Sustained output token generation throughput across streams"
+          icon={Zap}
+          accentColor="deepplum"
+        />
+
+        <KpiCard
+          title="Inter-token latency (ITL)"
+          badge="P95"
+          badgeVariant="secondary"
+          value={formatMs(snapshot?.itl_p95)}
+          subtext={`P50: ${formatMs(snapshot?.itl_p50)} • Decode smoothness`}
+          tooltip="Latency between consecutive streaming tokens during decode"
+          icon={Activity}
+          accentColor="charcoal"
+        />
+
+        <KpiCard
+          title="Cache Hit Goodput Yield"
+          badge="Strict SLO"
+          badgeVariant={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "violet"}
+          value={formatPct(snapshot?.goodput_pct)}
+          subtext={`${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`}
+          tooltip="Percentage of cached queries satisfying strict sub-second TTFT SLOs"
+          icon={CheckCircle2}
+          accentColor={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "deepplum"}
+        />
+
+        <KpiCard
+          title="Cached Session Cost"
+          badge="Real-time"
+          badgeVariant="default"
+          value={formatUsd(snapshot?.current_spend_usd)}
+          subtext="Reflects prompt cache discount"
+          tooltip="Accumulated financial spend with provider cache discount applied"
+          icon={DollarSign}
+          accentColor="mulberry"
+        />
+      </div>
+    );
+  }
+
+  // 8. Multimodal Vision & OCR Profile
+  if (preset === "multimodal_vision" || preset === "vision") {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <KpiCard
+          title="Multimodal TTFT"
+          badge="P95 Vision"
+          badgeVariant="default"
+          value={formatMs(snapshot?.ttft_p95)}
+          subtext={`P50: ${formatMs(snapshot?.ttft_p50)} • Image encoder + prefill`}
+          tooltip="Time to first token including vision embedding projection and LLM prefill"
+          icon={Eye}
+          accentColor="mulberry"
+        />
+
+        <KpiCard
+          title="Vision Ingestion Speed"
+          badge="P95 tok/s"
+          badgeVariant="emerald"
+          value={snapshot?.prefill_tps_p95 ? `${snapshot.prefill_tps_p95.toFixed(0)} tok/s` : "Computing..."}
+          subtext="Image patch token throughput"
+          tooltip="Speed of ingesting visual image tokens and prompt context"
+          icon={Layers}
+          accentColor="emerald"
+        />
+
+        <KpiCard
+          title="OCR Decode Throughput"
+          badge="Real-time"
+          badgeVariant="violet"
+          value={`${(snapshot?.current_tps || 0).toFixed(1)} tok/s`}
+          subtext={`${(snapshot?.current_rps || 0).toFixed(1)} images / sec`}
+          tooltip="Active rate of generating structured OCR descriptions"
+          icon={Zap}
+          accentColor="deepplum"
+        />
+
+        <KpiCard
+          title="Time Per Output Token (TPOT)"
+          badge="Hardware Decode"
+          badgeVariant="secondary"
+          value={`${formatMs(snapshot?.tpot_mean)} / tok`}
+          subtext="Mean decode duration per token"
+          tooltip="Average generation speed for vision response tokens"
+          icon={Gauge}
+          accentColor="charcoal"
+        />
+
+        <KpiCard
+          title="Multimodal Goodput Yield"
+          badge="Strict SLO"
+          badgeVariant={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "violet"}
+          value={formatPct(snapshot?.goodput_pct)}
+          subtext={`${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`}
+          tooltip="Percentage of vision requests satisfying latency and error SLOs"
+          icon={CheckCircle2}
+          accentColor={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "deepplum"}
+        />
+
+        <KpiCard
+          title="Multimodal Spend"
+          badge="Real-time"
+          badgeVariant="default"
+          value={formatUsd(snapshot?.current_spend_usd)}
+          subtext="Image token + decode billing"
+          tooltip="Total financial cost accounting for image patch token pricing"
+          icon={DollarSign}
+          accentColor="mulberry"
+        />
+      </div>
+    );
+  }
+
+  // 9. Multi-Turn Conversational Session Profile
+  if (preset === "multiturn_agentic") {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <KpiCard
+          title="Turn Latency (TTFT)"
+          badge="P95 Turn"
+          badgeVariant="default"
+          value={formatMs(snapshot?.ttft_p95)}
+          subtext={`P50: ${formatMs(snapshot?.ttft_p50)} • Turn context response`}
+          tooltip="Responsiveness per conversational turn with accumulated session history"
+          icon={MessagesSquare}
+          accentColor="mulberry"
+        />
+
+        <KpiCard
+          title="Inter-token latency (ITL)"
+          badge="P95"
+          badgeVariant="violet"
+          value={formatMs(snapshot?.itl_p95)}
+          subtext={`P50: ${formatMs(snapshot?.itl_p50)} • Stream smoothness`}
+          tooltip="Gap between consecutive streaming tokens in multi-turn responses"
+          icon={Activity}
+          accentColor="deepplum"
+        />
+
+        <KpiCard
+          title="Decode Throughput"
+          badge="Real-time"
+          badgeVariant="emerald"
+          value={`${(snapshot?.current_tps || 0).toFixed(1)} tok/s`}
+          subtext={`${(snapshot?.current_rps || 0).toFixed(1)} turns / sec`}
+          tooltip="Active generation throughput across multi-turn sessions"
+          icon={Zap}
+          accentColor="emerald"
+        />
+
+        <KpiCard
+          title="Time Per Output Token (TPOT)"
+          badge="Hardware Decode"
+          badgeVariant="secondary"
+          value={`${formatMs(snapshot?.tpot_mean)} / tok`}
+          subtext="Mean generation time per token"
+          tooltip="Average decode latency per token emitted in multi-turn responses"
+          icon={Gauge}
+          accentColor="charcoal"
+        />
+
+        <KpiCard
+          title="Session Goodput Yield"
+          badge="Strict SLO"
+          badgeVariant={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "violet"}
+          value={formatPct(snapshot?.goodput_pct)}
+          subtext={`${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`}
+          tooltip="Percentage of multi-turn requests meeting latency and success SLOs"
+          icon={CheckCircle2}
+          accentColor={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "deepplum"}
+        />
+
+        <KpiCard
+          title="Session Context Spend"
+          badge="Real-time"
+          badgeVariant="default"
+          value={formatUsd(snapshot?.current_spend_usd)}
+          subtext="Multi-turn accumulated cost"
+          tooltip="Total financial spend accounting for growing conversation history tokens"
+          icon={DollarSign}
+          accentColor="mulberry"
+        />
+      </div>
+    );
+  }
+
+  // 10. Default / Interactive Conversational / RAG Synthesis / Custom Profile
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
       <KpiCard

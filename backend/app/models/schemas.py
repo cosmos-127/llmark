@@ -16,18 +16,28 @@ class VendorType(str, Enum):
 
 class WorkloadPreset(str, Enum):
     # Specialized Workload Profiles
-    RATE_LIMIT_PROBE = "rate_limit_probe"  # Micro-calls (5 in / 1-2 out) to probe 429 rate limits, RPM/TPM saturation & ceilings
-    PREFILL_TTFT = "prefill_ttft"          # Heavy prompt / tiny decode (4k-16k in / 1-2 out) to isolate TTFT & prefill tok/s
-    DECODE_THROUGHPUT = "decode_throughput"# Light prompt / long decode (30 in / 1k out) for sustained decode tok/s & ITL jitter
-    REASONING_COT = "reasoning_cot"        # Reasoning models (o1/o3/R1) to measure TTFA, thinking phase & reasoning token ratio
-    RAG_SYNTHESIS = "rag_synthesis"        # Heavy document retrieval context (3.5k in / 400 out)
-    STRUCTURED_JSON = "structured_json"    # Guided grammar decoding with JSON schema constraint validation
-    CHAT_INTERACTIVE = "chat_interactive"  # Standard balanced conversational (~200 in / ~150 out)
+    RATE_LIMIT_PROBE = "rate_limit_probe"        # Micro-calls (5 in / 1-2 out) to probe 429 rate limits, RPM/TPM saturation & ceilings
+    PREFILL_TTFT = "prefill_ttft"                # Heavy prompt / tiny decode (4k in / 1-2 out) to isolate TTFT & prefill tok/s
+    DECODE_THROUGHPUT = "decode_throughput"      # Light prompt / long decode (40 in / 800 out) for sustained decode tok/s & ITL jitter
+    REASONING_COT = "reasoning_cot"              # Reasoning models (o1/o3/R1) to measure TTFA, thinking phase & reasoning token ratio
+    AGENTIC_TOOL_CALLING = "agentic_tool_calling"# Multi-tool schemas measuring tool call latency, arguments validity & throughput
+    CODE_GENERATION = "code_generation"          # AST/codebase context measuring syntax-dense code completion throughput & jitter
+    RAG_SYNTHESIS = "rag_synthesis"              # Heavy document retrieval context (3.5k in / 400 out)
+    LONG_CONTEXT_RETRIEVAL = "long_context_retrieval" # Massive context prompt (16k in / 300 out) measuring memory & KV scaling
+    SUMMARIZATION_DISTILL = "summarization_distill"   # Dense document reduction (4.5k in / 300 out) measuring compression latency
+    STRUCTURED_JSON = "structured_json"          # Guided grammar decoding with JSON schema constraint validation
+    CHAT_INTERACTIVE = "chat_interactive"        # Standard balanced conversational (~200 in / ~150 out)
+    FEWSHOT_CLASSIFICATION = "fewshot_classification" # High-throughput classification & intent extraction (1.2k in / 10 out)
+    MULTIMODAL_VISION = "multimodal_vision"      # Image token embedding & document OCR prefill (1.8k in / 200 out)
+    MULTITURN_AGENTIC = "multiturn_agentic"      # Multi-turn conversational session history & context growth (2.5k in / 350 out)
+    KV_CACHE_REUSE = "kv_cache_reuse"            # Prompt prefix caching & KV reuse speedup benchmark (3.2k in / 150 out)
     # Legacy / alias presets for backwards compatibility
-    CHAT = "chat"
-    RAG = "rag"
+    TOOL_CALLING = "tool_calling"
     CODE = "code"
     LONG_CONTEXT = "long_context"
+    SUMMARIZATION = "summarization"
+    CHAT = "chat"
+    RAG = "rag"
     VISION = "vision"
     JSON_SCHEMA = "json_schema"
     CUSTOM = "custom"
@@ -75,12 +85,52 @@ WORKLOAD_METRIC_PROFILES: Dict[str, Dict[str, Any]] = {
         "default_max_tokens": 1024,
         "default_duration": 30,
     },
+    WorkloadPreset.AGENTIC_TOOL_CALLING.value: {
+        "name": "Agentic Tool & Function Calling",
+        "tagline": "Multi-tool definitions & schemas measuring tool call latency, argument validity & invocation throughput",
+        "target_metrics": ["schema_validity_pct", "ttft_p95", "current_tps", "tpot_mean", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 1200,
+        "default_out_tokens": 150,
+        "default_concurrency": 4,
+        "default_max_tokens": 256,
+        "default_duration": 30,
+    },
+    WorkloadPreset.CODE_GENERATION.value: {
+        "name": "Code Generation & Syntax Stream",
+        "tagline": "Codebase context & syntax tree generation measuring code decode speed, token jitter & TPOT",
+        "target_metrics": ["current_tps", "itl_p95", "tpot_mean", "max_itl", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 1500,
+        "default_out_tokens": 800,
+        "default_concurrency": 4,
+        "default_max_tokens": 1024,
+        "default_duration": 30,
+    },
     WorkloadPreset.RAG_SYNTHESIS.value: {
         "name": "Enterprise RAG Synthesis",
         "tagline": "Document context ingestion measuring End-to-End latency, prefill/decode split & goodput yield",
         "target_metrics": ["ttft_p95", "current_tps", "tpot_mean", "goodput_pct", "error_rate_pct", "current_spend_usd"],
         "default_in_tokens": 3500,
         "default_out_tokens": 400,
+        "default_concurrency": 4,
+        "default_max_tokens": 512,
+        "default_duration": 30,
+    },
+    WorkloadPreset.LONG_CONTEXT_RETRIEVAL.value: {
+        "name": "Long-Context & Needle Retrieval",
+        "tagline": "Massive context prompt (16k tokens) measuring memory pressure, KV scaling & tail TTFT degradation",
+        "target_metrics": ["ttft_p95", "ttft_p99", "prefill_tps_p95", "waterfall_avg", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 16000,
+        "default_out_tokens": 300,
+        "default_concurrency": 2,
+        "default_max_tokens": 512,
+        "default_duration": 45,
+    },
+    WorkloadPreset.SUMMARIZATION_DISTILL.value: {
+        "name": "Document Summarization & Distillation",
+        "tagline": "Dense document context reduction measuring prefill efficiency, compression speed & turn latency",
+        "target_metrics": ["ttft_p95", "current_tps", "tpot_mean", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 4500,
+        "default_out_tokens": 300,
         "default_concurrency": 4,
         "default_max_tokens": 512,
         "default_duration": 30,
@@ -103,6 +153,46 @@ WORKLOAD_METRIC_PROFILES: Dict[str, Dict[str, Any]] = {
         "default_out_tokens": 150,
         "default_concurrency": 5,
         "default_max_tokens": 512,
+        "default_duration": 30,
+    },
+    WorkloadPreset.FEWSHOT_CLASSIFICATION.value: {
+        "name": "Few-Shot In-Context Classification",
+        "tagline": "Multi-exemplar in-context prompt measuring low-decode latency & high-throughput classification goodput",
+        "target_metrics": ["ttft_p95", "e2e_ms", "current_tps", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 1200,
+        "default_out_tokens": 10,
+        "default_concurrency": 6,
+        "default_max_tokens": 32,
+        "default_duration": 30,
+    },
+    WorkloadPreset.MULTIMODAL_VISION.value: {
+        "name": "Multimodal Vision & OCR",
+        "tagline": "Image token embedding context measuring multimodal prefill latency, vision encoder overhead & TTFT",
+        "target_metrics": ["ttft_p95", "prefill_tps_p95", "current_tps", "tpot_mean", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 1800,
+        "default_out_tokens": 200,
+        "default_concurrency": 4,
+        "default_max_tokens": 256,
+        "default_duration": 30,
+    },
+    WorkloadPreset.MULTITURN_AGENTIC.value: {
+        "name": "Multi-Turn Session Context",
+        "tagline": "Accumulated multi-turn conversation history measuring KV cache expansion, turn latency drift & memory pressure",
+        "target_metrics": ["ttft_p95", "current_tps", "itl_p95", "tpot_mean", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 2500,
+        "default_out_tokens": 350,
+        "default_concurrency": 4,
+        "default_max_tokens": 512,
+        "default_duration": 30,
+    },
+    WorkloadPreset.KV_CACHE_REUSE.value: {
+        "name": "Prompt Prefix Cache Warm / Hit",
+        "tagline": "Shared prefix context measuring KV cache hit speedup ratio, TTFT reduction & caching discount throughput",
+        "target_metrics": ["ttft_p95", "ttft_p50", "current_tps", "prefill_tps_p95", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 3200,
+        "default_out_tokens": 150,
+        "default_concurrency": 5,
+        "default_max_tokens": 256,
         "default_duration": 30,
     },
     WorkloadPreset.CUSTOM.value: {

@@ -30,7 +30,10 @@ type ChartMetricView = "throughput" | "latency" | "goodput" | "cost" | "ratelimi
 
 export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPreset }) => {
   const isRateLimit = workloadPreset === "rate_limit_probe";
-  const isPrefill = workloadPreset === "prefill_ttft";
+  const isPrefill =
+    workloadPreset === "prefill_ttft" ||
+    workloadPreset === "long_context_retrieval" ||
+    workloadPreset === "long_context";
   const isReasoning = workloadPreset === "reasoning_cot";
 
   const defaultMetric = isRateLimit ? "ratelimit" : isPrefill ? "prefill" : isReasoning ? "thinking" : "throughput";

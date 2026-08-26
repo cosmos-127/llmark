@@ -38,6 +38,20 @@ PROMPT_PRESET_TEXT = {
     ),
     WorkloadPreset.DECODE_THROUGHPUT: "Write a comprehensive, step-by-step master guide explaining the architecture, mechanics, and design patterns of distributed streaming telemetry systems in deep detail.",
     WorkloadPreset.REASONING_COT: "A farmer has 17 sheep. All but 9 run away. How many sheep does the farmer have left? Think step by step and explain your full reasoning path before providing the final answer.",
+    WorkloadPreset.AGENTIC_TOOL_CALLING: (
+        "Available Tools:\n"
+        "1. query_database(query: str, timeout_ms: int = 500) -> dict\n"
+        "2. calculate_p95_metric(timeseries_id: str, window_seconds: int) -> float\n"
+        "3. trigger_pagerduty_alert(service: str, severity: str, summary: str) -> bool\n\n"
+        "User Request: Check the P95 TTFT metric for timeseries cluster-us-east-1 over the past 300 seconds. "
+        "If it exceeds 1500ms, trigger a high-severity alert for service 'inference-gateway'.\n\n"
+        "Output the exact JSON tool call invocation."
+    ),
+    WorkloadPreset.CODE_GENERATION: (
+        "Write a production-grade, highly resilient asynchronous token rate limiter in Python using asyncio, "
+        "token bucket algorithm with redis-compatible sliding window, jittered exponential backoff, "
+        "full typing annotations (mypy strict), and docstrings with algorithmic time complexity analysis."
+    ),
     WorkloadPreset.RAG_SYNTHESIS: (
         "Context: Kubernetes is an open-source container orchestration system for automating software deployment, "
         "scaling, and management. Pods are the smallest deployable units of computing that you can create and manage. "
@@ -45,8 +59,63 @@ PROMPT_PRESET_TEXT = {
         "that govern how the containers should run.\n\n"
         "Question: Explain how Pod lifecycle management interacts with container restart policies and node affinity."
     ),
+    WorkloadPreset.LONG_CONTEXT_RETRIEVAL: (
+        "Analyze the following high-density system trace and telemetry records from a 128-node distributed inference cluster.\n\n"
+        + ("2026-08-26T10:14:02Z [DEBUG] KV cache pool allocation block 0x7f8a9c00: latency=12.4ms, hits=98.2%, eviction=0\n" * 160)
+        + "\nSECRET_AUTHENTICATION_TOKEN = 'LLMARK_ALPHA_9942_PASSKEY'\n\n"
+        + ("2026-08-26T10:14:03Z [INFO] Tensor parallel group synchronization completed across 8x H100 SXM5 nodes.\n" * 160)
+        + "\nTask: Extract the exact value of SECRET_AUTHENTICATION_TOKEN and report the primary cache hit percentage."
+    ),
+    WorkloadPreset.SUMMARIZATION_DISTILL: (
+        "Document Context: Quarterly High-Scale Infrastructure Reliability Report.\n"
+        "Over Q2, our inference platform scaled to 4.2 billion monthly token generations across 4 global regions. "
+        "P95 Time to First Token (TTFT) improved by 34% following the migration to speculative decoding and dynamic chunked prefill. "
+        "Inter-token latency (ITL) jitter was reduced from 42ms to 18ms via continuous batching schedule optimization. "
+        "However, HTTP 429 rate limit events surged during peak marketing events due to fixed upstream TPM quota thresholds. "
+        "Cost per 1M generated tokens dropped 22% with tiered FP8 quantization deployment.\n\n"
+        "Task: Provide a high-impact, bulleted executive summary highlighting Key Metrics, Wins, and Bottlenecks."
+    ),
     WorkloadPreset.STRUCTURED_JSON: "Return a valid JSON object matching this schema: {'service': str, 'status': str, 'latency_ms': float, 'metrics': {'cpu': float, 'memory_pct': float}}.",
     WorkloadPreset.CHAT_INTERACTIVE: "Explain the architectural difference between REST and Server-Sent Events in 2 paragraphs.",
+    WorkloadPreset.FEWSHOT_CLASSIFICATION: (
+        "Classify the incoming customer support message into one of: ['billing_dispute', 'auth_failure', 'bug_report', 'feature_request', 'hardware_fault'].\n\n"
+        "Example 1: 'I was double-charged on my July invoice.' -> {'intent': 'billing_dispute', 'confidence': 0.99}\n"
+        "Example 2: 'My SAML SSO login throws 403 Forbidden.' -> {'intent': 'auth_failure', 'confidence': 0.98}\n"
+        "Example 3: 'The PDF export button crashes on mobile safari.' -> {'intent': 'bug_report', 'confidence': 0.95}\n"
+        "Example 4: 'Can you add dark mode theme support?' -> {'intent': 'feature_request', 'confidence': 0.97}\n"
+        "Example 5: 'Server rack 4B power supply unit LED turned amber.' -> {'intent': 'hardware_fault', 'confidence': 0.99}\n\n"
+        "Input Query: 'Invoice #8839 contains an unauthorized overage line item of $450. Please refund immediately.'\n"
+        "Output JSON classification:"
+    ),
+    WorkloadPreset.MULTIMODAL_VISION: (
+        "Attached: Multimodal Vision Image Token Stream (Base64 Visual Embeddings: 1800 patch tokens representing dashboard topology diagram).\n\n"
+        "Task: Perform high-fidelity optical character recognition (OCR) and layout analysis. Identify all connected cluster nodes, "
+        "their allocated GPU VRAM percentages, and highlight any saturated bottleneck links."
+    ),
+    WorkloadPreset.MULTITURN_AGENTIC: (
+        "System: You are an autonomous site reliability engineer troubleshooting a distributed KV cache performance degradation.\n\n"
+        "Turn 1 User: Cluster us-east-1 is reporting P95 TTFT spikes from 120ms to 1800ms.\n"
+        "Turn 1 Assistant: Based on initial telemetry, KV cache VRAM allocation is sitting at 99.2% with frequent block evictions. Recommend enabling chunked prefill.\n"
+        "Turn 2 User: Chunked prefill was enabled with block size 16. What further kernel-level optimizations should we apply to reduce ITL jitter?\n\n"
+        "Turn 2 Assistant:"
+    ),
+    WorkloadPreset.KV_CACHE_REUSE: (
+        "[STATIC REFERENCE DOCUMENTATION - PREFIX CACHED CONTEXT]\n"
+        "LLMark Architecture Standard: LLMark evaluates LLM inference endpoints across TTFT, TPOT, ITL, Goodput, and Network Waterfalls. "
+        "Streaming responses are consumed chunk-by-chunk with sub-millisecond precision. Time to First Token (TTFT) includes TCP/TLS handshakes, "
+        "server queue time, and KV cache prefill compute. Time Per Output Token (TPOT) measures sustained decode execution.\n"
+        + ("Static Architecture Specification Record: Distributed KV cache block virtualization across NUMA nodes.\n" * 40)
+        + "\n[USER QUERY]: What metric directly captures sustained streaming smoothness during the decode phase?"
+    ),
+    WorkloadPreset.TOOL_CALLING: (
+        "Available Tools:\n"
+        "1. query_database(query: str, timeout_ms: int = 500) -> dict\n"
+        "2. calculate_p95_metric(timeseries_id: str, window_seconds: int) -> float\n\n"
+        "User Request: Query the database for active worker nodes in region 'us-east-1'. Output the exact tool call."
+    ),
+    WorkloadPreset.CODE: "Write a high-performance, asynchronous Python connection pool manager using asyncio and httpx.",
+    WorkloadPreset.LONG_CONTEXT: "Analyze the full operational history of distributed KV caching mechanisms across modern GPU clusters. " * 30,
+    WorkloadPreset.SUMMARIZATION: "Summarize the technical advantages and trade-offs of PagedAttention vs standard linear KV allocation.",
     WorkloadPreset.CHAT: "Explain the architectural difference between REST and Server-Sent Events in 2 paragraphs.",
     WorkloadPreset.RAG: (
         "Context: Kubernetes is an open-source container orchestration system for automating software deployment, "
@@ -55,8 +124,6 @@ PROMPT_PRESET_TEXT = {
         "that govern how the containers should run.\n\n"
         "Question: Explain how Pod lifecycle management interacts with container restart policies and node affinity."
     ),
-    WorkloadPreset.CODE: "Write a high-performance, asynchronous Python connection pool manager using asyncio and httpx.",
-    WorkloadPreset.LONG_CONTEXT: "Analyze the full operational history of distributed KV caching mechanisms across modern GPU clusters. " * 30,
     WorkloadPreset.VISION: "Describe the primary latency bottlenecks shown in the attached benchmark histogram.",
     WorkloadPreset.JSON_SCHEMA: "Return a structured JSON object containing user profiles, permissions, and session timeouts.",
     WorkloadPreset.CUSTOM: "Benchmark standard evaluation prompt.",

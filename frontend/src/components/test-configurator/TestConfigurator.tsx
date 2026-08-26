@@ -13,6 +13,7 @@ import {
   Zap,
   Activity,
   ShieldCheck,
+  ShieldAlert,
   Lock,
   Server,
   Check,
@@ -38,8 +39,16 @@ import {
   Terminal,
   Copy,
   Workflow,
+  Wrench,
+  Code2,
+  FileText,
+  FileSpreadsheet,
   Timer,
   FileCode,
+  Brain,
+  CheckSquare,
+  MessagesSquare,
+  Database,
 } from "lucide-react";
 import {
   BenchmarkConfig,
@@ -90,8 +99,9 @@ export type WorkloadCategory =
   | "latency"
   | "throughput"
   | "reasoning"
+  | "agentic"
   | "heavy_context"
-  | "structured"
+  | "code_structured"
   | "rate_limit"
   | "custom";
 
@@ -114,13 +124,13 @@ const PRESET_OPTIONS: {
     icon: MessageSquare,
     promptTokens: 200,
     genTokens: 150,
-    tag: "Human conversational",
-    metrics: ["TTFT P95", "ITL P95", "TPOT", "Goodput"],
+    tag: "Conversational UI",
+    metrics: ["TTFT P95", "ITL P95", "TPOT Mean", "Goodput"],
   },
   {
     id: "prefill_ttft",
     name: "Prefill Scaling & TTFT",
-    desc: "Heavy document context with 1-token output isolating pure KV prefill velocity & TTFT percentiles",
+    desc: "Heavy document context with 1-token output isolating pure KV prefill compute velocity & TTFT tail percentiles",
     category: "latency",
     icon: Layers,
     promptTokens: 4000,
@@ -131,7 +141,7 @@ const PRESET_OPTIONS: {
   {
     id: "decode_throughput",
     name: "Streaming Decode & Jitter",
-    desc: "Light prompt with long decode stream measuring decode TPS, ITL percentiles & max token freezes",
+    desc: "Light prompt with long decode stream measuring sustained decode TPS, ITL percentiles & max token freezes",
     category: "throughput",
     icon: Zap,
     promptTokens: 40,
@@ -142,18 +152,51 @@ const PRESET_OPTIONS: {
   {
     id: "reasoning_cot",
     name: "Reasoning & CoT Deep-Dive",
-    desc: "Chain-of-thought prompts measuring Time to First Answer (TTFA), thinking duration & token budget",
+    desc: "Chain-of-thought prompts measuring Time to First Answer (TTFA), thinking duration & reasoning token budget",
     category: "reasoning",
-    icon: Sparkles,
+    icon: Brain,
     promptTokens: 300,
     genTokens: 800,
     tag: "Reasoning & TTFA",
     metrics: ["TTFA P95", "Thinking tok/s", "Reasoning Ratio", "Goodput"],
   },
   {
+    id: "agentic_tool_calling",
+    name: "Agentic Tool & Function Calling",
+    desc: "Multi-tool definitions & schemas measuring tool call latency, arguments validity & invocation throughput",
+    category: "agentic",
+    icon: Wrench,
+    promptTokens: 1200,
+    genTokens: 150,
+    tag: "Function invocation",
+    metrics: ["Tool Latency", "Schema Validity %", "Constrained TPS", "Goodput"],
+  },
+  {
+    id: "fewshot_classification",
+    name: "Few-Shot In-Context Classification",
+    desc: "Multi-exemplar in-context prompt measuring ultra-low decode latency & high-throughput classification goodput",
+    category: "latency",
+    icon: CheckSquare,
+    promptTokens: 1200,
+    genTokens: 10,
+    tag: "Classification / ICL",
+    metrics: ["TTFT P95", "E2E Latency", "Classification RPS", "Goodput"],
+  },
+  {
+    id: "code_generation",
+    name: "Code Generation & Syntax Stream",
+    desc: "Codebase context & syntax tree generation measuring code decode speed, token jitter & TPOT",
+    category: "code_structured",
+    icon: Code2,
+    promptTokens: 1500,
+    genTokens: 800,
+    tag: "Developer workflow",
+    metrics: ["Decode tok/s", "ITL P95", "TPOT Mean", "Max Freeze"],
+  },
+  {
     id: "rag_synthesis",
     name: "Enterprise RAG Synthesis",
-    desc: "Heavy document context prefill & KV cache memory loading with synthesized answers",
+    desc: "Document retrieval context ingestion measuring End-to-End latency, prefill/decode split & goodput yield",
     category: "heavy_context",
     icon: FileSearch,
     promptTokens: 3500,
@@ -162,10 +205,65 @@ const PRESET_OPTIONS: {
     metrics: ["E2E Latency", "TTFT P95", "Decode TPS", "Goodput"],
   },
   {
+    id: "multimodal_vision",
+    name: "Multimodal Vision & OCR",
+    desc: "Image token embedding context measuring multimodal prefill latency, vision encoder overhead & TTFT",
+    category: "heavy_context",
+    icon: Eye,
+    promptTokens: 1800,
+    genTokens: 200,
+    tag: "Vision & OCR",
+    metrics: ["TTFT P95", "Multimodal Prefill", "TPOT Mean", "Goodput"],
+  },
+  {
+    id: "multiturn_agentic",
+    name: "Multi-Turn Session Context",
+    desc: "Accumulated multi-turn conversation history measuring KV cache expansion, turn latency drift & memory pressure",
+    category: "agentic",
+    icon: MessagesSquare,
+    promptTokens: 2500,
+    genTokens: 350,
+    tag: "Session continuity",
+    metrics: ["Turn Latency", "TTFT P95", "Decode TPS", "Goodput"],
+  },
+  {
+    id: "kv_cache_reuse",
+    name: "Prompt Prefix Cache Warm / Hit",
+    desc: "Repeated shared prefix context measuring KV cache hit speedup ratio, TTFT reduction & caching discount throughput",
+    category: "latency",
+    icon: Database,
+    promptTokens: 3200,
+    genTokens: 150,
+    tag: "KV Cache Hit",
+    metrics: ["Cached TTFT", "Cache Hit Speedup", "TTFT P95", "Goodput"],
+  },
+  {
+    id: "long_context_retrieval",
+    name: "Long-Context & Needle Retrieval",
+    desc: "Massive context prompt (16k tokens) measuring memory pressure, KV scaling & tail TTFT degradation",
+    category: "heavy_context",
+    icon: FileText,
+    promptTokens: 16000,
+    genTokens: 300,
+    tag: "16k context / Needle",
+    metrics: ["TTFT P95/P99", "Prefill tok/s", "E2E Latency", "Goodput"],
+  },
+  {
+    id: "summarization_distill",
+    name: "Document Summarization & Distillation",
+    desc: "Dense document context reduction measuring prefill efficiency, compression speed & turn latency",
+    category: "throughput",
+    icon: FileSpreadsheet,
+    promptTokens: 4500,
+    genTokens: 300,
+    tag: "Text distillation",
+    metrics: ["TTFT P95", "Decode TPS", "TPOT Mean", "Goodput"],
+  },
+  {
     id: "structured_json",
     name: "Structured JSON & Grammar",
     desc: "Guided grammar decoding measuring JSON syntax validity compliance & constrained decode speed",
-    category: "structured",
+    category: "code_structured",
     icon: Braces,
     promptTokens: 600,
     genTokens: 300,
@@ -177,7 +275,7 @@ const PRESET_OPTIONS: {
     name: "Rate Limit & Quota Probing",
     desc: "Micro-token calls (5 in / 2 out) probing HTTP 429 ceilings, RPM/TPM saturation & backoff delays",
     category: "rate_limit",
-    icon: ShieldCheck,
+    icon: ShieldAlert,
     promptTokens: 5,
     genTokens: 2,
     tag: "Micro-cost / 429 probe",
@@ -197,12 +295,13 @@ const PRESET_OPTIONS: {
 ];
 
 const CATEGORY_TABS: { id: WorkloadCategory; label: string }[] = [
-  { id: "all", label: "All Profiles (8)" },
+  { id: "all", label: "All Profiles (16)" },
   { id: "latency", label: "Latency & TTFT" },
   { id: "throughput", label: "Decode & Jitter" },
   { id: "reasoning", label: "Reasoning & CoT" },
-  { id: "heavy_context", label: "Enterprise RAG" },
-  { id: "structured", label: "Structured JSON" },
+  { id: "agentic", label: "Agentic & Multi-Turn" },
+  { id: "heavy_context", label: "Heavy Context & RAG" },
+  { id: "code_structured", label: "Code & JSON" },
   { id: "rate_limit", label: "429 Rate Limits" },
   { id: "custom", label: "Custom Studio" },
 ];
@@ -558,7 +657,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
       }
     }
     if (step === 2) {
-      if ((config.workload_preset === "structured_json" || config.workload_preset === "json_schema") && jsonSchemaError) {
+      if (
+        (config.workload_preset === "structured_json" ||
+          config.workload_preset === "json_schema" ||
+          config.workload_preset === "agentic_tool_calling" ||
+          config.workload_preset === "tool_calling") &&
+        jsonSchemaError
+      ) {
         setValidationError(`JSON Schema has syntax errors: ${jsonSchemaError}`);
         return false;
       }
@@ -578,10 +683,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
   };
 
   const steps = [
-    { num: 1, title: "Endpoint & Model", desc: "Provider, Auth & Model" },
-    { num: 2, title: "Workload & Sampling", desc: "Token Profile & Params" },
-    { num: 3, title: "Traffic & Guardrails", desc: "Strategy, Scope & Cap" },
-    { num: 4, title: "Review & Launch", desc: "Pre-Flight Cockpit" },
+    { num: 1, title: "Provider & Infrastructure", desc: "Driver, Auth & Target Model" },
+    { num: 2, title: "Workload & Payload", desc: "Token Shape & Prompt Schema" },
+    { num: 3, title: "Traffic & Guardrails", desc: "Concurrency, Curves & SLOs" },
+    { num: 4, title: "Review & Launch", desc: "Pre-Flight Validation & Run" },
   ];
 
   const selectedPreset = PRESET_OPTIONS.find((p) => p.id === config.workload_preset) || PRESET_OPTIONS[0];
@@ -2162,7 +2267,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
 
                       {/* Structured JSON Schema Editor */}
-                      {(config.workload_preset === "structured_json" || config.workload_preset === "json_schema") && (
+                      {(config.workload_preset === "structured_json" ||
+                        config.workload_preset === "json_schema" ||
+                        config.workload_preset === "agentic_tool_calling" ||
+                        config.workload_preset === "tool_calling" ||
+                        Boolean(config.json_schema)) && (
                         <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
                           <div className="flex items-center justify-between">
                             <Label className="text-xs font-semibold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
