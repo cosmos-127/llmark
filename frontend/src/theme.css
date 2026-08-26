@@ -1,0 +1,286 @@
+/* ==========================================================================
+   LLMARK COLOR PALETTE & THEME SPECIFICATION
+   
+   Palette:
+   - #2C2C2C / rgb(44, 44, 44)   -> Charcoal Black (Dark Vintage Base)
+   - #853953 / rgb(133, 57, 83)  -> Mulberry Maroon (Primary Brand Accent)
+   - #612D53 / rgb(97, 45, 83)   -> Deep Plum Maroon (Secondary Accent)
+   - #F3F4F4 / rgb(243, 244, 244)-> Vintage Light Grey (Light Vintage Surface)
+
+   Theme Personality: "blackmaroongreydarkvintage"
+   Includes Light Mode and Dark Mode Counterpart with smooth animated transitions.
+   ========================================================================== */
+
+:root {
+  /* Raw Palette Constants */
+  --color-black-charcoal: #2C2C2C;
+  --color-maroon-mulberry: #853953;
+  --color-maroon-deepplum: #612D53;
+  --color-grey-vintage-light: #F3F4F4;
+
+  /* Light Theme (Default) */
+  --bg-app: #F3F4F4;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-surface-subtle: #EBECEC;
+  --bg-surface-hover: #E4E8E8;
+  --bg-header: rgba(255, 255, 255, 0.92);
+  --bg-sidebar: rgba(255, 255, 255, 0.95);
+  --bg-card: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --bg-dialog: #FFFFFF;
+  --bg-popover: #FFFFFF;
+
+  --text-main: #2C2C2C;
+  --text-muted: rgba(44, 44, 44, 0.68);
+  --text-subtle: rgba(44, 44, 44, 0.45);
+  --text-inverse: #F3F4F4;
+
+  --border-subtle: rgba(44, 44, 44, 0.10);
+  --border-medium: rgba(44, 44, 44, 0.18);
+  --border-strong: rgba(44, 44, 44, 0.28);
+
+  --brand-primary: #853953;
+  --brand-primary-hover: #994361;
+  --brand-primary-light: rgba(133, 57, 83, 0.10);
+  --brand-primary-border: rgba(133, 57, 83, 0.25);
+  --brand-secondary: #612D53;
+  --brand-secondary-hover: #743663;
+  --brand-secondary-light: rgba(97, 45, 83, 0.10);
+  --brand-secondary-border: rgba(97, 45, 83, 0.25);
+
+  --chart-grid: #e1e4e4;
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.98);
+  --chart-tooltip-border: rgba(44, 44, 44, 0.15);
+  --chart-text: #6E6E6E;
+
+  /* HSL Component Tokens for Radix / Tailwind shadcn */
+  --background: 180 3% 96%; /* #F3F4F4 */
+  --foreground: 0 0% 17%;   /* #2C2C2C */
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 17%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 17%;
+  --primary: 339 40% 37%;   /* #853953 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 314 37% 28%; /* #612D53 */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 180 3% 92%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 339 40% 95%;
+  --accent-foreground: 339 40% 37%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 180 3% 88%;
+  --input: 180 3% 84%;
+  --ring: 339 40% 37%;
+  --radius: 0.75rem;
+
+  --ambient-plum: rgba(133, 57, 83, 0.09);
+  --ambient-deepplum: rgba(97, 45, 83, 0.07);
+  --ambient-charcoal: rgba(44, 44, 44, 0.04);
+  --grid-dots: rgba(44, 44, 44, 0.08);
+
+  --toggle-btn-bg: #ffffff;
+  --toggle-btn-border: rgba(133, 57, 83, 0.25);
+  --toggle-btn-hover: #F3F4F4;
+  --toggle-btn-text: #853953;
+  --toggle-btn-glow: rgba(133, 57, 83, 0.18);
+}
+
+/* ==========================================================================
+   Dark Theme Counterpart ("blackmaroongreydarkvintage")
+   ========================================================================== */
+.dark, [data-theme="dark"] {
+  --bg-app: #181719;
+  --bg-surface: #252426;
+  --bg-surface-elevated: #2C2C2C;
+  --bg-surface-subtle: #2C2C2C;
+  --bg-surface-hover: #353337;
+  --bg-header: rgba(37, 36, 38, 0.92);
+  --bg-sidebar: rgba(33, 32, 34, 0.96);
+  --bg-card: #252426;
+  --bg-input: #2C2C2C;
+  --bg-dialog: #252426;
+  --bg-popover: #252426;
+
+  --text-main: #F3F4F4;
+  --text-muted: rgba(243, 244, 244, 0.72);
+  --text-subtle: rgba(243, 244, 244, 0.45);
+  --text-inverse: #2C2C2C;
+
+  --border-subtle: rgba(243, 244, 244, 0.10);
+  --border-medium: rgba(243, 244, 244, 0.18);
+  --border-strong: rgba(243, 244, 244, 0.28);
+
+  --brand-primary: #A74B6A;
+  --brand-primary-hover: #B85879;
+  --brand-primary-light: rgba(167, 75, 106, 0.16);
+  --brand-primary-border: rgba(167, 75, 106, 0.35);
+  --brand-secondary: #7E3B6C;
+  --brand-secondary-hover: #92457E;
+  --brand-secondary-light: rgba(126, 59, 108, 0.16);
+  --brand-secondary-border: rgba(126, 59, 108, 0.35);
+
+  --chart-grid: rgba(243, 244, 244, 0.08);
+  --chart-tooltip-bg: rgba(37, 36, 38, 0.98);
+  --chart-tooltip-border: rgba(243, 244, 244, 0.15);
+  --chart-text: #9E9E9E;
+
+  /* HSL Component Tokens for Dark */
+  --background: 270 5% 10%; /* #181719 */
+  --foreground: 180 3% 96%; /* #F3F4F4 */
+  --card: 270 3% 15%;       /* #252426 */
+  --card-foreground: 180 3% 96%;
+  --popover: 270 3% 15%;
+  --popover-foreground: 180 3% 96%;
+  --primary: 339 45% 52%;   /* #A74B6A */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 314 38% 42%; /* #7E3B6C */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 270 5% 18%;      /* #2C2C2C */
+  --muted-foreground: 180 3% 68%;
+  --accent: 339 30% 22%;
+  --accent-foreground: 339 45% 75%;
+  --destructive: 0 65% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 270 4% 22%;
+  --input: 270 4% 20%;
+  --ring: 339 45% 52%;
+
+  --ambient-plum: rgba(167, 75, 106, 0.15);
+  --ambient-deepplum: rgba(126, 59, 108, 0.12);
+  --ambient-charcoal: rgba(243, 244, 244, 0.03);
+  --grid-dots: rgba(243, 244, 244, 0.06);
+
+  --toggle-btn-bg: #2C2C2C;
+  --toggle-btn-border: rgba(167, 75, 106, 0.40);
+  --toggle-btn-hover: #353337;
+  --toggle-btn-text: #A74B6A;
+  --toggle-btn-glow: rgba(167, 75, 106, 0.28);
+}
+
+/* ==========================================================================
+   View Transitions API for Theme Switching (Clip-path Radial / Shape Reveal)
+   ========================================================================== */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+[data-magicui-theme-vt="active"]::view-transition-new(root) {
+  clip-path: var(--magicui-theme-vt-clip-from);
+  animation-duration: var(--magicui-theme-toggle-vt-duration, 600ms);
+}
+
+/* Background grid pattern adapting to theme */
+.bg-grid-pattern {
+  background-image: radial-gradient(var(--grid-dots) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.ambient-glow-plum {
+  background: radial-gradient(circle at 50% 0%, var(--ambient-plum) 0%, transparent 60%);
+}
+
+.ambient-glow-deepplum {
+  background: radial-gradient(circle at 80% 20%, var(--ambient-deepplum) 0%, transparent 50%);
+}
+
+.ambient-glow-charcoal {
+  background: radial-gradient(circle at 20% 40%, var(--ambient-charcoal) 0%, transparent 50%);
+}
+
+/* Glass panel & cards adhering to theme variables */
+.glass-panel {
+  background: var(--bg-header);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+.glass-card:hover {
+  border-color: var(--brand-primary);
+  box-shadow: 0 4px 10px -1px rgba(133, 57, 83, 0.12);
+}
+
+.glass-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-medium);
+  color: var(--text-main);
+}
+
+.glass-input:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px var(--brand-primary-light);
+  outline: none;
+}
+
+/* Brand Glowing Action Buttons */
+.btn-brand-glow, .btn-amber-glow {
+  background: linear-gradient(135deg, #853953 0%, #612D53 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px -2px rgba(133, 57, 83, 0.35);
+  border: 1px solid rgba(133, 57, 83, 0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .btn-brand-glow, .dark .btn-amber-glow,
+[data-theme="dark"] .btn-brand-glow, [data-theme="dark"] .btn-amber-glow {
+  background: linear-gradient(135deg, #A74B6A 0%, #7E3B6C 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px -2px rgba(167, 75, 106, 0.45);
+  border: 1px solid rgba(167, 75, 106, 0.45);
+}
+
+.btn-brand-glow:hover, .btn-amber-glow:hover {
+  background: linear-gradient(135deg, #994361 0%, #743663 100%) !important;
+  box-shadow: 0 6px 18px 0px rgba(133, 57, 83, 0.45);
+  transform: translateY(-1px);
+}
+
+.dark .btn-brand-glow:hover, .dark .btn-amber-glow:hover,
+[data-theme="dark"] .btn-brand-glow:hover, [data-theme="dark"] .btn-amber-glow:hover {
+  background: linear-gradient(135deg, #B85879 0%, #92457E 100%) !important;
+  box-shadow: 0 6px 18px 0px rgba(167, 75, 106, 0.55);
+}
+
+.btn-brand-glow:active, .btn-amber-glow:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 8px -1px rgba(133, 57, 83, 0.3);
+}
+
+/* Scrollbars adapting to current theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-primary);
+}

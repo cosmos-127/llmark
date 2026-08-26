@@ -1,0 +1,17 @@
+# LLMark CI Configuration Sample
+name: "GPT-4o vs Mock Canary Benchmark"
+vendor: "mock"
+model: "gpt-4o"
+workload_preset: "chat"
+load_curve: "constant"
+concurrency: 5
+duration_seconds: 5
+max_tokens: 64
+warmup_requests: 1
+cache_bust: false
+hard_spend_cap: 2.0
+slo:
+  max_ttft_ms: 1500.0
+  max_tpot_ms: 50.0
+  max_e2e_ms: 10000.0
+  max_error_rate_pct: 1.0

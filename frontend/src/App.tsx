@@ -1,0 +1,92 @@
+import React, { useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
+import { AppSidebar, NavTab } from "./components/admin-layout/AppSidebar";
+import { AdminHeader } from "./components/admin-layout/AdminHeader";
+import { BenchmarkPage } from "./pages/BenchmarkPage";
+import { DiffPage } from "./pages/DiffPage";
+import { HistoryPage } from "./pages/HistoryPage";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { ThemeProvider } from "./lib/theme";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 5000,
+    },
+  },
+});
+
+export function App() {
+  const [activeTab, setActiveTab] = useState<NavTab>("benchmark");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  return (
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider delayDuration={200}>
+          <div className="min-h-screen bg-[#F3F4F4] dark:bg-[#181719] text-[#2C2C2C] dark:text-[#F3F4F4] flex font-sans relative overflow-x-hidden transition-colors duration-200">
+            {/* Ambient Grid & Palette Glows */}
+            <div className="fixed inset-0 bg-grid-pattern opacity-40 pointer-events-none z-0" />
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[850px] h-[350px] ambient-glow-plum pointer-events-none z-0" />
+            <div className="fixed top-1/3 right-0 w-[500px] h-[500px] ambient-glow-deepplum pointer-events-none z-0" />
+            <div className="fixed bottom-0 left-1/4 w-[400px] h-[400px] ambient-glow-charcoal pointer-events-none z-0" />
+
+            {/* shadcn-admin Sidebar */}
+            <AppSidebar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              collapsed={sidebarCollapsed}
+              setCollapsed={setSidebarCollapsed}
+            />
+
+            {/* Main App Content Area */}
+            <div className="flex-1 flex flex-col min-w-0 z-10">
+              {/* shadcn-admin Header */}
+              <AdminHeader
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                collapsed={sidebarCollapsed}
+                setCollapsed={setSidebarCollapsed}
+              />
+
+              {/* Page Canvas with smooth tab transition */}
+              <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-7">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                  >
+                    {activeTab === "benchmark" && <BenchmarkPage />}
+                    {activeTab === "diff" && <DiffPage />}
+                    {activeTab === "history" && <HistoryPage />}
+                  </motion.div>
+                </AnimatePresence>
+              </main>
+
+              {/* Minimalist Decluttered Footer */}
+              <footer className="border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white/70 dark:bg-[#252426]/70 backdrop-blur-xs py-3 px-6 text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans flex items-center justify-between transition-colors duration-200">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">LLMark</span>
+                  <span className="text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30">•</span>
+                  <span className="font-normal">Microsecond Inference Telemetry</span>
+                </div>
+                <div className="flex items-center gap-3 text-[11px] font-mono text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                  <span>v0.1.0</span>
+                  <span>•</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-sans font-medium">Ready</span>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  );
+}
+
+export default App;
