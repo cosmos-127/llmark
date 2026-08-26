@@ -99,7 +99,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   const renderValue = () => {
     if (typeof value === "number") {
       return (
-        <div className="flex items-baseline gap-1 font-mono tabular-nums">
+        <div className="flex items-baseline gap-1 font-sans tabular-nums">
           <span className={cn("text-2xl sm:text-3xl font-bold tracking-tight", currentTheme.text)}>
             {value}
           </span>
@@ -118,7 +118,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       const [, prefix, num, matchedUnit] = match;
       const finalUnit = unit || matchedUnit;
       return (
-        <div className="flex items-baseline gap-0.5 font-mono tabular-nums">
+        <div className="flex items-baseline gap-0.5 font-sans tabular-nums">
           {prefix && (
             <span className={cn("text-lg sm:text-xl font-semibold opacity-70", currentTheme.text)}>
               {prefix}
@@ -137,7 +137,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     }
 
     return (
-      <span className={cn("text-2xl sm:text-3xl font-bold font-mono tracking-tight tabular-nums", currentTheme.text)}>
+      <span className={cn("text-2xl sm:text-3xl font-bold font-sans tracking-tight tabular-nums", currentTheme.text)}>
         {strValue}
       </span>
     );
@@ -158,7 +158,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 {title}
               </span>
               {badge && (
-                <Badge variant={badgeVariant} className="text-[10px] px-1.5 py-0 font-medium tracking-normal">
+                <Badge variant={badgeVariant} className="px-1.5 py-0 font-medium tracking-normal">
                   {badge}
                 </Badge>
               )}
@@ -175,7 +175,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             {delta && (
               <span
                 className={cn(
-                  "inline-flex items-center gap-0.5 text-xs font-mono font-medium px-1.5 py-0.5 rounded",
+                  "inline-flex items-center gap-0.5 text-xs font-sans font-medium tabular-nums px-1.5 py-0.5 rounded",
                   delta.isGood
                     ? "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800"
                     : "text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800"

@@ -202,13 +202,13 @@ export const DiffPage: React.FC = () => {
                   </div>
                   <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
                     Goodput delta:{" "}
-                    <strong className={diffData.goodput_delta_pct >= 0 ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-rose-700 dark:text-rose-400 font-bold"}>
+                    <span className={diffData.goodput_delta_pct >= 0 ? "text-emerald-700 dark:text-emerald-400 font-semibold" : "text-rose-700 dark:text-rose-400 font-semibold"}>
                       {diffData.goodput_delta_pct > 0 ? `+${diffData.goodput_delta_pct}%` : `${diffData.goodput_delta_pct}%`}
-                    </strong>{" "}
+                    </span>{" "}
                     • Cost delta:{" "}
-                    <strong className={diffData.cost_delta_pct <= 0 ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-[#853953] dark:text-[#A74B6A] font-bold"}>
+                    <span className={diffData.cost_delta_pct <= 0 ? "text-emerald-700 dark:text-emerald-400 font-semibold" : "text-[#853953] dark:text-[#A74B6A] font-semibold"}>
                       {diffData.cost_delta_pct > 0 ? `+${diffData.cost_delta_pct}%` : `${diffData.cost_delta_pct}%`}
-                    </strong>
+                    </span>
                   </p>
                 </div>
 
@@ -262,11 +262,11 @@ export const DiffPage: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="py-3.5 px-5">Metric dimension</TableHead>
-                    <TableHead className="py-3.5 px-3">Run A (Baseline)</TableHead>
-                    <TableHead className="py-3.5 px-3">Run B (Candidate)</TableHead>
-                    <TableHead className="py-3.5 px-3">Absolute delta</TableHead>
-                    <TableHead className="py-3.5 px-5 text-right">Percentage delta</TableHead>
+                    <TableHead className="py-3 px-5">Metric dimension</TableHead>
+                    <TableHead className="py-3 px-3">Run A (Baseline)</TableHead>
+                    <TableHead className="py-3 px-3">Run B (Candidate)</TableHead>
+                    <TableHead className="py-3 px-3">Absolute delta</TableHead>
+                    <TableHead className="py-3 px-5 text-right">Percentage delta</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -276,17 +276,17 @@ export const DiffPage: React.FC = () => {
                       initial={{ opacity: 0, x: -6 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.2, delay: idx * 0.04 }}
-                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                      className="border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 transition-colors hover:bg-[#F3F4F4]/70 dark:hover:bg-[#2C2C2C]/60 data-[state=selected]:bg-muted"
                     >
-                      <TableCell className="py-3.5 px-5 font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      <TableCell className="py-3 px-5 font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
                         {d.metric_name}
                       </TableCell>
-                      <TableCell className="py-3.5 px-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-mono text-xs">{d.run_a_value}</TableCell>
-                      <TableCell className="py-3.5 px-3 text-[#2C2C2C] dark:text-[#F3F4F4] font-bold font-mono text-xs">{d.run_b_value}</TableCell>
-                      <TableCell className="py-3.5 px-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-mono text-xs">
+                      <TableCell className="py-3 px-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-sans tabular-nums text-xs">{d.run_a_value}</TableCell>
+                      <TableCell className="py-3 px-3 text-[#2C2C2C] dark:text-[#F3F4F4] font-semibold font-sans tabular-nums text-xs">{d.run_b_value}</TableCell>
+                      <TableCell className="py-3 px-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-sans tabular-nums text-xs">
                         {d.delta_value > 0 ? `+${d.delta_value}` : `${d.delta_value}`}
                       </TableCell>
-                      <TableCell className="py-3.5 px-5 text-right">
+                      <TableCell className="py-3 px-5 text-right">
                         <motion.div
                           whileHover={{ scale: 1.05 }}
                           className="inline-block"
@@ -299,7 +299,7 @@ export const DiffPage: React.FC = () => {
                                 ? "emerald"
                                 : "destructive"
                             }
-                            className="gap-1.5 py-1 px-3 text-xs font-medium font-mono shadow-2xs"
+                            className="gap-1.5 py-1 px-3 text-xs font-semibold font-sans tabular-nums shadow-2xs"
                           >
                             {d.delta_pct === 0 ? (
                               <Minus className="h-3.5 w-3.5" />

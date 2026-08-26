@@ -59,10 +59,10 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
                   />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="font-mono text-xs">
-                    {item.name}: <strong>{item.value.toFixed(1)}</strong> ({((item.value / total) * 100).toFixed(1)}%)
+                  <p className="font-sans font-medium text-xs">
+                    {item.name}: <strong className="tabular-nums">{item.value.toFixed(1)}</strong> (<span className="tabular-nums">{((item.value / total) * 100).toFixed(1)}%</span>)
                   </p>
-                  {item.subtext && <p className="text-[10px] text-slate-300">{item.subtext}</p>}
+                  {item.subtext && <p className="text-[11px] font-sans text-slate-300">{item.subtext}</p>}
                 </TooltipContent>
               </Tooltip>
             );
@@ -76,7 +76,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
               <div key={item.key || idx} className="flex items-center gap-1.5 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
                 <span className={cn("h-2 w-2 rounded-full shrink-0", item.color)} />
                 <span className="truncate">{item.name}</span>
-                <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-medium font-mono">({((item.value / total) * 100).toFixed(0)}%)</span>
+                <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-medium font-sans tabular-nums">({((item.value / total) * 100).toFixed(0)}%)</span>
               </div>
             ))}
           </div>

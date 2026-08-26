@@ -60,16 +60,22 @@ async def test_benchmark_run_lifecycle(async_client: AsyncClient):
     assert status_resp.json()["benchmark_id"] == benchmark_id
 
     # 3. Wait for run to complete
-    for _ in range(25):
-        await asyncio.sleep(0.2)
+    for _ in range(40):
+        await asyncio.sleep(0.1)
         curr = await async_client.get(f"/api/benchmark/{benchmark_id}")
         if curr.json()["status"] == "completed":
             break
 
-    # 4. Check historical run in DB
-    history_resp = await async_client.get("/api/history")
-    assert history_resp.status_code == 200
-    history = history_resp.json()
+    # 4. Check historical run in DB (wait for DB commit if needed)
+    history = []
+    for _ in range(30):
+        history_resp = await async_client.get("/api/history")
+        assert history_resp.status_code == 200
+        history = history_resp.json()
+        if any(r["id"] == benchmark_id for r in history):
+            break
+        await asyncio.sleep(0.1)
+
     assert len(history) >= 1
     matched = [r for r in history if r["id"] == benchmark_id]
     assert len(matched) == 1

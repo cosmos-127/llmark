@@ -20,12 +20,12 @@ const buttonVariants = cva(
           "text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:bg-[#A74B6A]/15 dark:hover:text-[#A74B6A] active:scale-[0.98]",
         link: "text-[#853953] dark:text-[#A74B6A] underline-offset-4 hover:underline",
         amberGlow:
-          "bg-gradient-to-r from-[#853953] to-[#612D53] hover:from-[#994361] hover:to-[#743663] dark:from-[#A74B6A] dark:to-[#7E3B6C] dark:hover:from-[#B85879] dark:hover:to-[#92457E] text-white font-bold shadow-md shadow-[#853953]/25 dark:shadow-[#A74B6A]/30 border border-[#853953]/30 dark:border-[#A74B6A]/40 active:scale-[0.98]",
+          "bg-gradient-to-r from-[#853953] to-[#612D53] hover:from-[#994361] hover:to-[#743663] dark:from-[#A74B6A] dark:to-[#7E3B6C] dark:hover:from-[#B85879] dark:hover:to-[#92457E] text-white font-semibold shadow-md shadow-[#853953]/25 dark:shadow-[#A74B6A]/30 border border-[#853953]/30 dark:border-[#A74B6A]/40 active:scale-[0.98]",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-lg px-3 text-xs font-medium",
-        lg: "h-11 rounded-2xl px-6 text-sm font-bold",
+        default: "h-9 px-4 py-2 text-xs",
+        sm: "h-8 rounded-lg px-3 text-xs",
+        lg: "h-11 rounded-2xl px-6 text-sm font-semibold",
         icon: "h-8 w-8 rounded-xl",
       },
     },

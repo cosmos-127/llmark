@@ -81,7 +81,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       >
         {/* Sidebar Header / Brand */}
         <div>
-          <div className="flex h-16 items-center justify-between px-4 border-b border-[#F3F4F4] dark:border-[#F3F4F4]/10">
+          <div className="flex h-16 items-center justify-between px-4 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -102,7 +102,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                       Stream
                     </span>
                   </div>
-                  <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate font-mono tracking-wide">v0.1.0-alpha</p>
+                  <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate font-sans font-medium tracking-wide">v0.1.0-alpha</p>
                 </div>
               )}
             </motion.div>
@@ -121,7 +121,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           {/* Nav Links */}
           <div className="space-y-1 p-3">
             {!collapsed && (
-              <p className="px-3 pt-2 pb-1.5 text-xs font-medium text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">
+              <p className="px-3 pt-2 pb-1.5 text-xs font-semibold text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">
                 Benchmark suite
               </p>
             )}
@@ -135,7 +135,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   className={cn(
                     "group relative flex w-full items-center gap-3 rounded-xl p-2.5 text-xs font-medium transition-all cursor-pointer font-sans select-none",
                     isActive
-                      ? "text-[#853953] dark:text-[#A74B6A] font-bold"
+                      ? "text-[#853953] dark:text-[#A74B6A] font-semibold"
                       : "text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 hover:bg-[#F3F4F4]/70 dark:hover:bg-[#2C2C2C]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
                   )}
                 >
@@ -161,7 +161,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   {!collapsed && (
                     <div className="relative z-10 flex flex-1 items-center justify-between truncate">
                       <span className="truncate">{item.label}</span>
-                      <Badge variant={isActive ? "default" : "secondary"} className="text-[10px] px-2 py-0.5 font-medium">
+                      <Badge variant={isActive ? "default" : "secondary"} className="text-[11px] px-2 py-0.5 font-medium">
                         {item.badge}
                       </Badge>
                     </div>
@@ -174,8 +174,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   <Tooltip key={item.id}>
                     <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
                     <TooltipContent side="right">
-                      <p className="font-bold">{item.label}</p>
-                      <p className="text-[11px] text-slate-300">{item.description}</p>
+                      <p className="font-semibold">{item.label}</p>
+                      <p className="text-[11px] text-slate-300 font-normal">{item.description}</p>
                     </TooltipContent>
                   </Tooltip>
                 );
@@ -187,7 +187,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         </div>
 
         {/* Sidebar Footer Engine Info & Theme Switcher */}
-        <div className="border-t border-[#F3F4F4] dark:border-[#F3F4F4]/10 p-3 space-y-2">
+        <div className="border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3 space-y-2">
           {/* Theme Switcher in Sidebar */}
           <div className="rounded-xl bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/70 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
             <ThemeToggle variant="sidebar" collapsed={collapsed} />
@@ -200,7 +200,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                   Ephemeral vault
                 </span>
-                <Badge variant="emerald" className="text-[10px] py-0 px-1.5 font-medium">
+                <Badge variant="emerald" className="text-[11px] py-0 px-1.5 font-medium">
                   Active
                 </Badge>
               </div>
@@ -209,14 +209,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   <Cpu className="h-3.5 w-3.5 text-[#612D53] dark:text-[#C57BB2]" />
                   SQLite WAL
                 </span>
-                <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-bold font-mono text-[11px] tracking-wide">Local</span>
+                <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-medium font-sans text-[11px] tracking-wide">Local</span>
               </div>
               <div className="flex items-center justify-between text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
                 <span className="flex items-center gap-1.5 font-medium">
                   <Gauge className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
                   SSE telemetry
                 </span>
-                <span className="text-[#853953] dark:text-[#A74B6A] font-bold font-mono text-[11px] tracking-wide">100Hz</span>
+                <span className="text-[#853953] dark:text-[#A74B6A] font-medium font-sans text-[11px] tracking-wide">100Hz</span>
               </div>
             </div>
           ) : (
@@ -233,7 +233,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           )}
 
           {!collapsed && (
-            <div className="px-2 pt-0.5 text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-medium text-center tracking-wide uppercase">
+            <div className="px-2 pt-0.5 text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-semibold text-center tracking-wider uppercase">
               LLMark Benchmark Engine
             </div>
           )}

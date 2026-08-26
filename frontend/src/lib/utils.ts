@@ -26,20 +26,39 @@ export function formatUsd(usd?: number | null): string {
 export async function downloadFile(urlOrContent: string, filename: string, mimeType: string = "application/octet-stream") {
   try {
     if (urlOrContent.startsWith("/") || urlOrContent.startsWith("http://") || urlOrContent.startsWith("https://")) {
-      const response = await fetch(urlOrContent);
-      if (!response.ok) {
-        throw new Error(`Download failed with status ${response.status}: ${response.statusText}`);
+      try {
+        const response = await fetch(urlOrContent);
+        if (!response.ok) {
+          let errDetail = response.statusText;
+          try {
+            const errJson = await response.json();
+            if (errJson?.detail) errDetail = errJson.detail;
+          } catch {
+            // ignore
+          }
+          throw new Error(`Server returned HTTP ${response.status}: ${errDetail}`);
+        }
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 15000);
+        return;
+      } catch (fetchErr) {
+        console.warn("Direct fetch blob download failed, falling back to anchor trigger:", fetchErr);
+        const a = document.createElement("a");
+        a.href = urlOrContent;
+        a.download = filename;
+        a.target = "_blank";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
       }
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-      return;
     }
 
     if (urlOrContent.startsWith("blob:")) {
@@ -60,8 +79,9 @@ export async function downloadFile(urlOrContent: string, filename: string, mimeT
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
   } catch (error) {
     console.error("Error executing file download:", error);
   }
 }
+

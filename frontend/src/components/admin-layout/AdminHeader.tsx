@@ -31,7 +31,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
 
   return (
     <TooltipProvider delayDuration={150}>
-      <header className="sticky top-0 z-50 w-full border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white/90 dark:bg-[#181719]/90 backdrop-blur-md transition-colors duration-200">
+      <header className="sticky top-0 z-50 w-full border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white/90 dark:bg-[#111012]/90 backdrop-blur-md transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
           {/* Left: Brand Logo & Title */}
           <motion.div
@@ -52,11 +52,11 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                 <span className="text-[#853953] dark:text-[#A74B6A] text-xs font-semibold tracking-wide">
                   Stream
                 </span>
-                <Badge variant="default" className="text-[10px] px-1.5 py-0 font-medium">
+                <Badge variant="default" className="text-[11px] px-1.5 py-0 font-medium">
                   v0.1.0-alpha
                 </Badge>
               </div>
-              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-mono hidden md:block">
+              <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans hidden md:block">
                 Microsecond Inference Telemetry
               </p>
             </div>
@@ -74,7 +74,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                   className={cn(
                     "relative flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-lg font-medium transition-colors cursor-pointer select-none",
                     isActive
-                      ? "text-[#853953] dark:text-[#A74B6A] font-bold"
+                      ? "text-[#853953] dark:text-[#A74B6A] font-semibold"
                       : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
                   )}
                 >

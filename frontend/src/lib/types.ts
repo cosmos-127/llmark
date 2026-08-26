@@ -1,9 +1,10 @@
 export type VendorType =
-  | "openai"
-  | "anthropic"
-  | "gcp_vertex"
-  | "aws_bedrock"
   | "openai_compatible"
+  | "openai"
+  | "azure_openai"
+  | "anthropic"
+  | "aws_bedrock"
+  | "gcp_vertex"
   | "mock";
 
 export type WorkloadPreset =
@@ -32,9 +33,14 @@ export interface VendorCredential {
   api_key?: string;
   base_url?: string;
   organization_id?: string;
+  azure_endpoint?: string;
+  azure_deployment?: string;
+  azure_api_version?: string;
   aws_region?: string;
   aws_access_key_id?: string;
   aws_secret_access_key?: string;
+  aws_session_token?: string;
+  gcp_auth_mode?: "api_key" | "vertex_ai";
   gcp_project_id?: string;
   gcp_location?: string;
 }

@@ -12,6 +12,10 @@ export interface DonutChartProps {
   data: DonutChartDataItem[];
   valueFormatter?: (val: number) => string;
   label?: string;
+  showLegend?: boolean;
+  innerRadius?: number;
+  outerRadius?: number;
+  heightClass?: string;
   className?: string;
 }
 
@@ -19,23 +23,30 @@ export const DonutChart: React.FC<DonutChartProps> = ({
   data,
   valueFormatter = (val) => val.toLocaleString(),
   label,
+  showLegend = false,
+  innerRadius = 40,
+  outerRadius = 58,
+  heightClass = "h-36",
   className,
 }) => {
-  const total = data.reduce((acc, d) => acc + d.value, 0);
+  const total = data.reduce((acc, d) => acc + (d.value || 0), 0);
+
+  // Safe fallback if total is 0
+  const chartData = total > 0 ? data : [{ name: "None", value: 1, color: "#888888" }];
 
   return (
-    <div className={cn("relative flex flex-col items-center justify-center", className)}>
-      <div className="h-44 w-full relative">
+    <div className={cn("relative flex flex-col items-center justify-center w-full overflow-hidden", className)}>
+      <div className={cn("w-full relative", heightClass)}>
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <Tooltip
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const item = payload[0];
                   return (
-                    <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 bg-white dark:bg-[#252426] px-3 py-1.5 text-xs text-[#2C2C2C] dark:text-[#F3F4F4] shadow-lg font-sans">
-                      <p className="font-medium text-[#853953] dark:text-[#A74B6A]">{item.name}</p>
-                      <p className="font-mono font-bold">{valueFormatter(item.value as number)}</p>
+                    <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 bg-white dark:bg-[#252426] px-2.5 py-1 text-xs text-[#2C2C2C] dark:text-[#F3F4F4] shadow-md font-sans z-50">
+                      <p className="font-semibold text-[#853953] dark:text-[#A74B6A] text-[11px]">{item.name}</p>
+                      <p className="font-sans font-semibold text-xs tabular-nums">{valueFormatter(item.value as number)}</p>
                     </div>
                   );
                 }
@@ -43,18 +54,19 @@ export const DonutChart: React.FC<DonutChartProps> = ({
               }}
             />
             <Pie
-              data={data}
+              data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={52}
-              outerRadius={70}
-              paddingAngle={4}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
+              paddingAngle={chartData.length > 1 ? 3 : 0}
               dataKey="value"
-              stroke="currentColor"
-              className="text-white dark:text-[#252426]"
-              strokeWidth={2}
+              stroke="transparent"
+              isAnimationActive={true}
+              animationDuration={500}
+              animationEasing="ease-out"
             >
-              {data.map((entry, index) => (
+              {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
@@ -62,24 +74,30 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         </ResponsiveContainer>
 
         {/* Center label */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-lg font-extrabold font-mono text-[#2C2C2C] dark:text-[#F3F4F4] tracking-normal">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-1 font-sans">
+          <span className="text-sm sm:text-base font-semibold font-sans text-[#2C2C2C] dark:text-[#F3F4F4] tracking-tight leading-none truncate max-w-[80px] tabular-nums">
             {valueFormatter(total)}
           </span>
-          {label && <span className="text-xs font-sans text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-medium">{label}</span>}
+          {label && (
+            <span className="text-[11px] font-sans text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-medium pt-0.5 leading-none">
+              {label}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Legend below */}
-      <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-sans">
-        {data.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-            <span className="text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">{item.name}:</span>
-            <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-medium font-mono">{valueFormatter(item.value)}</span>
-          </div>
-        ))}
-      </div>
+      {/* Optional Legend below */}
+      {showLegend && (
+        <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2 text-[11px] font-sans w-full">
+          {data.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-1.5 shrink-0">
+              <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+              <span className="text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 truncate max-w-[100px]">{item.name}:</span>
+              <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-medium font-sans tabular-nums shrink-0">{valueFormatter(item.value)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

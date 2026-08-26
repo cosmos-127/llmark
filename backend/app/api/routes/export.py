@@ -63,11 +63,13 @@ async def _get_run_or_active(run_id: str, db: AsyncSession) -> BenchmarkRun:
             max_itl=snapshot.max_itl,
             tpot_mean=snapshot.tpot_mean,
             goodput_pct=snapshot.goodput_pct,
+            error_rate_pct=snapshot.error_rate_pct,
             tps_decode=snapshot.current_tps,
-            dns_p50=snapshot.waterfall_avg.dns_ms,
-            tcp_p50=snapshot.waterfall_avg.tcp_ms,
-            tls_p50=snapshot.waterfall_avg.tls_ms,
-            config_snapshot=config.model_dump() if hasattr(config, "model_dump") else {},
+            dns_p50=snapshot.waterfall_avg.dns_ms if snapshot.waterfall_avg else (getattr(execution, "waterfall_baseline", None).dns_ms if getattr(execution, "waterfall_baseline", None) else 0.0),
+            tcp_p50=snapshot.waterfall_avg.tcp_ms if snapshot.waterfall_avg else (getattr(execution, "waterfall_baseline", None).tcp_ms if getattr(execution, "waterfall_baseline", None) else 0.0),
+            tls_p50=snapshot.waterfall_avg.tls_ms if snapshot.waterfall_avg else (getattr(execution, "waterfall_baseline", None).tls_ms if getattr(execution, "waterfall_baseline", None) else 0.0),
+            config_snapshot=config.model_dump(mode="json") if hasattr(config, "model_dump") else {},
+            raw_telemetry={"metrics": [m.model_dump(mode="json") for m in execution.metrics]} if execution.metrics else {},
         )
 
     raise HTTPException(

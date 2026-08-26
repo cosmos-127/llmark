@@ -9,70 +9,71 @@
   }
 
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.5;
-    letter-spacing: -0.011em;
+    letter-spacing: -0.006em;
     background-color: var(--bg-app);
     color: var(--text-main);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'calt';
   }
 
   code, pre, kbd {
-    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     font-size: 0.875em;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
     font-feature-settings: 'tnum' 1, 'zero' 1;
   }
 
   /* Enterprise Tabular Figures for Real-Time Metrics & Latency Numbers */
-  .tabular-nums, table, [data-metric] {
+  .tabular-nums, table, [data-metric], [data-metric-value] {
     font-variant-numeric: tabular-nums;
-    font-feature-settings: 'tnum' 1;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
   }
 
-  /* ── Type Scale (Polished enterprise 14px base) ─────────────────────────
-     Plus Jakarta Sans with balanced tracking & crisp optical hierarchy.
+  /* ── Inter Standard Type Scale (Clean Enterprise 14px Base) ─────────────
+     Standardized scale for Inter: ensures micro text (≥11px) remains 100%
+     legible while headers scale proportionally without jarring jumps.
      ─────────────────────────────────────────────────────────────────────── */
   :root {
-    /* Meta / badge labels */
+    /* Micro tags / status chips (never below 11px for WCAG readability) */
     --text-2xs: 11px;
-    /* Caption / secondary labels */
+    /* Caption / secondary labels / helper notes */
     --text-xs: 12px;
-    /* Small body / table cells */
+    /* Compact body / table cells / compact badges */
     --text-sm: 13px;
-    /* Primary body copy */
+    /* Primary UI body copy / standard form inputs */
     --text-base: 14px;
-    /* Prominent body / input values */
+    /* Prominent body text */
     --text-md: 15px;
-    /* Sub-section headers */
+    /* Sub-section headers / dialog titles */
     --text-lg: 16px;
-    /* Section headers */
+    /* Section headers / card titles */
     --text-xl: 18px;
-    /* Card / panel titles */
+    /* Feature titles / compact KPI values */
     --text-2xl: 22px;
-    /* Page headings */
+    /* Primary page headings / hero KPI values */
     --text-3xl: 28px;
+    /* Main landing hero display title */
+    --text-4xl: 36px;
 
-    /* Font weights — Plus Jakarta Sans has true 300/400/500/600/700/800 */
-    --fw-light:    300;
-    --fw-normal:   400;
-    --fw-medium:   500;  /* Labels, captions, nav items */
-    --fw-semibold: 600;  /* Card titles, section headers */
-    --fw-bold:     700;  /* Hero KPI numbers, page headings */
-    --fw-extrabold: 800;
+    /* Font weights — Inter supports full variable 100-900 weights */
+    --fw-normal:   400;  /* Body copy, descriptions, captions */
+    --fw-medium:   500;  /* Form labels, chips, badges, nav items */
+    --fw-semibold: 600;  /* Card titles, section headers, active tabs, buttons */
+    --fw-bold:     700;  /* Hero page titles & large standalone KPI numbers */
   }
 }
 
 @theme {
-  /* ── Font families ─────────────────────────────────────────────────────── */
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* ── Font families: 100% Inter universally ────────────────────────────── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
   /* ── Colour tokens (Radix / shadcn HSL) ──────────────────────────────── */
   --color-background: hsl(var(--background));

@@ -249,18 +249,18 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
         </div>
 
         {/* Live Snapshot Stat Badge Strip */}
-        <div className="flex items-center gap-3 pt-2 font-mono text-xs">
+        <div className="flex items-center gap-3 pt-2 font-sans text-xs">
           {activeMetric === "ratelimit" && (
             <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
               <div className="flex items-center gap-1.5">
                 <span>HTTP 429 Rate:</span>
-                <Badge variant={(latest?.rate_limit_pct || 0) > 0 ? "destructive" : "emerald"} className="font-mono text-xs font-bold tabular-nums">
+                <Badge variant={(latest?.rate_limit_pct || 0) > 0 ? "destructive" : "emerald"} className="font-sans text-xs font-semibold tabular-nums">
                   {formatPct(latest?.rate_limit_pct || 0)}
                 </Badge>
               </div>
               <div className="flex items-center gap-1.5">
                 <span>Live RPM:</span>
-                <Badge variant="default" className="font-mono text-xs font-bold tabular-nums">
+                <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
                   {latest?.rpm ? `${latest.rpm.toFixed(0)} req/min` : "0 req/min"}
                 </Badge>
               </div>
@@ -270,13 +270,13 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
               <div className="flex items-center gap-1.5">
                 <span>Prefill Speed:</span>
-                <Badge variant="emerald" className="font-mono text-xs font-bold tabular-nums">
+                <Badge variant="emerald" className="font-sans text-xs font-semibold tabular-nums">
                   {latest?.prefill_tps_p95 ? `${latest.prefill_tps_p95.toFixed(0)} tok/s` : "0 tok/s"}
                 </Badge>
               </div>
               <div className="flex items-center gap-1.5">
                 <span>TTFT P95:</span>
-                <Badge variant="default" className="font-mono text-xs font-bold tabular-nums">
+                <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
                   {formatMs(latest?.ttft_p95)}
                 </Badge>
               </div>
@@ -286,13 +286,13 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
               <div className="flex items-center gap-1.5">
                 <span>Thinking Budget:</span>
-                <Badge variant="secondary" className="font-mono text-xs font-bold tabular-nums">
+                <Badge variant="secondary" className="font-sans text-xs font-semibold tabular-nums">
                   {latest?.thinking_tokens_avg ? `${latest.thinking_tokens_avg.toFixed(0)} tok` : "0 tok"}
                 </Badge>
               </div>
               <div className="flex items-center gap-1.5">
                 <span>Decode TPS:</span>
-                <Badge variant="emerald" className="font-mono text-xs font-bold tabular-nums">
+                <Badge variant="emerald" className="font-sans text-xs font-semibold tabular-nums">
                   {latest ? `${latest.tps.toFixed(1)} tok/s` : "0.0 tok/s"}
                 </Badge>
               </div>
@@ -301,7 +301,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           {activeMetric === "throughput" && (
             <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
               <span>{isRateLimit ? "Saturated RPM:" : "Current Rate:"}</span>
-              <Badge variant="emerald" className="font-mono text-xs font-bold tabular-nums">
+              <Badge variant="emerald" className="font-sans text-xs font-semibold tabular-nums">
                 {isRateLimit
                   ? `${latest?.rpm ? latest.rpm.toFixed(0) : "0"} req/min`
                   : latest ? `${latest.tps.toFixed(1)} tok/s` : "0.0 tok/s"}
@@ -312,14 +312,14 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
               <div className="flex items-center gap-1.5">
                 <span>TTFT P95:</span>
-                <Badge variant="default" className="font-mono text-xs font-bold tabular-nums">
+                <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
                   {formatMs(latest?.ttft_p95)}
                 </Badge>
               </div>
               {!isPrefill && (
                 <div className="flex items-center gap-1.5">
                   <span>ITL P95:</span>
-                  <Badge variant="secondary" className="font-mono text-xs font-bold tabular-nums">
+                  <Badge variant="secondary" className="font-sans text-xs font-semibold tabular-nums">
                     {formatMs(latest?.itl_p95)}
                   </Badge>
                 </div>
@@ -329,7 +329,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           {activeMetric === "goodput" && (
             <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
               <span>{isRateLimit ? "Availability:" : "SLO Yield:"}</span>
-              <Badge variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"} className="font-mono text-xs font-bold tabular-nums">
+              <Badge variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"} className="font-sans text-xs font-semibold tabular-nums">
                 {formatPct(latest?.goodput || 100)}
               </Badge>
             </div>
@@ -337,7 +337,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           {activeMetric === "cost" && (
             <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
               <span>Total Accrued:</span>
-              <Badge variant="default" className="font-mono text-xs font-bold tabular-nums">
+              <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
                 {formatUsd(latest?.spend || 0)}
               </Badge>
             </div>
@@ -390,9 +390,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               <XAxis
                 dataKey="time"
                 stroke={axisColor}
-                fontSize={10}
+                fontSize="11px"
                 tickLine={false}
-                fontFamily="monospace"
+                fontFamily="var(--font-sans), sans-serif"
                 minTickGap={50}
                 interval="preserveStartEnd"
               />
@@ -401,9 +401,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {activeMetric === "ratelimit" && (
                 <YAxis
                   stroke={axisColor}
-                  fontSize={10}
+                  fontSize="11px"
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="var(--font-sans), sans-serif"
                   unit="%"
                   domain={[0, 100]}
                 />
@@ -412,9 +412,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {activeMetric === "prefill" && (
                 <YAxis
                   stroke={axisColor}
-                  fontSize={10}
+                  fontSize="11px"
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="var(--font-sans), sans-serif"
                   unit=" tok/s"
                   domain={[0, "auto"]}
                 />
@@ -423,9 +423,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {activeMetric === "thinking" && (
                 <YAxis
                   stroke={axisColor}
-                  fontSize={10}
+                  fontSize="11px"
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="var(--font-sans), sans-serif"
                   unit=" tok"
                   domain={[0, "auto"]}
                 />
@@ -434,9 +434,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {activeMetric === "throughput" && (
                 <YAxis
                   stroke={axisColor}
-                  fontSize={10}
+                  fontSize="11px"
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="var(--font-sans), sans-serif"
                   unit={isRateLimit ? " req/m" : " tok/s"}
                   domain={[0, "auto"]}
                 />
@@ -447,9 +447,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   <YAxis
                     yAxisId="left"
                     stroke={axisColor}
-                    fontSize={10}
+                    fontSize="11px"
                     tickLine={false}
-                    fontFamily="monospace"
+                    fontFamily="var(--font-sans), sans-serif"
                     unit=" ms"
                     domain={[0, "auto"]}
                   />
@@ -458,9 +458,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                       yAxisId="right"
                       orientation="right"
                       stroke={axisColor}
-                      fontSize={10}
+                      fontSize="11px"
                       tickLine={false}
-                      fontFamily="monospace"
+                      fontFamily="var(--font-sans), sans-serif"
                       unit=" ms"
                       domain={[0, "auto"]}
                     />
@@ -471,9 +471,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {activeMetric === "goodput" && (
                 <YAxis
                   stroke={axisColor}
-                  fontSize={10}
+                  fontSize="11px"
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="var(--font-sans), sans-serif"
                   unit="%"
                   domain={[0, 100]}
                 />
@@ -482,9 +482,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {activeMetric === "cost" && (
                 <YAxis
                   stroke={axisColor}
-                  fontSize={10}
+                  fontSize="11px"
                   tickLine={false}
-                  fontFamily="monospace"
+                  fontFamily="var(--font-sans), sans-serif"
                   unit="$"
                   domain={[0, "auto"]}
                 />
@@ -587,7 +587,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {/* Goodput View */}
               {activeMetric === "goodput" && (
                 <>
-                  <ReferenceLine y={95} stroke="#34D399" strokeDasharray="3 3" label={{ value: "95% Target", fill: "#34D399", fontSize: 10, position: "insideTopLeft" }} />
+                  <ReferenceLine y={95} stroke="#34D399" strokeDasharray="3 3" label={{ value: "95% Target", fill: "#34D399", fontSize: 11, position: "insideTopLeft" }} />
                   <Area
                     type="monotone"
                     dataKey="Goodput SLO Yield (%)"

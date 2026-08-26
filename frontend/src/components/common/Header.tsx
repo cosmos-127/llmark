@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
                 <span className="text-base font-bold tracking-normal text-[#2C2C2C] dark:text-[#F3F4F4] font-sans flex items-center gap-1.5">
                   LLMark <span className="text-[#853953] dark:text-[#A74B6A] text-xs font-medium">Stream</span>
                 </span>
-                <Badge variant="default" className="text-[10px] py-0.5 font-medium">
+                <Badge variant="default" className="text-[11px] py-0.5 font-medium">
                   v0.1.0-alpha
                 </Badge>
               </div>

@@ -5,12 +5,13 @@ from pydantic import BaseModel, Field
 
 
 class VendorType(str, Enum):
-    OPENAI = "openai"
-    ANTHROPIC = "anthropic"
-    GCP_VERTEX = "gcp_vertex"
-    AWS_BEDROCK = "aws_bedrock"
-    OPENAI_COMPATIBLE = "openai_compatible"  # Groq, Together, vLLM, DeepSeek, Ollama
-    MOCK = "mock"                            # Testing & dry runs
+    OPENAI_COMPATIBLE = "openai_compatible"  # Groq, Together, vLLM, DeepSeek, Ollama, OpenRouter
+    OPENAI = "openai"                        # Direct OpenAI
+    AZURE_OPENAI = "azure_openai"            # Microsoft Azure OpenAI Service
+    ANTHROPIC = "anthropic"                  # Anthropic Messages Protocol
+    AWS_BEDROCK = "aws_bedrock"              # AWS Bedrock Converse / SigV4
+    GCP_VERTEX = "gcp_vertex"                # Google Cloud Vertex AI & Gemini
+    MOCK = "mock"                            # Testing & zero-cost simulation
 
 
 class WorkloadPreset(str, Enum):
@@ -118,15 +119,15 @@ WORKLOAD_METRIC_PROFILES: Dict[str, Dict[str, Any]] = {
 
 
 class LoadCurveType(str, Enum):
-    CONSTANT = "constant"           # Flat concurrency (e.g. 10 workers)
-    RAMP_UP = "ramp_up"             # Linear ramp (e.g. 1 -> 50 workers over duration)
-    SPIKE = "spike"                 # Low baseline with sudden surges
-    POISSON = "poisson"             # Target RPS Poisson arrival rate
+    CONSTANT = "constant"
+    RAMP_UP = "ramp_up"
+    SPIKE = "spike"
+    POISSON = "poisson"
 
 
 class TestMode(str, Enum):
-    DURATION = "duration"           # Continuous time-bounded test
-    REQUESTS = "requests"           # Fixed request-count bounded test
+    DURATION = "duration"
+    REQUESTS = "requests"
 
 
 class VendorCredential(BaseModel):
@@ -134,9 +135,20 @@ class VendorCredential(BaseModel):
     api_key: Optional[str] = Field(None, description="API key or token")
     base_url: Optional[str] = Field(None, description="Custom base URL for vLLM/Ollama/Groq/OpenRouter")
     organization_id: Optional[str] = None
+    
+    # Azure OpenAI
+    azure_endpoint: Optional[str] = Field(None, description="Azure OpenAI endpoint (e.g. https://my-resource.openai.azure.com)")
+    azure_deployment: Optional[str] = Field(None, description="Azure deployment name")
+    azure_api_version: Optional[str] = Field("2024-10-21", description="Azure OpenAI API version")
+    
+    # AWS Bedrock
     aws_region: Optional[str] = "us-east-1"
     aws_access_key_id: Optional[str] = None
     aws_secret_access_key: Optional[str] = None
+    aws_session_token: Optional[str] = None
+    
+    # GCP Vertex AI / Gemini
+    gcp_auth_mode: Optional[str] = Field("api_key", description="api_key (AI Studio) or vertex_ai (GCP VPC)")
     gcp_project_id: Optional[str] = None
     gcp_location: Optional[str] = "us-central1"
 

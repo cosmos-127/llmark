@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ProviderLogo } from "@/components/common/BrandLogos";
 
 interface CredentialVaultProps {
   vendor: VendorType;
@@ -53,7 +54,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
     <TooltipProvider>
       <Card className="relative overflow-hidden shadow-xs">
         <CardHeader className="p-5 pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2.5">
               <motion.div
                 animate={hasKey ? { scale: [1, 1.15, 1] } : {}}
@@ -75,30 +76,39 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
               </div>
             </div>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <Badge variant="emerald" className="gap-1 cursor-pointer">
-                    <ShieldCheck className="h-3 w-3" />
-                    <span>Scrubbed</span>
-                  </Badge>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Tokens are wiped immediately when session terminates or browser tab is closed.</p>
-              </TooltipContent>
-            </Tooltip>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 font-sans">
+                <ProviderLogo vendor={vendor} className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-sans font-medium capitalize text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  {vendor.replace("_", " ")}
+                </span>
+              </div>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Badge variant="emerald" className="gap-1 cursor-pointer text-[11px]">
+                      <ShieldCheck className="h-3 w-3" />
+                      <span>Scrubbed</span>
+                    </Badge>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Tokens are wiped immediately when session terminates or browser tab is closed.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-5 pt-2 space-y-4">
+        <CardContent className="p-5 pt-2 space-y-4 font-sans">
           {/* API Key Input */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="vault-api-key">
                 {vendor === "anthropic" ? "Anthropic API key" : "Provider API key"}
               </Label>
-              <span className="text-xs font-mono text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+              <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
                 {hasKey ? "Key loaded" : "Required for live test"}
               </span>
             </div>
@@ -109,7 +119,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                 value={credential.api_key || ""}
                 onChange={(e) => onChange({ ...credential, api_key: e.target.value })}
                 placeholder={vendor === "anthropic" ? "sk-ant-api03-..." : "sk-proj-..."}
-                className="pr-10"
+                className="pr-10 font-sans text-xs"
               />
               <Button
                 type="button"
@@ -130,7 +140,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                 <Label htmlFor="vault-base-url">
                   Endpoint base URL <span className="text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-normal lowercase">(optional)</span>
                 </Label>
-                <span className="text-xs font-mono text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">vLLM / Ollama / Groq</span>
+                <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">vLLM / Ollama / Groq</span>
               </div>
               <div className="relative">
                 <Input

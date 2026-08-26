@@ -121,14 +121,14 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
           {isDark ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5 text-amber-500" />}
           <span>{isDark ? "Dark theme" : "Light theme"}</span>
         </div>
-        <div className="flex items-center bg-[#2C2C2C]/10 dark:bg-[#181719] rounded-lg p-0.5 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+        <div className="flex items-center bg-[#2C2C2C]/10 dark:bg-[#111012] rounded-lg p-0.5 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
           <button
             type="button"
             onClick={() => setTheme("light")}
             className={cn(
               "p-1 rounded-md transition-all cursor-pointer",
               theme === "light"
-                ? "bg-white text-amber-600 shadow-xs font-bold"
+                ? "bg-white text-amber-600 shadow-xs font-medium"
                 : "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
             )}
             title="Light mode"
@@ -141,7 +141,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
             className={cn(
               "p-1 rounded-md transition-all cursor-pointer",
               theme === "dark"
-                ? "bg-[#853953] text-white shadow-xs font-bold"
+                ? "bg-[#853953] text-white shadow-xs font-medium"
                 : "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
             )}
             title="Dark mode"

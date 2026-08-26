@@ -13,7 +13,7 @@ const DEFAULT_CONFIG: BenchmarkConfig = {
   vendor: "mock",
   model: "gpt-4o",
   credential: {},
-  workload_preset: "chat",
+  workload_preset: "chat_interactive",
   test_mode: "duration",
   total_requests: 50,
   max_tokens: 256,

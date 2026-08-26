@@ -92,72 +92,72 @@
    Dark Theme Counterpart ("blackmaroongreydarkvintage")
    ========================================================================== */
 .dark, [data-theme="dark"] {
-  --bg-app: #181719;
-  --bg-surface: #252426;
-  --bg-surface-elevated: #2C2C2C;
-  --bg-surface-subtle: #2C2C2C;
-  --bg-surface-hover: #353337;
-  --bg-header: rgba(37, 36, 38, 0.92);
-  --bg-sidebar: rgba(33, 32, 34, 0.96);
-  --bg-card: #252426;
-  --bg-input: #2C2C2C;
-  --bg-dialog: #252426;
-  --bg-popover: #252426;
+  --bg-app: #111012;
+  --bg-surface: #1A191C;
+  --bg-surface-elevated: #222125;
+  --bg-surface-subtle: #222125;
+  --bg-surface-hover: #2B2A2E;
+  --bg-header: rgba(17, 16, 18, 0.94);
+  --bg-sidebar: rgba(17, 16, 18, 0.97);
+  --bg-card: #1A191C;
+  --bg-input: #1F1E22;
+  --bg-dialog: #222125;
+  --bg-popover: #222125;
 
-  --text-main: #F3F4F4;
-  --text-muted: rgba(243, 244, 244, 0.72);
-  --text-subtle: rgba(243, 244, 244, 0.45);
-  --text-inverse: #2C2C2C;
+  --text-main: #FAFAFA;
+  --text-muted: rgba(250, 250, 250, 0.80);
+  --text-subtle: rgba(250, 250, 250, 0.58);
+  --text-inverse: #111012;
 
-  --border-subtle: rgba(243, 244, 244, 0.10);
-  --border-medium: rgba(243, 244, 244, 0.18);
-  --border-strong: rgba(243, 244, 244, 0.28);
+  --border-subtle: rgba(250, 250, 250, 0.12);
+  --border-medium: rgba(250, 250, 250, 0.20);
+  --border-strong: rgba(250, 250, 250, 0.32);
 
-  --brand-primary: #A74B6A;
-  --brand-primary-hover: #B85879;
-  --brand-primary-light: rgba(167, 75, 106, 0.16);
-  --brand-primary-border: rgba(167, 75, 106, 0.35);
-  --brand-secondary: #7E3B6C;
-  --brand-secondary-hover: #92457E;
-  --brand-secondary-light: rgba(126, 59, 108, 0.16);
-  --brand-secondary-border: rgba(126, 59, 108, 0.35);
+  --brand-primary: #B8557A;
+  --brand-primary-hover: #C9668C;
+  --brand-primary-light: rgba(184, 85, 122, 0.18);
+  --brand-primary-border: rgba(184, 85, 122, 0.40);
+  --brand-secondary: #8E457C;
+  --brand-secondary-hover: #A2538F;
+  --brand-secondary-light: rgba(142, 69, 124, 0.18);
+  --brand-secondary-border: rgba(142, 69, 124, 0.40);
 
-  --chart-grid: rgba(243, 244, 244, 0.08);
-  --chart-tooltip-bg: rgba(37, 36, 38, 0.98);
-  --chart-tooltip-border: rgba(243, 244, 244, 0.15);
-  --chart-text: #9E9E9E;
+  --chart-grid: rgba(250, 250, 250, 0.08);
+  --chart-tooltip-bg: rgba(26, 25, 28, 0.98);
+  --chart-tooltip-border: rgba(250, 250, 250, 0.18);
+  --chart-text: #B0B0B0;
 
-  /* HSL Component Tokens for Dark */
-  --background: 270 5% 10%; /* #181719 */
-  --foreground: 180 3% 96%; /* #F3F4F4 */
-  --card: 270 3% 15%;       /* #252426 */
-  --card-foreground: 180 3% 96%;
-  --popover: 270 3% 15%;
-  --popover-foreground: 180 3% 96%;
-  --primary: 339 45% 52%;   /* #A74B6A */
+  /* HSL Component Tokens for High-Contrast Dark */
+  --background: 270 5% 7%;  /* #111012 */
+  --foreground: 0 0% 98%;   /* #FAFAFA */
+  --card: 270 5% 10%;       /* #1A191C */
+  --card-foreground: 0 0% 98%;
+  --popover: 270 5% 13%;    /* #222125 */
+  --popover-foreground: 0 0% 98%;
+  --primary: 338 45% 53%;   /* #B8557A */
   --primary-foreground: 0 0% 100%;
-  --secondary: 314 38% 42%; /* #7E3B6C */
+  --secondary: 314 36% 41%; /* #8E457C */
   --secondary-foreground: 0 0% 100%;
-  --muted: 270 5% 18%;      /* #2C2C2C */
-  --muted-foreground: 180 3% 68%;
-  --accent: 339 30% 22%;
-  --accent-foreground: 339 45% 75%;
-  --destructive: 0 65% 50%;
+  --muted: 270 5% 14%;      /* #232226 */
+  --muted-foreground: 0 0% 75%;
+  --accent: 338 35% 24%;
+  --accent-foreground: 338 55% 82%;
+  --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
-  --border: 270 4% 22%;
-  --input: 270 4% 20%;
-  --ring: 339 45% 52%;
+  --border: 270 4% 18%;
+  --input: 270 4% 16%;
+  --ring: 338 45% 53%;
 
-  --ambient-plum: rgba(167, 75, 106, 0.15);
-  --ambient-deepplum: rgba(126, 59, 108, 0.12);
-  --ambient-charcoal: rgba(243, 244, 244, 0.03);
-  --grid-dots: rgba(243, 244, 244, 0.06);
+  --ambient-plum: rgba(184, 85, 122, 0.18);
+  --ambient-deepplum: rgba(142, 69, 124, 0.14);
+  --ambient-charcoal: rgba(250, 250, 250, 0.03);
+  --grid-dots: rgba(250, 250, 250, 0.06);
 
-  --toggle-btn-bg: #2C2C2C;
-  --toggle-btn-border: rgba(167, 75, 106, 0.40);
-  --toggle-btn-hover: #353337;
-  --toggle-btn-text: #A74B6A;
-  --toggle-btn-glow: rgba(167, 75, 106, 0.28);
+  --toggle-btn-bg: #222125;
+  --toggle-btn-border: rgba(184, 85, 122, 0.45);
+  --toggle-btn-hover: #2B2A2E;
+  --toggle-btn-text: #B8557A;
+  --toggle-btn-glow: rgba(184, 85, 122, 0.35);
 }
 
 /* ==========================================================================

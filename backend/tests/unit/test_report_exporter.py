@@ -70,5 +70,53 @@ def test_bundle_export(sample_run):
 
 def test_pdf_export(sample_run):
     pdf_bytes = ReportExporter.generate_pdf(sample_run)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+
+
+def test_pdf_export_with_special_characters():
+    """Verify PDF export safely handles special XML/HTML characters without parser crashes."""
+    run = BenchmarkRun(
+        id="bmk_xml_test_&<>",
+        name="<Canary> & 'Benchmark' \"Test\"",
+        vendor="openai & azure",
+        model="gpt-4o <latest> & fast",
+        workload_preset="chat",
+        load_curve="constant",
+        concurrency=3,
+        duration_seconds=10,
+        status="completed",
+        total_requests=10,
+        completed_requests=8,
+        failed_requests=2,
+        total_cost_usd=0.012,
+        goodput_pct=80.0,
+        error_rate_pct=20.0,
+        config_snapshot={"name": "Special & Chars <Run>"},
+    )
+    pdf_bytes = ReportExporter.generate_pdf(run)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+
+
+def test_pdf_export_with_none_values():
+    """Verify PDF export does not crash when metrics are None or sparse."""
+    sparse_run = BenchmarkRun(
+        id="bmk_sparse_001",
+        name="",
+        vendor="mock",
+        model="test-model",
+        workload_preset="chat",
+        load_curve="constant",
+        concurrency=1,
+        duration_seconds=5,
+        status="aborted",
+        total_requests=0,
+        completed_requests=0,
+        failed_requests=0,
+        config_snapshot={},
+    )
+    pdf_bytes = ReportExporter.generate_pdf(sparse_run)
     assert len(pdf_bytes) > 500
     assert pdf_bytes.startswith(b"%PDF")
+

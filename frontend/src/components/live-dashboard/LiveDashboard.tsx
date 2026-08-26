@@ -73,43 +73,43 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
         <Card className="border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
           <CardContent className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
-                <ProviderLogo vendor={config.vendor} className="h-5 w-5" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs p-1.5">
+                <ProviderLogo vendor={config.vendor} className="h-6 w-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-base font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-tight">
                     {config.model}
                   </h3>
-                  <Badge variant="outline" className="text-[11px] font-mono capitalize">
+                  <Badge variant="outline" className="text-[11px] font-sans capitalize">
                     {config.vendor.replace("_", " ")}
                   </Badge>
                   {snapshot?.status === "running" && (
-                    <Badge variant="default" className="text-[10px] bg-emerald-600 dark:bg-emerald-700 text-white animate-pulse">
+                    <Badge variant="default" className="text-[11px] bg-emerald-600 dark:bg-emerald-700 text-white animate-pulse">
                       Live Socket
                     </Badge>
                   )}
                   {snapshot?.status === "completed" && (
-                    <Badge variant="secondary" className="text-[10px]">
+                    <Badge variant="secondary" className="text-[11px]">
                       Completed
                     </Badge>
                   )}
                   {snapshot?.status === "aborted" && (
-                    <Badge variant="destructive" className="text-[10px]">
+                    <Badge variant="destructive" className="text-[11px]">
                       Aborted
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-mono mt-0.5">
-                  Concurrency: {config.concurrency} streams • Preset: {config.workload_preset} • Run: {benchmarkId.slice(0, 16)}...
+                <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans mt-0.5">
+                  Concurrency: {config.concurrency} streams • Preset: {config.workload_preset} • Run: <span className="font-sans font-medium">{benchmarkId.slice(0, 16)}...</span>
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <div className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-mono">Elapsed Time</div>
-                <div className="text-sm font-bold font-mono text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
+                <div className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">Elapsed Time</div>
+                <div className="text-sm font-semibold font-sans text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
                   {snapshot?.elapsed_seconds ? `${snapshot.elapsed_seconds.toFixed(1)}s` : "0.0s"}
                 </div>
               </div>
@@ -154,7 +154,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                 <CardContent className="p-4 flex items-center gap-3 text-[#853953] dark:text-[#A74B6A] text-xs">
                   <AlertTriangle className="h-5 w-5 text-[#853953] dark:text-[#A74B6A] shrink-0" />
                   <div>
-                    <p className="font-bold">Hard spend cap breached</p>
+                    <p className="font-semibold">Hard spend cap breached</p>
                     <p>{budgetWarning}</p>
                   </div>
                 </CardContent>
@@ -256,7 +256,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
               </TabsTrigger>
             </TabsList>
 
-            <span className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 hidden sm:inline-block font-mono">
+            <span className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 hidden sm:inline-block font-sans font-medium">
               Live updates every 100ms
             </span>
           </div>

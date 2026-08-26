@@ -8,7 +8,6 @@ import {
   Cpu,
   Gauge,
   ArrowRight,
-  Sparkles,
   Activity,
   Layers,
   FileText,
@@ -25,10 +24,6 @@ import {
   Scale,
   Copy,
   Check,
-  MessageSquare,
-  FileSearch,
-  Code2,
-  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -164,22 +159,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     },
   ];
 
-  const presets = [
-    { name: "Chat Stream", desc: "~200 in / ~150 out", preset: "chat", icon: MessageSquare, iconColor: "text-[#853953] dark:text-[#A74B6A] bg-[#853953]/10 dark:bg-[#A74B6A]/15" },
-    { name: "RAG Retrieval", desc: "~3.5k in / ~400 out", preset: "rag", icon: FileSearch, iconColor: "text-[#612D53] dark:text-[#C57BB2] bg-[#612D53]/10 dark:bg-[#7E3B6C]/15" },
-    { name: "Code Synthesis", desc: "~1.2k in / ~800 out", preset: "code", icon: Code2, iconColor: "text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40" },
-    { name: "Long Context", desc: "~16k in / ~500 out", preset: "long_context", icon: BookOpen, iconColor: "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40" },
-  ];
-
   const providers = [
-    { name: "OpenAI", sub: "GPT-5, GPT-4o, o3", vendor: "openai" },
-    { name: "Anthropic", sub: "Claude 3.7 Sonnet", vendor: "anthropic" },
+    { name: "OpenAI", sub: "GPT-4o, o1, o3", vendor: "openai" },
+    { name: "Anthropic", sub: "Claude 3.7 & 3.5", vendor: "anthropic" },
     { name: "Google Gemini", sub: "Gemini 2.5 Pro", vendor: "gemini" },
-    { name: "Groq LPU", sub: "500+ tok/s Fast", vendor: "groq" },
+    { name: "AWS Bedrock", sub: "Claude, Nova, Llama", vendor: "aws_bedrock" },
+    { name: "Microsoft Azure", sub: "Azure AI Foundry", vendor: "azure" },
     { name: "DeepSeek", sub: "R1 & V3 Official", vendor: "deepseek" },
-    { name: "OpenRouter", sub: "Unified Gateway", vendor: "openrouter" },
-    { name: "Together AI", sub: "Llama 3.3 70B", vendor: "together" },
-    { name: "vLLM / Ollama", sub: "Self-Hosted", vendor: "vllm" },
+    { name: "GCP Vertex AI", sub: "Google Cloud VPC", vendor: "gcp_vertex" },
+    { name: "Groq LPU", sub: "500+ tok/s Fast", vendor: "groq" },
   ];
 
   return (
@@ -226,7 +214,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.15 }}
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-2 text-xs font-mono text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
+            className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-2 text-xs font-sans font-medium text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
           >
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#252426]/80 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
               <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -243,13 +231,43 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           </motion.div>
         </section>
 
+        {/* Supported Providers Marquee Strip */}
+        <section className="space-y-3">
+          <div className="text-center">
+            <span className="text-[11px] font-sans font-medium uppercase tracking-wider text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+              Compatible with Any OpenAI-Compliant or Frontier API
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 font-sans">
+            {providers.map((pr, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ y: -2, scale: 1.02 }}
+                className="p-3 rounded-xl bg-white/70 dark:bg-[#212022]/70 border border-[#2C2C2C]/8 dark:border-[#F3F4F4]/8 hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/30 text-center cursor-default transition-all flex flex-col items-center justify-between gap-2 shadow-2xs group"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] transition-colors">
+                  <ProviderLogo vendor={pr.vendor} className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] truncate">
+                    {pr.name}
+                  </div>
+                  <div className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 truncate font-sans font-medium">
+                    {pr.sub}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
         {/* 3 Core Operation Spotlight Cards */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-mono">
+            <h2 className="text-[11px] font-semibold uppercase tracking-widest text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">
               Choose An Operation
             </h2>
-            <span className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">
+            <span className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans font-medium">
               3 Primary Capabilities
             </span>
           </div>
@@ -270,17 +288,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                       <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${op.gradient} text-white shadow-xs`}>
                         <Icon className="h-5 w-5 fill-current" />
                       </div>
-                      <Badge variant={op.badgeVariant} className="text-xs px-2.5 py-0.5 font-medium">
+                      <Badge variant={op.badgeVariant} className="text-[11px] px-2.5 py-0.5 font-medium">
                         {op.badgeText}
                       </Badge>
                     </div>
 
                     {/* Titles */}
                     <div className="space-y-1">
-                      <h3 className="text-xl font-bold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-tight">
+                      <h3 className="text-xl font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-tight">
                         {op.title}
                       </h3>
-                      <p className="text-xs font-semibold text-[#853953] dark:text-[#A74B6A]">
+                      <p className="text-xs font-medium text-[#853953] dark:text-[#A74B6A]">
                         {op.tagline}
                       </p>
                     </div>
@@ -315,76 +333,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </SpotlightCard>
               );
             })}
-          </div>
-        </section>
-
-        {/* Quick-Start Workload Presets Strip */}
-        <section className="rounded-2xl bg-white/70 dark:bg-[#212022]/70 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-5 sm:p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
-              <h3 className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4] font-sans">
-                Quick-Start Workload Presets
-              </h3>
-            </div>
-            <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
-              Instant load profiles pre-tuned for industry scenarios
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-sans">
-            {presets.map((p, i) => {
-              const Icon = p.icon;
-              return (
-                <button
-                  key={i}
-                  onClick={() => onNavigate("benchmark")}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/50 hover:bg-white dark:hover:bg-[#353337] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/35 dark:hover:border-[#A74B6A]/35 transition-all text-left group cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.99]"
-                >
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-current/20 ${p.iconColor}`}>
-                    <Icon className="h-4.5 w-4.5" />
-                  </div>
-                  <div className="truncate">
-                    <div className="text-xs font-bold text-[#2C2C2C] dark:text-[#F3F4F4] group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] transition-colors">
-                      {p.name}
-                    </div>
-                    <div className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-mono">
-                      {p.desc}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Supported Providers Marquee Strip */}
-        <section className="space-y-3">
-          <div className="text-center">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-              Compatible with Any OpenAI-Compliant or Frontier API
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 font-sans">
-            {providers.map((pr, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ y: -2, scale: 1.02 }}
-                className="p-3 rounded-xl bg-white/70 dark:bg-[#212022]/70 border border-[#2C2C2C]/8 dark:border-[#F3F4F4]/8 hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/30 text-center cursor-default transition-all flex flex-col items-center justify-between gap-2 shadow-2xs group"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] transition-colors">
-                  <ProviderLogo vendor={pr.vendor} className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#2C2C2C] dark:text-[#F3F4F4] truncate">
-                    {pr.name}
-                  </div>
-                  <div className="text-[9px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 truncate font-mono">
-                    {pr.sub}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
           </div>
         </section>
       </main>

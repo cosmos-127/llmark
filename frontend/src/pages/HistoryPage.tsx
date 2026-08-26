@@ -112,7 +112,7 @@ export const HistoryPage: React.FC = () => {
                 {r.name}
               </div>
               <div className="text-xs font-sans text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 flex items-center gap-2 mt-0.5">
-                <Badge variant="default" className="text-[10px] py-0 px-1.5 font-medium">
+                <Badge variant="default" className="text-[11px] py-0 px-1.5 font-medium">
                   {r.model}
                 </Badge>
                 <span className="text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30">•</span>
@@ -151,12 +151,12 @@ export const HistoryPage: React.FC = () => {
             )}
           </Button>
         ),
-        cell: ({ row }) => <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono text-xs">{row.original.concurrency} streams</span>,
+        cell: ({ row }) => <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans tabular-nums text-xs">{row.original.concurrency} streams</span>,
       },
       {
         accessorKey: "completed_requests",
         header: "Requests",
-        cell: ({ row }) => <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono text-xs">{row.original.completed_requests} reqs</span>,
+        cell: ({ row }) => <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans tabular-nums text-xs">{row.original.completed_requests} reqs</span>,
       },
       {
         accessorKey: "ttft_p95",
@@ -165,7 +165,7 @@ export const HistoryPage: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 font-sans font-medium text-xs text-[#853953] dark:text-[#A74B6A] hover:text-[#612D53]"
+            className="-ml-3 h-8 font-sans font-semibold text-xs text-[#853953] dark:text-[#A74B6A] hover:text-[#612D53]"
           >
             TTFT (P95)
             {column.getIsSorted() === "asc" ? (
@@ -177,7 +177,7 @@ export const HistoryPage: React.FC = () => {
             )}
           </Button>
         ),
-        cell: ({ row }) => <span className="text-[#853953] dark:text-[#A74B6A] font-bold font-mono text-xs">{formatMs(row.original.ttft_p95)}</span>,
+        cell: ({ row }) => <span className="text-[#853953] dark:text-[#A74B6A] font-semibold font-sans tabular-nums text-xs">{formatMs(row.original.ttft_p95)}</span>,
       },
       {
         accessorKey: "itl_p95",
@@ -186,7 +186,7 @@ export const HistoryPage: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 font-sans font-medium text-xs text-[#612D53] dark:text-[#C57BB2] hover:text-[#853953]"
+            className="-ml-3 h-8 font-sans font-semibold text-xs text-[#612D53] dark:text-[#C57BB2] hover:text-[#853953]"
           >
             ITL (P95)
             {column.getIsSorted() === "asc" ? (
@@ -198,7 +198,7 @@ export const HistoryPage: React.FC = () => {
             )}
           </Button>
         ),
-        cell: ({ row }) => <span className="text-[#612D53] dark:text-[#C57BB2] font-bold font-mono text-xs">{formatMs(row.original.itl_p95)}</span>,
+        cell: ({ row }) => <span className="text-[#612D53] dark:text-[#C57BB2] font-semibold font-sans tabular-nums text-xs">{formatMs(row.original.itl_p95)}</span>,
       },
       {
         accessorKey: "goodput_pct",
@@ -207,7 +207,7 @@ export const HistoryPage: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 font-sans font-medium text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-800"
+            className="-ml-3 h-8 font-sans font-semibold text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-800"
           >
             Goodput %
             {column.getIsSorted() === "asc" ? (
@@ -222,7 +222,7 @@ export const HistoryPage: React.FC = () => {
         cell: ({ row }) => (
           <Badge
             variant={row.original.goodput_pct >= 95 ? "emerald" : "default"}
-            className="text-[11px] font-medium font-mono"
+            className="text-[11px] font-semibold font-sans tabular-nums"
           >
             {formatPct(row.original.goodput_pct)}
           </Badge>
@@ -231,7 +231,7 @@ export const HistoryPage: React.FC = () => {
       {
         accessorKey: "total_cost_usd",
         header: "Total cost",
-        cell: ({ row }) => <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono text-xs">{formatUsd(row.original.total_cost_usd)}</span>,
+        cell: ({ row }) => <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans tabular-nums text-xs">{formatUsd(row.original.total_cost_usd)}</span>,
       },
       {
         id: "actions",
@@ -305,7 +305,7 @@ export const HistoryPage: React.FC = () => {
                     className={cn(
                       "relative flex items-center gap-1.5 h-7 px-3 rounded-lg capitalize text-xs font-medium transition-colors cursor-pointer select-none",
                       isActive
-                        ? "text-[#853953] dark:text-[#A74B6A] font-bold"
+                        ? "text-[#853953] dark:text-[#A74B6A] font-semibold"
                         : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
                     )}
                   >
@@ -392,11 +392,11 @@ export const HistoryPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 py-1 text-xs font-sans text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
               <div className="flex items-center gap-2">
                 <span>
-                  Showing page <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono">{table.getState().pagination.pageIndex + 1}</strong> of{" "}
-                  <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono">{table.getPageCount() || 1}</strong>
+                  Showing page <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans font-semibold tabular-nums">{table.getState().pagination.pageIndex + 1}</strong> of{" "}
+                  <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans font-semibold tabular-nums">{table.getPageCount() || 1}</strong>
                 </span>
                 <span>•</span>
-                <span>Total runs: <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono">{filteredData.length}</strong></span>
+                <span>Total runs: <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans font-semibold tabular-nums">{filteredData.length}</strong></span>
               </div>
 
               <div className="flex items-center gap-1.5">
@@ -452,11 +452,11 @@ export const HistoryPage: React.FC = () => {
             ) : (
               <div className="space-y-6">
                 <DialogHeader>
-                  <DialogTitle className="text-base font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">{runDetails.name}</DialogTitle>
+                  <DialogTitle className="text-base font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">{runDetails.name}</DialogTitle>
                   <DialogDescription>
-                    Model: <strong className="text-[#853953] dark:text-[#A74B6A] font-mono">{runDetails.model}</strong> • Vendor:{" "}
-                    <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">{runDetails.vendor}</strong> • Preset:{" "}
-                    <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] capitalize">{runDetails.workload_preset}</strong>
+                    Model: <span className="text-[#853953] dark:text-[#A74B6A] font-semibold font-sans">{runDetails.model}</span> • Vendor:{" "}
+                    <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-medium">{runDetails.vendor}</span> • Preset:{" "}
+                    <span className="text-[#2C2C2C] dark:text-[#F3F4F4] capitalize font-medium">{runDetails.workload_preset}</span>
                   </DialogDescription>
                 </DialogHeader>
 
@@ -464,19 +464,19 @@ export const HistoryPage: React.FC = () => {
                 <div className="grid grid-cols-3 gap-3 text-xs font-sans">
                   <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5">
                     <span className="text-xs font-medium text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block">Goodput (SLO)</span>
-                    <p className="text-lg font-extrabold font-mono text-emerald-700 dark:text-emerald-400 mt-1">
+                    <p className="text-lg font-semibold font-sans tabular-nums text-emerald-700 dark:text-emerald-400 mt-1">
                       {formatPct(runDetails.percentiles.goodput_pct)}
                     </p>
                   </div>
                   <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5">
                     <span className="text-xs font-medium text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block">Decode TPS</span>
-                    <p className="text-lg font-extrabold font-mono text-[#612D53] dark:text-[#C57BB2] mt-1">
+                    <p className="text-lg font-semibold font-sans tabular-nums text-[#612D53] dark:text-[#C57BB2] mt-1">
                       {runDetails.percentiles.tps_decode.toFixed(1)} tok/s
                     </p>
                   </div>
                   <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5">
                     <span className="text-xs font-medium text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block">Total spend</span>
-                    <p className="text-lg font-extrabold font-mono text-[#853953] dark:text-[#A74B6A] mt-1">
+                    <p className="text-lg font-semibold font-sans tabular-nums text-[#853953] dark:text-[#A74B6A] mt-1">
                       {formatUsd(runDetails.counts.total_cost_usd)}
                     </p>
                   </div>
@@ -484,54 +484,54 @@ export const HistoryPage: React.FC = () => {
 
                 {/* Unaggregated Percentile Grid */}
                 <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-4 space-y-3 font-sans text-xs">
-                  <h4 className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-2 text-xs">
+                  <h4 className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-2 text-xs">
                     <Activity className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
                     Unaggregated percentile distribution
                   </h4>
                   <div className="grid grid-cols-4 gap-2 text-center text-xs">
                     <div className="bg-white dark:bg-[#252426] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
                       <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-[11px]">TTFT (P50)</span>
-                      <strong className="text-[#612D53] dark:text-[#C57BB2] font-mono font-bold">{formatMs(runDetails.percentiles.ttft_p50)}</strong>
+                      <strong className="text-[#612D53] dark:text-[#C57BB2] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p50)}</strong>
                     </div>
                     <div className="bg-white dark:bg-[#252426] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
                       <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-[11px]">TTFT (P95)</span>
-                      <strong className="text-[#853953] dark:text-[#A74B6A] font-mono font-bold">{formatMs(runDetails.percentiles.ttft_p95)}</strong>
+                      <strong className="text-[#853953] dark:text-[#A74B6A] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p95)}</strong>
                     </div>
                     <div className="bg-white dark:bg-[#252426] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
                       <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-[11px]">TTFT (P99)</span>
-                      <strong className="text-[#612D53] dark:text-[#C57BB2] font-mono font-bold">{formatMs(runDetails.percentiles.ttft_p99)}</strong>
+                      <strong className="text-[#612D53] dark:text-[#C57BB2] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p99)}</strong>
                     </div>
                     <div className="bg-white dark:bg-[#252426] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
                       <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-[11px]">Max ITL freeze</span>
-                      <strong className="text-rose-700 dark:text-rose-400 font-mono font-bold">{formatMs(runDetails.percentiles.max_itl)}</strong>
+                      <strong className="text-rose-700 dark:text-rose-400 font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.max_itl)}</strong>
                     </div>
                   </div>
                 </div>
 
                 {/* Network Handshake Breakdown */}
                 <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-4 space-y-2 font-sans text-xs">
-                  <h4 className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-2 text-xs">
+                  <h4 className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-2 text-xs">
                     <Network className="h-4 w-4 text-[#612D53] dark:text-[#C57BB2]" />
                     Network handshake baseline
                   </h4>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
                     <div className="bg-white dark:bg-[#252426] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
                       <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-[11px]">DNS lookup</span>
-                      <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono font-medium">{formatMs(runDetails.waterfall.dns_p50)}</span>
+                      <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.dns_p50)}</span>
                     </div>
                     <div className="bg-white dark:bg-[#252426] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
                       <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-[11px]">TCP handshake</span>
-                      <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono font-medium">{formatMs(runDetails.waterfall.tcp_p50)}</span>
+                      <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.tcp_p50)}</span>
                     </div>
                     <div className="bg-white dark:bg-[#252426] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
                       <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-[11px]">TLS handshake</span>
-                      <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono font-medium">{formatMs(runDetails.waterfall.tls_p50)}</span>
+                      <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.tls_p50)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Multi-Format Export Hub Bar */}
-                <div className="pt-3 border-t border-[#F3F4F4] dark:border-[#F3F4F4]/10 flex flex-wrap items-center justify-between gap-3">
+                <div className="pt-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 flex flex-wrap items-center justify-between gap-3">
                   <span className="text-xs font-medium text-[#2C2C2C] dark:text-[#F3F4F4] font-sans">Export telemetry package:</span>
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -549,7 +549,7 @@ export const HistoryPage: React.FC = () => {
                         CSV data
                       </a>
                     </Button>
-                    <Button variant="default" size="sm" asChild className="rounded-xl bg-[#853953] dark:bg-[#A74B6A] text-white hover:bg-[#612D53] shadow-xs font-medium cursor-pointer">
+                    <Button variant="default" size="sm" asChild className="rounded-xl bg-[#853953] dark:bg-[#A74B6A] text-white hover:bg-[#612D53] dark:hover:bg-[#B85879] shadow-xs font-medium cursor-pointer">
                       <a href={`/api/export/bundle/${runDetails.id}`} download>
                         <Download className="h-3.5 w-3.5 text-white" />
                         .llmark bundle

@@ -35,7 +35,7 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden border-[#2C2C2C]/15 shadow-sm">
+    <Card className="overflow-hidden border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 shadow-sm">
       {/* Terminal Titlebar */}
       <div className="bg-[#2C2C2C] px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -44,15 +44,15 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
             <span className="h-2.5 w-2.5 rounded-full bg-[#853953]" />
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
           </div>
-          <div className="flex items-center gap-2 font-mono text-xs text-[#F3F4F4]">
+          <div className="flex items-center gap-2 font-sans text-xs text-[#F3F4F4]">
             <Terminal className="h-3.5 w-3.5 text-[#853953]" />
             <span>live_token_stream.log</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 font-mono text-[11px] text-[#F3F4F4]">
-            <Badge variant="emerald" className="font-mono text-[10px] py-0 px-2 bg-emerald-950 text-emerald-300 border-emerald-700">
+          <div className="flex items-center gap-2 font-sans text-xs text-[#F3F4F4]">
+            <Badge variant="emerald" className="font-sans font-semibold text-[11px] py-0 px-2 bg-emerald-950 text-emerald-300 border-emerald-700 tabular-nums">
               {currentTps.toFixed(1)} tok/s
             </Badge>
             <span>•</span>
@@ -93,13 +93,13 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
       </div>
 
       {/* Terminal Content Body */}
-      <ScrollArea className="h-[185px] p-4 bg-[#1f1f1f] font-mono text-xs text-[#F3F4F4]">
+      <ScrollArea className="h-[185px] p-4 bg-[#1f1f1f] font-sans tabular-nums text-xs text-[#F3F4F4]">
         <div className="space-y-3">
           {/* Simulated Reasoning Thinking Stream with Spring Collapse */}
           <div className="rounded-xl bg-[#612D53]/30 border border-[#612D53]/50 p-3 space-y-1">
             <div
               onClick={() => setShowReasoning(!showReasoning)}
-              className="flex items-center justify-between gap-1.5 text-[11px] font-bold text-[#F3F4F4] cursor-pointer select-none"
+              className="flex items-center justify-between gap-1.5 text-[11px] font-medium text-[#F3F4F4] cursor-pointer select-none"
             >
               <div className="flex items-center gap-1.5">
                 <Brain className="h-3.5 w-3.5 text-[#853953]" />
@@ -116,7 +116,7 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-[11px] text-[#F3F4F4]/80 leading-relaxed italic overflow-hidden"
+                  className="text-[11px] text-[#F3F4F4]/80 leading-relaxed italic overflow-hidden font-sans"
                 >
                   Analyzing concurrency parameters... Evaluating KV cache memory saturation... Calculating optimal time to first answer...
                 </motion.p>
@@ -125,7 +125,7 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
           </div>
 
           {/* Streaming Answer Tokens with Micro-Transitions */}
-          <div className="text-[#F3F4F4] leading-relaxed space-x-1 pt-1">
+          <div className="text-[#F3F4F4] leading-relaxed space-x-1 pt-1 font-sans">
             <span className="text-[#853953] font-bold select-none">&gt;&gt;</span>
             {sampleTokens.map((word, i) => (
               <motion.span
@@ -133,7 +133,7 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.15, delay: i * 0.02 }}
-                className="inline-block bg-white/[0.08] px-1 py-0.5 rounded text-[#F3F4F4] border border-white/[0.08] text-[11px]"
+                className="inline-block bg-white/[0.08] px-1.5 py-0.5 rounded text-[#F3F4F4] border border-white/[0.08] text-xs font-sans tabular-nums"
               >
                 {word}
               </motion.span>

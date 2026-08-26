@@ -1,56 +1,111 @@
 import React from "react";
+import awsBedrockIcon from "@/assets/svg/aws-bedrock-icon.svg";
+import azureIcon from "@/assets/svg/azure-icon.svg";
+import claudeAiIcon from "@/assets/svg/claude-ai-icon.svg";
+import deepseekLogoIcon from "@/assets/svg/deepseek-logo-icon.svg";
+import googleCloudIcon from "@/assets/svg/google-cloud-icon.svg";
+import googleGeminiIcon from "@/assets/svg/google-gemini-svg.svg";
+import openaiIcon from "@/assets/svg/openai-icon.svg";
 
-interface BrandLogoProps {
+export interface BrandLogoProps {
   className?: string;
   size?: number | string;
+  alt?: string;
 }
 
 /**
- * Official OpenAI Spiral Swirl Logo SVG (Pixel-Perfect Canonical Geometry)
+ * Official OpenAI Spiral Swirl Logo SVG (Tier 1 AI Wire Protocol & Frontier Driver)
  */
-export const OpenAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    width={size}
-    height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.8956zm16.0993 3.8558L12.5973 8.3829l2.02-1.1638a.0804.0804 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.402-.686zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L8.909 9.2298V6.8974a.0662.0662 0 0 1 .0331-.0615l4.9912-2.8764a4.4992 4.4992 0 0 1 6.6026 4.7188l-.0044.0483zM12 14.708l-2.9094-1.6806V9.6644L12 7.9838l2.9094 1.6806v3.363z" />
-  </svg>
+export const OpenAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "OpenAI" }) => (
+  <img
+    src={openaiIcon}
+    alt={alt}
+    className={`inline-block object-contain shrink-0 select-none dark:invert ${className}`}
+    style={size ? { width: size, height: size } : undefined}
+    draggable={false}
+  />
 );
 
 /**
- * Official Anthropic Geometric Logo SVG
+ * Official Claude / Anthropic Logo SVG (Tier 1 Frontier Model & Messages Protocol)
  */
-export const AnthropicLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    width={size}
-    height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M13.827 3.5h3.693L24 20.5h-3.693l-6.48-17zm-7.347 0L0 20.5h3.693l1.455-3.818h6.294l1.455 3.818h3.693L10.173 3.5H6.48zm.287 10.364L8.327 7.182l1.553 6.682H6.767z" />
-  </svg>
+export const AnthropicLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Anthropic Claude" }) => (
+  <img
+    src={claudeAiIcon}
+    alt={alt}
+    className={`inline-block object-contain shrink-0 select-none rounded-xs ${className}`}
+    style={size ? { width: size, height: size } : undefined}
+    draggable={false}
+  />
+);
+
+export const ClaudeLogo = AnthropicLogo;
+
+/**
+ * Official Google Gemini Multi-Color Sparkle Star SVG (Tier 1 Frontier AI Protocol)
+ */
+export const GeminiLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Google Gemini" }) => (
+  <img
+    src={googleGeminiIcon}
+    alt={alt}
+    className={`inline-block object-contain shrink-0 select-none ${className}`}
+    style={size ? { width: size, height: size } : undefined}
+    draggable={false}
+  />
 );
 
 /**
- * Official Google Gemini 4-Pointed Sparkle Star Logo SVG
+ * Official Google Cloud Platform / Vertex AI Cloud Logo SVG (Tier 1 Cloud Enterprise Protocol)
  */
-export const GeminiLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    width={size}
-    height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 0C12 6.627 6.627 12 0 12c6.627 0 12 5.373 12 12 0-6.627 5.373-12 12-12-6.627 0-12-5.373-12-12Z" />
-  </svg>
+export const VertexAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Google Cloud Vertex AI" }) => (
+  <img
+    src={googleCloudIcon}
+    alt={alt}
+    className={`inline-block object-contain shrink-0 select-none ${className}`}
+    style={size ? { width: size, height: size } : undefined}
+    draggable={false}
+  />
+);
+
+export const GoogleCloudLogo = VertexAILogo;
+
+/**
+ * Official Microsoft Azure Cloud Logo SVG (Tier 1 Enterprise Cloud Protocol)
+ */
+export const AzureLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Microsoft Azure" }) => (
+  <img
+    src={azureIcon}
+    alt={alt}
+    className={`inline-block object-contain shrink-0 select-none ${className}`}
+    style={size ? { width: size, height: size } : undefined}
+    draggable={false}
+  />
+);
+
+/**
+ * Official AWS Bedrock Silicon Cube Logo SVG (Tier 1 Cloud Enterprise SigV4 Protocol)
+ */
+export const AWSBedrockLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "AWS Bedrock" }) => (
+  <img
+    src={awsBedrockIcon}
+    alt={alt}
+    className={`inline-block object-contain shrink-0 select-none ${className}`}
+    style={size ? { width: size, height: size } : undefined}
+    draggable={false}
+  />
+);
+
+/**
+ * Official DeepSeek Logo SVG (Tier 1 Frontier Reasoning & AI Model Protocol)
+ */
+export const DeepSeekLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "DeepSeek" }) => (
+  <img
+    src={deepseekLogoIcon}
+    alt={alt}
+    className={`inline-block object-contain shrink-0 select-none ${className}`}
+    style={size ? { width: size, height: size } : undefined}
+    draggable={false}
+  />
 );
 
 /**
@@ -82,22 +137,6 @@ export const OpenRouterLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path d="M12 2L2 7l10 5 10-5-10-5zm0 6.86L5.3 7 12 3.64 18.7 7 12 8.86zM2 12l10 5 10-5-2.3-1.15L12 14.54 4.3 10.85 2 12zm0 5l10 5 10-5-2.3-1.15L12 19.54 4.3 15.85 2 17z" />
-  </svg>
-);
-
-/**
- * Official DeepSeek Logo SVG
- */
-export const DeepSeekLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    width={size}
-    height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm1 15.93V17a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3h-1v1.93A8.01 8.01 0 0 1 12 4a8 8 0 0 1 1 13.93z" />
   </svg>
 );
 
@@ -176,38 +215,6 @@ export const MockEngineLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4"
 );
 
 /**
- * AWS Bedrock Silicon Logo SVG
- */
-export const AWSBedrockLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    width={size}
-    height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.3l6.7 3.7-6.7 3.7L5.3 8 12 4.3zM5 9.7l6 3.3v6.7l-6-3.3V9.7zm8 10v-6.7l6-3.3v6.7l-6 3.3z" />
-  </svg>
-);
-
-/**
- * GCP Vertex AI Logo SVG
- */
-export const VertexAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    width={size}
-    height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2L2 8l10 6 10-6-10-6zm0 8.5L4.8 8 12 3.7 19.2 8 12 10.5zM2 12l10 6 10-6-2.5-1.5L12 15 4.5 10.5 2 12zm0 4l10 6 10-6-2.5-1.5L12 19 4.5 14.5 2 16z" />
-  </svg>
-);
-
-/**
  * Dynamic Brand Logo Resolver Component
  */
 export const ProviderLogo: React.FC<{
@@ -217,29 +224,32 @@ export const ProviderLogo: React.FC<{
 }> = ({ vendor, className = "h-4 w-4", size }) => {
   const v = (vendor || "").toLowerCase();
 
-  if (v.includes("openai") && !v.includes("compatible")) {
-    return <OpenAILogo className={className} size={size} />;
+  if (v.includes("azure")) {
+    return <AzureLogo className={className} size={size} />;
+  }
+  if (v.includes("aws") || v.includes("bedrock")) {
+    return <AWSBedrockLogo className={className} size={size} />;
   }
   if (v.includes("anthropic") || v.includes("claude")) {
     return <AnthropicLogo className={className} size={size} />;
   }
-  if (v.includes("gemini") || v.includes("google")) {
+  if (v.includes("deepseek") || v.includes("r1") || v.includes("v3")) {
+    return <DeepSeekLogo className={className} size={size} />;
+  }
+  if (v.includes("gemini")) {
     return <GeminiLogo className={className} size={size} />;
   }
-  if (v.includes("gcp") || v.includes("vertex")) {
+  if (v.includes("vertex") || v.includes("gcp") || (v.includes("google") && !v.includes("gemini"))) {
     return <VertexAILogo className={className} size={size} />;
   }
-  if (v.includes("aws") || v.includes("bedrock")) {
-    return <AWSBedrockLogo className={className} size={size} />;
+  if (v.includes("openai")) {
+    return <OpenAILogo className={className} size={size} />;
   }
   if (v.includes("groq")) {
     return <GroqLogo className={className} size={size} />;
   }
   if (v.includes("openrouter")) {
     return <OpenRouterLogo className={className} size={size} />;
-  }
-  if (v.includes("deepseek") || v.includes("r1")) {
-    return <DeepSeekLogo className={className} size={size} />;
   }
   if (v.includes("together")) {
     return <TogetherAILogo className={className} size={size} />;
@@ -250,7 +260,7 @@ export const ProviderLogo: React.FC<{
   if (v.includes("ollama")) {
     return <OllamaLogo className={className} size={size} />;
   }
-  if (v.includes("mock")) {
+  if (v.includes("mock") || v.includes("simulat") || v.includes("local")) {
     return <MockEngineLogo className={className} size={size} />;
   }
 

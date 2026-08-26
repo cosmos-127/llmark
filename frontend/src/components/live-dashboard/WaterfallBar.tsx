@@ -40,7 +40,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: dnsPct,
       bgBar: "bg-[#2D1223] dark:bg-[#3D1A31]",
       dotColor: "bg-[#2D1223] dark:bg-[#521D42]",
-      badgeBg: "bg-[#2D1223]/10 dark:bg-[#3D1A31]/40 text-[#2D1223] dark:text-[#E88EC4] border-[#2D1223]/20",
+      badgeBg: "bg-[#2D1223]/10 dark:bg-[#3D1A31]/40 text-[#2D1223] dark:text-[#E88EC4] border-[#2D1223]/20 dark:border-[#E88EC4]/30",
       textColor: "text-[#2D1223] dark:text-[#E88EC4]",
       icon: Globe,
       desc: "Hostname to IP resolution",
@@ -54,7 +54,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: tcpPct,
       bgBar: "bg-[#4D1C3D] dark:bg-[#682453]",
       dotColor: "bg-[#4D1C3D] dark:bg-[#682453]",
-      badgeBg: "bg-[#4D1C3D]/10 dark:bg-[#682453]/40 text-[#4D1C3D] dark:text-[#DDA0B8] border-[#4D1C3D]/20",
+      badgeBg: "bg-[#4D1C3D]/10 dark:bg-[#682453]/40 text-[#4D1C3D] dark:text-[#DDA0B8] border-[#4D1C3D]/20 dark:border-[#DDA0B8]/30",
       textColor: "text-[#4D1C3D] dark:text-[#DDA0B8]",
       icon: Network,
       desc: "SYN/ACK socket handshake",
@@ -68,7 +68,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: tlsPct,
       bgBar: "bg-[#73275B] dark:bg-[#8F3372]",
       dotColor: "bg-[#73275B] dark:bg-[#8F3372]",
-      badgeBg: "bg-[#73275B]/10 dark:bg-[#8F3372]/40 text-[#73275B] dark:text-[#C57BB2] border-[#73275B]/20",
+      badgeBg: "bg-[#73275B]/10 dark:bg-[#8F3372]/40 text-[#73275B] dark:text-[#C57BB2] border-[#73275B]/20 dark:border-[#C57BB2]/30",
       textColor: "text-[#73275B] dark:text-[#C57BB2]",
       icon: Shield,
       desc: "TLS 1.3 session crypto",
@@ -82,7 +82,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: prefillPct,
       bgBar: "bg-[#9A3579] dark:bg-[#B34590]",
       dotColor: "bg-[#9A3579] dark:bg-[#B34590]",
-      badgeBg: "bg-[#9A3579]/10 dark:bg-[#B34590]/40 text-[#9A3579] dark:text-[#A74B6A] border-[#9A3579]/20",
+      badgeBg: "bg-[#9A3579]/10 dark:bg-[#B34590]/40 text-[#9A3579] dark:text-[#A74B6A] border-[#9A3579]/20 dark:border-[#A74B6A]/30",
       textColor: "text-[#9A3579] dark:text-[#A74B6A]",
       icon: Cpu,
       desc: "Prompt encode & KV init",
@@ -96,7 +96,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: decodePct,
       bgBar: "bg-[#C4559E] dark:bg-[#D972B5]",
       dotColor: "bg-[#C4559E] dark:bg-[#D972B5]",
-      badgeBg: "bg-[#C4559E]/10 dark:bg-[#D972B5]/40 text-[#853953] dark:text-[#F3F4F4] border-[#C4559E]/20",
+      badgeBg: "bg-[#C4559E]/10 dark:bg-[#D972B5]/40 text-[#853953] dark:text-[#F3F4F4] border-[#C4559E]/20 dark:border-[#F3F4F4]/20",
       textColor: "text-[#853953] dark:text-[#F3F4F4]",
       icon: Zap,
       desc: "Autoregressive token decode",
@@ -123,18 +123,18 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
               </div>
             </div>
 
-            <div className="flex items-center flex-wrap gap-2 text-xs font-mono">
+            <div className="flex items-center flex-wrap gap-2 text-xs font-sans">
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
                 <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">Transport:</span>
-                <span className="font-bold text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">{formatMs(handshakeTotal)}</span>
+                <span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">{formatMs(handshakeTotal)}</span>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
                 <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">GPU Inference:</span>
-                <span className="font-bold text-[#853953] dark:text-[#A74B6A] tabular-nums">{formatMs(inferenceTotal)}</span>
+                <span className="font-semibold text-[#853953] dark:text-[#A74B6A] tabular-nums">{formatMs(inferenceTotal)}</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/15 border border-[#853953]/30 dark:border-[#A74B6A]/35">
                 <span className="text-[11px] text-[#853953] dark:text-[#A74B6A] font-sans font-medium">Total E2E:</span>
-                <span className="font-bold text-[#853953] dark:text-[#A74B6A] tabular-nums">{formatMs(waterfall?.total_e2e_ms || total)}</span>
+                <span className="font-semibold text-[#853953] dark:text-[#A74B6A] tabular-nums">{formatMs(waterfall?.total_e2e_ms || total)}</span>
               </div>
             </div>
           </div>
@@ -161,10 +161,10 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                     >
                       {stg.pct >= 8 && (
                         <>
-                          <span className="text-[10px] font-medium text-white/85 truncate select-none hidden sm:inline-block">
+                          <span className="text-[11px] font-medium text-white/85 truncate select-none hidden sm:inline-block">
                             {stg.label}
                           </span>
-                          <span className="text-[10px] font-mono font-bold text-white/95 truncate select-none">
+                          <span className="text-[11px] font-sans font-medium tabular-nums text-white/95 truncate select-none">
                             {stg.pct}%
                           </span>
                         </>
@@ -173,14 +173,14 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="font-semibold">{stg.label}: {formatMs(stg.time)} ({stg.pct}%)</p>
-                    <p className="text-[11px] opacity-80">{stg.desc}</p>
+                    <p className="text-xs opacity-80">{stg.desc}</p>
                   </TooltipContent>
                 </Tooltip>
               ))}
             </div>
 
             {/* Timeline markers */}
-            <div className="flex items-center justify-between text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-mono px-1">
+            <div className="flex items-center justify-between text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans tabular-nums px-1">
               <span>0 ms (Send)</span>
               <span>Client Handshake ~{(handshakeTotal).toFixed(1)}ms</span>
               <span>TTFT ~{Math.round(handshakeTotal + serverPrefill)}ms</span>
@@ -207,27 +207,27 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                             {stg.label}
                           </span>
                         </div>
-                        <span className="text-[10px] font-mono font-semibold text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                        <span className="text-[11px] font-sans font-medium tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
                           {stg.pct}%
                         </span>
                       </div>
 
                       <div className="flex items-baseline justify-between pt-1">
-                        <strong className={`${stg.textColor} font-mono text-base font-bold tabular-nums`}>
+                        <span className={`${stg.textColor} font-sans text-base font-semibold tabular-nums`}>
                           {formatMs(stg.time)}
-                        </strong>
-                        <span className="text-[9px] font-mono uppercase text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                        </span>
+                        <span className="text-[10px] font-sans font-medium uppercase text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
                           {stg.category}
                         </span>
                       </div>
 
-                      <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-1 border-t border-[#2C2C2C]/5 dark:border-[#F3F4F4]/5 pt-1.5">
+                      <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-1 border-t border-[#2C2C2C]/5 dark:border-[#F3F4F4]/5 pt-1.5">
                         {stg.desc}
                       </p>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="font-bold">{stg.label}</p>
+                    <p className="font-semibold">{stg.label}</p>
                     <p className="text-xs">{stg.desc} • {formatMs(stg.time)} ({stg.pct}% of total E2E)</p>
                   </TooltipContent>
                 </Tooltip>

@@ -1,5 +1,6 @@
 from typing import Dict, Type
 from app.adapters.anthropic_adapter import AnthropicAdapter
+from app.adapters.azure_openai_adapter import AzureOpenAIAdapter
 from app.adapters.base import VendorAdapter
 from app.adapters.mock_adapter import MockVendorAdapter
 from app.adapters.openai_adapter import OpenAICompatAdapter
@@ -10,6 +11,7 @@ class AdapterRegistry:
     _adapters: Dict[VendorType, Type[VendorAdapter]] = {
         VendorType.OPENAI: OpenAICompatAdapter,
         VendorType.OPENAI_COMPATIBLE: OpenAICompatAdapter,
+        VendorType.AZURE_OPENAI: AzureOpenAIAdapter,
         VendorType.ANTHROPIC: AnthropicAdapter,
         VendorType.MOCK: MockVendorAdapter,
     }
