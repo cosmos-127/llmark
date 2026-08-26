@@ -89,6 +89,8 @@ import { VramAllocationMatrix } from "@/components/test-configurator/VramAllocat
 import { LatencyWaterfallInspector } from "@/components/test-configurator/LatencyWaterfallInspector";
 import { TokenBucketReservoir } from "@/components/test-configurator/TokenBucketReservoir";
 import { GoodputSievePipeline } from "@/components/test-configurator/GoodputSievePipeline";
+import { PrefillDecodeBalanceGauge } from "@/components/test-configurator/PrefillDecodeBalanceGauge";
+import { AttentionComputeMatrix } from "@/components/test-configurator/AttentionComputeMatrix";
 
 interface TestConfiguratorProps {
   config: BenchmarkConfig;
@@ -817,10 +819,37 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="space-y-6"
+                  className="space-y-4"
                 >
+                  {/* Step 1 Sticky Mini-Anchor Bar */}
+                  <div className="sticky top-2 z-10 p-1.5 rounded-xl bg-white/95 dark:bg-[#252426]/95 backdrop-blur-md border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs flex items-center gap-1.5 overflow-x-auto">
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-1a")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <Sliders className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <span className="font-semibold">1A. Wire Protocol & Routing</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 capitalize">
+                        {config.vendor.replace("_", " ")}
+                      </Badge>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-1b")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <span className="font-semibold">1B. Model Selection & Discovery</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 truncate max-w-[120px]">
+                        {config.model || "Select Model"}
+                      </Badge>
+                    </button>
+                  </div>
+
                   {/* Card 1: Wire Protocol & Ephemeral Authentication */}
-                  <Card>
+                  <Card id="section-1a" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
@@ -837,7 +866,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
                         </div>
                         <Badge variant="default" className="text-xs font-medium gap-1">
-                          <Sliders className="h-3 w-3" /> Step 1 of 4 • Configurable
+                          <Sliders className="h-3 w-3" /> Sub-Step 1A • Configurable
                         </Badge>
                       </div>
                     </CardHeader>
@@ -1386,7 +1415,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   </Card>
 
                   {/* Card 2: Target Model Discovery & Identity */}
-                  <Card>
+                  <Card id="section-1b" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
@@ -1404,7 +1433,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="default" className="text-xs font-medium gap-1">
-                            <Sliders className="h-3 w-3" /> Configurable
+                            <Sliders className="h-3 w-3" /> Sub-Step 1B • Configurable
                           </Badge>
                           {availableModels.length > 0 && !isLoadingModels && (
                             <Badge variant="emerald" className="gap-1 font-sans tabular-nums text-[11px] px-2 py-0.5">
@@ -1610,7 +1639,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           {/* Quick Category Filter Pills */}
                           <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
                             {[
-                              { id: "all", label: "All (13)" },
+                              { id: "all", label: `All (${PRESET_OPTIONS.length})` },
                               { id: "latency", label: "Latency" },
                               { id: "throughput", label: "Throughput" },
                               { id: "reasoning", label: "Reasoning" },
@@ -1882,6 +1911,20 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
                         );
                       })()}
+
+                      {/* Interactive Prefill vs Decode Balance Gauge & Arithmetic Intensity Matrix */}
+                      <div className="space-y-4 pt-2">
+                        <PrefillDecodeBalanceGauge
+                          promptTokens={selectedPreset.promptTokens}
+                          maxTokens={config.max_tokens}
+                          presetName={selectedPreset.name}
+                          cacheBust={config.cache_bust}
+                        />
+                        <AttentionComputeMatrix
+                          promptTokens={selectedPreset.promptTokens}
+                          maxTokens={config.max_tokens}
+                        />
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -2306,7 +2349,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </Badge>
                           </div>
                           <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
-                            Under high concurrency, LLM clusters exhaust KV cache VRAM slots and begin buffering streams. Testing arrival curves isolates the concurrency threshold where queue backpressure begins degrading TTFT.
+                            Under high concurrency, LLM clusters exhaust KV cache VRAM slots and begin buffering streams. Testing arrival curves (like <strong>Saturation Knee Probe</strong> with 1→3→8→16→50 auto-steps) isolates the queue inflection cliff where TTFT degrades non-linearly (Little's Law: <em>L_q = &lambda; W_q</em>).
                           </p>
                           <div className="pt-2.5 border-t border-[#853953]/15 text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 space-y-1.5">
                             <div className="flex justify-between">
@@ -2453,10 +2496,49 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="space-y-5"
+                  className="space-y-4"
                 >
+                  {/* Step 4 Sticky Mini-Anchor Bar */}
+                  <div className="sticky top-2 z-10 p-1.5 rounded-xl bg-white/95 dark:bg-[#252426]/95 backdrop-blur-md border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs flex items-center gap-1.5 overflow-x-auto">
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-4a")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <Gauge className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="font-semibold">4A. Reliability SLOs</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 font-sans tabular-nums">
+                        ≤ {config.slo.max_ttft_ms}ms TTFT
+                      </Badge>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-4b")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="font-semibold">4B. Financial Guardrails</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 font-sans tabular-nums">
+                        {formatUsd(config.hard_spend_cap || 2.0)} cap
+                      </Badge>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-4c")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <span className="font-semibold">4C. Pre-Flight Cockpit</span>
+                      <Badge variant="emerald" className="text-[10px] hidden sm:inline-flex ml-1">
+                        Ready
+                      </Badge>
+                    </button>
+                  </div>
+
                   {/* SUB-STEP 4A: RELIABILITY SLOS & GOODPUT CEILINGS */}
-                  <Card id="section-4a">
+                  <Card id="section-4a" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
@@ -2610,11 +2692,27 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         maxErrorRatePct={config.slo.max_error_rate_pct}
                         maxE2eMs={config.slo.max_e2e_ms}
                       />
+
+                      {/* Goodput vs Raw Throughput Architectural Insight */}
+                      <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 font-semibold text-emerald-800 dark:text-emerald-300">
+                            <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+                            <span>Goodput vs. Raw Throughput Metric Theory</span>
+                          </div>
+                          <Badge variant="emerald" className="text-[10px] font-sans font-medium py-0 px-1.5">
+                            SLO Yield Formula
+                          </Badge>
+                        </div>
+                        <p className="text-[11px] text-emerald-900/80 dark:text-emerald-200/80 leading-relaxed font-normal">
+                          <strong>Raw Throughput</strong> measures gross generated tokens per second across all responses (including degraded or timed-out turns). <strong>Goodput</strong> strictly filters for production-grade throughput — measuring only requests that meet <em>all four</em> latency and error SLO thresholds (TTFT, TPOT, E2E, and HTTP 200).
+                        </p>
+                      </div>
                     </CardContent>
                   </Card>
 
                   {/* SUB-STEP 4B: FINANCIAL GUARDRAILS & TOKEN ECONOMICS */}
-                  <Card id="section-4b">
+                  <Card id="section-4b" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
@@ -2754,7 +2852,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   </Card>
 
                   {/* SUB-STEP 4C: PRE-FLIGHT COCKPIT & LIVE LAUNCH */}
-                  <Card id="section-4c">
+                  <Card id="section-4c" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
