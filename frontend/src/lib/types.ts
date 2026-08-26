@@ -33,7 +33,7 @@ export type WorkloadPreset =
   | "json_schema"
   | "custom";
 
-export type LoadCurveType = "constant" | "ramp_up" | "spike" | "poisson";
+export type LoadCurveType = "constant" | "ramp_up" | "spike" | "poisson" | "saturation_knee";
 
 export type TestMode = "duration" | "requests";
 
@@ -70,6 +70,8 @@ export interface BenchmarkConfig {
   workload_preset: WorkloadPreset;
   test_mode: TestMode;
   total_requests?: number;
+  dataset_type?: "synthetic" | "jsonl";
+  custom_dataset?: string[];
   custom_prompt?: string;
   custom_messages?: any[];
   json_schema?: any;
@@ -99,6 +101,8 @@ export interface WaterfallTiming {
   dns_ms: number;
   tcp_ms: number;
   tls_ms: number;
+  network_edge_ms?: number;
+  server_gpu_compute_ms?: number;
   ttft_ms: number;
   decode_ms: number;
   total_e2e_ms: number;
@@ -151,6 +155,7 @@ export interface MetricsSnapshot {
   itl_p99: number;
   max_itl: number;
   tpot_mean: number;
+  tps_decode?: number;
   goodput_pct: number;
   error_rate_pct: number;
 
@@ -166,6 +171,13 @@ export interface MetricsSnapshot {
   thinking_token_ratio_pct?: number;
   schema_validity_pct?: number;
   schema_error_count?: number;
+
+  // Saturation Knee Probe & Breakdown
+  saturation_knee_concurrency?: number | null;
+  saturation_knee_detected?: boolean;
+  network_edge_avg_ms?: number | null;
+  server_gpu_compute_avg_ms?: number | null;
+
   profile_metrics?: string[];
   workload_preset?: string;
 }
@@ -189,19 +201,33 @@ export interface MetricDelta {
   metric_name: string;
   run_a_value: number;
   run_b_value: number;
+  run_c_value?: number | null;
   delta_value: number;
   delta_pct: number;
+  delta_c_value?: number | null;
+  delta_c_pct?: number | null;
   is_improvement: boolean;
+  is_improvement_c?: boolean | null;
 }
 
 export interface RunDiffResponse {
   run_a_id: string;
   run_b_id: string;
+  run_c_id?: string | null;
   run_a_name: string;
   run_b_name: string;
+  run_c_name?: string | null;
+  run_a_vendor?: string | null;
+  run_b_vendor?: string | null;
+  run_c_vendor?: string | null;
+  run_a_model?: string | null;
+  run_b_model?: string | null;
+  run_c_model?: string | null;
   deltas: MetricDelta[];
   goodput_delta_pct: number;
   cost_delta_pct: number;
+  goodput_delta_c_pct?: number | null;
+  cost_delta_c_pct?: number | null;
 }
 
 export interface HistoricalRunSummary {

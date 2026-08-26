@@ -213,6 +213,7 @@ class LoadCurveType(str, Enum):
     RAMP_UP = "ramp_up"
     SPIKE = "spike"
     POISSON = "poisson"
+    SATURATION_KNEE = "saturation_knee"
 
 
 class TestMode(str, Enum):
@@ -258,6 +259,8 @@ class BenchmarkConfig(BaseModel):
     workload_preset: WorkloadPreset = WorkloadPreset.CHAT
     test_mode: TestMode = TestMode.DURATION
     total_requests: Optional[int] = Field(50, ge=1, le=1000, description="Target total requests in request-based mode")
+    dataset_type: str = Field("synthetic", description="synthetic or jsonl")
+    custom_dataset: Optional[List[str]] = Field(None, description="Array of prompt strings loaded from custom JSONL dataset")
     custom_prompt: Optional[str] = None
     custom_messages: Optional[List[Dict[str, Any]]] = None
     json_schema: Optional[Dict[str, Any]] = None
@@ -288,6 +291,8 @@ class WaterfallTiming(BaseModel):
     dns_ms: float = 0.0
     tcp_ms: float = 0.0
     tls_ms: float = 0.0
+    network_edge_ms: float = 0.0
+    server_gpu_compute_ms: float = 0.0
     ttft_ms: float = 0.0
     decode_ms: float = 0.0
     total_e2e_ms: float = 0.0
@@ -363,6 +368,12 @@ class MetricsSnapshot(BaseModel):
     schema_validity_pct: Optional[float] = None
     schema_error_count: int = 0
 
+    # Saturation Knee Probe Discovery
+    saturation_knee_concurrency: Optional[int] = None
+    saturation_knee_detected: bool = False
+    network_edge_avg_ms: Optional[float] = None
+    server_gpu_compute_avg_ms: Optional[float] = None
+
     # Target Metric Profile Tags for Dynamic Frontend Filtering
     profile_metrics: List[str] = Field(default_factory=list)
     workload_preset: Optional[str] = None
@@ -387,19 +398,33 @@ class MetricDelta(BaseModel):
     metric_name: str
     run_a_value: float
     run_b_value: float
+    run_c_value: Optional[float] = None
     delta_value: float
     delta_pct: float
+    delta_c_value: Optional[float] = None
+    delta_c_pct: Optional[float] = None
     is_improvement: bool
+    is_improvement_c: Optional[bool] = None
 
 
 class RunDiffResponse(BaseModel):
     run_a_id: str
     run_b_id: str
+    run_c_id: Optional[str] = None
     run_a_name: str
     run_b_name: str
+    run_c_name: Optional[str] = None
+    run_a_vendor: Optional[str] = None
+    run_b_vendor: Optional[str] = None
+    run_c_vendor: Optional[str] = None
+    run_a_model: Optional[str] = None
+    run_b_model: Optional[str] = None
+    run_c_model: Optional[str] = None
     deltas: List[MetricDelta]
     goodput_delta_pct: float
     cost_delta_pct: float
+    goodput_delta_c_pct: Optional[float] = None
+    cost_delta_c_pct: Optional[float] = None
 
 
 class ListModelsRequest(BaseModel):

@@ -19,6 +19,7 @@ import {
 import { MetricsSnapshot, WorkloadPreset } from "@/lib/types";
 import { formatMs, formatPct, formatUsd } from "@/lib/utils";
 import { KpiCard } from "@/components/tremor/KpiCard";
+import { Badge } from "@/components/ui/badge";
 
 interface MetricCardsProps {
   snapshot: MetricsSnapshot | null;
@@ -27,6 +28,28 @@ interface MetricCardsProps {
 
 export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPreset }) => {
   const preset = (snapshot?.workload_preset || workloadPreset || "chat") as string;
+
+  const kneeBanner = (snapshot?.saturation_knee_detected || snapshot?.saturation_knee_concurrency) ? (
+    <div className="col-span-full mb-1 p-3.5 rounded-xl bg-gradient-to-r from-[#853953]/15 via-[#853953]/8 to-[#853953]/0 dark:from-[#A74B6A]/20 dark:via-[#A74B6A]/10 dark:to-[#A74B6A]/0 border border-[#853953]/40 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2.5">
+        <div className="p-2 rounded-lg bg-[#853953] text-white shadow-2xs">
+          <Gauge className="h-4 w-4" />
+        </div>
+        <div>
+          <div className="text-xs font-bold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
+            Saturation Knee Inflection Discovered
+            <Badge variant="destructive" className="text-[10px] py-0 h-4">Inflection Point</Badge>
+          </div>
+          <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-0.5">
+            Optimal concurrency ceiling identified at <strong>{snapshot.saturation_knee_concurrency || 16} parallel streams</strong>. Concurrency beyond this causes TTFT degradation &gt;50% or upstream queue backpressure.
+          </p>
+        </div>
+      </div>
+      <Badge variant="outline" className="text-xs font-semibold border-[#853953]/50 text-[#853953] dark:text-[#A74B6A] tabular-nums whitespace-nowrap">
+        Max Stable: {snapshot.saturation_knee_concurrency || 16} streams
+      </Badge>
+    </div>
+  ) : null;
 
   // 1. Rate Limit & Capacity Probing Profile
   if (preset === "rate_limit_probe") {
@@ -37,6 +60,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
 
     return (
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
+        {kneeBanner}
         <KpiCard
           title="HTTP 429 Rate Limits"
           badge={rateLimitCount > 0 ? "Throttled" : "Optimal"}
@@ -718,6 +742,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
   // 10. Default / Interactive Conversational / RAG Synthesis / Custom Profile
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
+      {kneeBanner}
       <KpiCard
         title="Time to first token (TTFT)"
         badge="P95"

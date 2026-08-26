@@ -50,6 +50,8 @@ class StatisticsEngine:
         metrics: List[SingleRequestMetric],
         slo: SLOThresholds,
         workload_preset: Optional[str] = None,
+        saturation_knee_concurrency: Optional[int] = None,
+        saturation_knee_detected: bool = False,
     ) -> MetricsSnapshot:
         """Aggregate in-flight or completed telemetry into a live MetricsSnapshot."""
         target_profile_metrics = (
@@ -66,6 +68,8 @@ class StatisticsEngine:
                 total_requests=total_requests,
                 completed_requests=0,
                 failed_requests=0,
+                saturation_knee_concurrency=saturation_knee_concurrency,
+                saturation_knee_detected=saturation_knee_detected,
                 profile_metrics=target_profile_metrics,
                 workload_preset=workload_preset,
             )
@@ -148,11 +152,13 @@ class StatisticsEngine:
         goodput_pct = round((successful_slo_reqs / max(1, total_finished)) * 100.0, 2)
         error_rate_pct = round((num_failed / max(1, total_finished)) * 100.0, 2)
 
-        # 7. Average Waterfall
+        # 7. Average Waterfall with Edge Network vs GPU Compute Phase
         if completed_reqs:
             avg_dns = float(np.mean([m.waterfall.dns_ms for m in completed_reqs]))
             avg_tcp = float(np.mean([m.waterfall.tcp_ms for m in completed_reqs]))
             avg_tls = float(np.mean([m.waterfall.tls_ms for m in completed_reqs]))
+            avg_edge = float(np.mean([m.waterfall.network_edge_ms for m in completed_reqs]))
+            avg_gpu = float(np.mean([m.waterfall.server_gpu_compute_ms for m in completed_reqs]))
             avg_ttft = float(np.mean([m.waterfall.ttft_ms for m in completed_reqs]))
             avg_decode = float(np.mean([m.waterfall.decode_ms for m in completed_reqs]))
             avg_e2e = float(np.mean([m.waterfall.total_e2e_ms for m in completed_reqs]))
@@ -160,12 +166,18 @@ class StatisticsEngine:
                 dns_ms=round(avg_dns, 2),
                 tcp_ms=round(avg_tcp, 2),
                 tls_ms=round(avg_tls, 2),
+                network_edge_ms=round(avg_edge, 2),
+                server_gpu_compute_ms=round(avg_gpu, 2),
                 ttft_ms=round(avg_ttft, 2),
                 decode_ms=round(avg_decode, 2),
                 total_e2e_ms=round(avg_e2e, 2),
             )
+            network_edge_avg_ms = round(avg_edge, 2)
+            server_gpu_compute_avg_ms = round(avg_gpu, 2)
         else:
             waterfall_avg = WaterfallTiming()
+            network_edge_avg_ms = None
+            server_gpu_compute_avg_ms = None
 
         return MetricsSnapshot(
             benchmark_id=benchmark_id,
@@ -205,6 +217,10 @@ class StatisticsEngine:
             thinking_token_ratio_pct=thinking_token_ratio_pct,
             schema_validity_pct=schema_validity_pct,
             schema_error_count=schema_error_count,
+            saturation_knee_concurrency=saturation_knee_concurrency,
+            saturation_knee_detected=saturation_knee_detected,
+            network_edge_avg_ms=network_edge_avg_ms,
+            server_gpu_compute_avg_ms=server_gpu_compute_avg_ms,
             profile_metrics=target_profile_metrics,
             workload_preset=workload_preset,
         )

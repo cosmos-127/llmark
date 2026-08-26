@@ -21,6 +21,14 @@ const queryClient = new QueryClient({
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>("landing");
+  const [historyInitialView, setHistoryInitialView] = useState<"history" | "roi">("history");
+  const [historySelectedRunId, setHistorySelectedRunId] = useState<string | null>(null);
+
+  const handleNavigateToHistory = (view?: "history" | "roi", runId?: string) => {
+    if (view) setHistoryInitialView(view);
+    if (runId) setHistorySelectedRunId(runId);
+    setActiveTab("history");
+  };
 
   return (
     <ThemeProvider>
@@ -29,9 +37,9 @@ export function App() {
           <div className="min-h-screen bg-[#F3F4F4] dark:bg-[#111012] text-[#2C2C2C] dark:text-[#FAFAFA] flex flex-col font-sans relative overflow-x-hidden transition-colors duration-200">
             {/* Ambient Grid & Palette Glows */}
             <div className="fixed inset-0 bg-grid-pattern opacity-40 pointer-events-none z-0" />
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[850px] h-[350px] ambient-glow-plum pointer-events-none z-0" />
-            <div className="fixed top-1/3 right-0 w-[500px] h-[500px] ambient-glow-deepplum pointer-events-none z-0" />
-            <div className="fixed bottom-0 left-1/4 w-[400px] h-[400px] ambient-glow-charcoal pointer-events-none z-0" />
+            <div className="fixed -top-28 left-1/2 -translate-x-1/2 w-[900px] max-w-[100vw] h-[450px] ambient-glow-plum pointer-events-none z-0" />
+            <div className="fixed top-1/4 -right-16 w-[600px] h-[600px] ambient-glow-deepplum pointer-events-none z-0" />
+            <div className="fixed -bottom-20 left-1/12 w-[520px] h-[520px] ambient-glow-charcoal pointer-events-none z-0" />
 
             {/* Unified Sticky Top Navigation Bar — Persistent in ALL views */}
             <AdminHeader
@@ -51,14 +59,25 @@ export function App() {
                   className="flex-1 flex flex-col"
                 >
                   {activeTab === "landing" && (
-                    <LandingPage onNavigate={(tab: NavTab) => setActiveTab(tab)} />
+                    <LandingPage onNavigate={(tab: NavTab) => {
+                      if (tab === "history") {
+                        setHistoryInitialView("history");
+                      }
+                      setActiveTab(tab);
+                    }} />
                   )}
 
                   {activeTab !== "landing" && (
                     <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-7">
                       {activeTab === "benchmark" && <BenchmarkPage />}
                       {activeTab === "diff" && <DiffPage />}
-                      {activeTab === "history" && <HistoryPage />}
+                      {activeTab === "history" && (
+                        <HistoryPage
+                          initialView={historyInitialView}
+                          initialRunId={historySelectedRunId}
+                          onNavigateToBenchmark={() => setActiveTab("benchmark")}
+                        />
+                      )}
                     </main>
                   )}
                 </motion.div>

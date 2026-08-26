@@ -30,6 +30,8 @@ class WaterfallCollector:
                 dns_ms=round(8.5, 2),
                 tcp_ms=round(18.2, 2),
                 tls_ms=round(22.4, 2),
+                network_edge_ms=round(49.1, 2),
+                server_gpu_compute_ms=0.0,
                 total_e2e_ms=round(49.1, 2),
             )
 
@@ -99,6 +101,8 @@ class WaterfallCollector:
                 dns_ms=round(dns_ms, 2),
                 tcp_ms=round(tcp_ms, 2),
                 tls_ms=round(tls_ms, 2),
+                network_edge_ms=round(total_handshake_ms, 2),
+                server_gpu_compute_ms=0.0,
                 total_e2e_ms=round(total_handshake_ms, 2),
             )
 
@@ -109,5 +113,7 @@ class WaterfallCollector:
                 dns_ms=12.5,
                 tcp_ms=25.0,
                 tls_ms=30.0,
+                network_edge_ms=67.5,
+                server_gpu_compute_ms=0.0,
                 total_e2e_ms=67.5,
             )

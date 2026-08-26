@@ -16,9 +16,13 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
   const dns = waterfall?.dns_ms && waterfall.dns_ms > 0 ? waterfall.dns_ms : 8.4;
   const tcp = waterfall?.tcp_ms && waterfall.tcp_ms > 0 ? waterfall.tcp_ms : 18.2;
   const tls = waterfall?.tls_ms && waterfall.tls_ms > 0 ? waterfall.tls_ms : 24.6;
-  const handshakeTotal = dns + tcp + tls;
+  const handshakeTotal = (waterfall?.network_edge_ms && waterfall.network_edge_ms > 0)
+    ? waterfall.network_edge_ms
+    : (dns + tcp + tls);
   const rawTtft = waterfall?.ttft_ms || 140;
-  const serverPrefill = Math.max(12, rawTtft - handshakeTotal);
+  const serverPrefill = (waterfall?.server_gpu_compute_ms && waterfall.server_gpu_compute_ms > 0)
+    ? waterfall.server_gpu_compute_ms
+    : Math.max(12, rawTtft - handshakeTotal);
   const decodeStream = Math.max(25, waterfall?.decode_ms || 165);
 
   const total = handshakeTotal + serverPrefill + decodeStream;

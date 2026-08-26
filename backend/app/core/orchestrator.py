@@ -232,14 +232,41 @@ class BenchmarkOrchestrator:
                 except Exception as e:
                     logger.warning("Warmup request failed", error=str(e))
 
-            # 3. Workload Concurrency Execution
-            workers_count = config.concurrency
+            # 3. Workload Concurrency & Load Curve Setup
+            custom_dataset = (
+                [p.strip() for p in config.custom_dataset if p and p.strip()]
+                if (config.custom_dataset and len(config.custom_dataset) > 0)
+                else None
+            )
+
+            is_knee_probe = (
+                config.load_curve == "saturation_knee"
+                or (hasattr(config.load_curve, "value") and config.load_curve.value == "saturation_knee")
+            )
+            target_max_concurrency = max(1, config.concurrency)
+            raw_stages = [1, 3, 8, 16, 25, 40, target_max_concurrency]
+            stepped_stages = sorted(list(set([s for s in raw_stages if s <= target_max_concurrency])))
+            if not stepped_stages:
+                stepped_stages = [target_max_concurrency]
+
+            stage_duration = config.duration_seconds / max(1, len(stepped_stages))
+            current_active_workers = stepped_stages[0] if is_knee_probe else target_max_concurrency
+            saturation_knee_concurrency: Optional[int] = None
+            saturation_knee_detected: bool = False
+            baseline_stage_ttft: Optional[float] = None
+
+            workers_count = target_max_concurrency
             request_counter = 0
             counter_lock = asyncio.Lock()
 
             async def worker_loop(worker_id: int):
                 nonlocal request_counter
                 while not execution.cancel_token.is_cancelled:
+                    # Gating for Knee-Point Probe staged active worker scaling
+                    if is_knee_probe and worker_id >= current_active_workers:
+                        await asyncio.sleep(0.05)
+                        continue
+
                     # Mode-based termination check
                     if config.test_mode == TestMode.REQUESTS and config.total_requests and config.total_requests > 0:
                         async with counter_lock:
@@ -251,10 +278,14 @@ class BenchmarkOrchestrator:
                         if elapsed >= config.duration_seconds:
                             break
 
-                    # Prepare prompt (Cache-warm vs Cache-bust nonce)
-                    prompt = base_prompt
+                    # Prepare prompt (Custom Dataset vs Preset text vs Nonce)
+                    if custom_dataset:
+                        prompt = custom_dataset[request_counter % len(custom_dataset)]
+                    else:
+                        prompt = base_prompt
+
                     if config.cache_bust:
-                        prompt = f"{base_prompt} [Nonce: {uuid.uuid4().hex[:8]}]"
+                        prompt = f"{prompt} [Nonce: {uuid.uuid4().hex[:8]}]"
 
                     # Check spend cap circuit breaker
                     if CostGuard.is_spend_cap_exceeded(execution.total_cost_usd, config.hard_spend_cap):
@@ -278,8 +309,25 @@ class BenchmarkOrchestrator:
 
             # Periodic SSE Snapshot Broadcaster Task
             async def broadcast_loop():
+                nonlocal current_active_workers, baseline_stage_ttft, saturation_knee_concurrency, saturation_knee_detected
                 while execution.status == "running" and not execution.cancel_token.is_cancelled:
                     elapsed = time.perf_counter() - execution.start_time
+
+                    if is_knee_probe:
+                        stage_idx = min(len(stepped_stages) - 1, int(elapsed / max(0.1, stage_duration)))
+                        current_active_workers = stepped_stages[stage_idx]
+
+                        # Detect TTFT saturation knee inflection (>50% spike over 1-stream baseline)
+                        if len(execution.metrics) >= 4:
+                            comp = [m for m in execution.metrics if not m.is_error and m.status_code == 200]
+                            if comp:
+                                current_p95 = float(np.percentile([m.ttft_ms for m in comp], 95))
+                                if baseline_stage_ttft is None and stage_idx == 0 and len(comp) >= 3:
+                                    baseline_stage_ttft = current_p95
+                                elif baseline_stage_ttft and current_p95 >= 1.5 * baseline_stage_ttft and not saturation_knee_detected and stage_idx > 0:
+                                    saturation_knee_concurrency = stepped_stages[stage_idx - 1]
+                                    saturation_knee_detected = True
+
                     snapshot = StatisticsEngine.calculate_snapshot(
                         benchmark_id=benchmark_id,
                         status=execution.status,
@@ -288,6 +336,8 @@ class BenchmarkOrchestrator:
                         metrics=execution.metrics,
                         slo=config.slo,
                         workload_preset=config.workload_preset.value,
+                        saturation_knee_concurrency=saturation_knee_concurrency,
+                        saturation_knee_detected=saturation_knee_detected,
                     )
                     await execution.broadcast("progress_snapshot", snapshot.model_dump())
                     await asyncio.sleep(0.1)
@@ -316,6 +366,8 @@ class BenchmarkOrchestrator:
                 metrics=execution.metrics,
                 slo=config.slo,
                 workload_preset=config.workload_preset.value,
+                saturation_knee_concurrency=saturation_knee_concurrency,
+                saturation_knee_detected=saturation_knee_detected,
             )
 
             # Persist to database
@@ -338,6 +390,8 @@ class BenchmarkOrchestrator:
                 metrics=execution.metrics,
                 slo=config.slo,
                 workload_preset=config.workload_preset.value,
+                saturation_knee_concurrency=saturation_knee_concurrency if "saturation_knee_concurrency" in locals() else None,
+                saturation_knee_detected=saturation_knee_detected if "saturation_knee_detected" in locals() else False,
             )
             await cls._persist_run_to_db(execution, error_snapshot)
             await execution.broadcast("run_complete", error_snapshot.model_dump())
@@ -436,10 +490,15 @@ class BenchmarkOrchestrator:
                 config.custom_completion_price_per_1m,
             )
 
+            edge_network_ms = round(baseline_waterfall.dns_ms + baseline_waterfall.tcp_ms + baseline_waterfall.tls_ms, 2)
+            server_gpu_compute_ms = max(0.0, round(ttft_ms - edge_network_ms, 2))
+
             waterfall = WaterfallTiming(
                 dns_ms=baseline_waterfall.dns_ms,
                 tcp_ms=baseline_waterfall.tcp_ms,
                 tls_ms=baseline_waterfall.tls_ms,
+                network_edge_ms=edge_network_ms,
+                server_gpu_compute_ms=server_gpu_compute_ms,
                 ttft_ms=ttft_ms,
                 decode_ms=round(decode_duration_ms, 2),
                 total_e2e_ms=e2e_ms,

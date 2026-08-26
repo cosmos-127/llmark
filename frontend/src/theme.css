@@ -76,9 +76,9 @@
   --ring: 339 40% 37%;
   --radius: 0.75rem;
 
-  --ambient-plum: rgba(133, 57, 83, 0.09);
-  --ambient-deepplum: rgba(97, 45, 83, 0.07);
-  --ambient-charcoal: rgba(44, 44, 44, 0.04);
+  --ambient-plum: rgba(133, 57, 83, 0.18);
+  --ambient-deepplum: rgba(97, 45, 83, 0.14);
+  --ambient-charcoal: rgba(133, 57, 83, 0.08);
   --grid-dots: rgba(44, 44, 44, 0.08);
 
   --toggle-btn-bg: #ffffff;
@@ -148,9 +148,9 @@
   --input: 270 4% 16%;
   --ring: 338 45% 53%;
 
-  --ambient-plum: rgba(184, 85, 122, 0.18);
-  --ambient-deepplum: rgba(142, 69, 124, 0.14);
-  --ambient-charcoal: rgba(250, 250, 250, 0.03);
+  --ambient-plum: rgba(184, 85, 122, 0.28);
+  --ambient-deepplum: rgba(142, 69, 124, 0.22);
+  --ambient-charcoal: rgba(184, 85, 122, 0.12);
   --grid-dots: rgba(250, 250, 250, 0.06);
 
   --toggle-btn-bg: #222125;
@@ -189,15 +189,40 @@
 }
 
 .ambient-glow-plum {
-  background: radial-gradient(circle at 50% 0%, var(--ambient-plum) 0%, transparent 60%);
+  background: radial-gradient(circle at 50% 50%, var(--ambient-plum) 0%, var(--ambient-deepplum) 40%, transparent 75%);
+  filter: blur(60px);
+  border-radius: 9999px;
+  will-change: transform;
 }
 
 .ambient-glow-deepplum {
-  background: radial-gradient(circle at 80% 20%, var(--ambient-deepplum) 0%, transparent 50%);
+  background: radial-gradient(circle at 50% 50%, var(--ambient-deepplum) 0%, var(--ambient-plum) 35%, transparent 75%);
+  filter: blur(70px);
+  border-radius: 9999px;
+  will-change: transform;
 }
 
 .ambient-glow-charcoal {
-  background: radial-gradient(circle at 20% 40%, var(--ambient-charcoal) 0%, transparent 50%);
+  background: radial-gradient(circle at 50% 50%, var(--ambient-charcoal) 0%, transparent 70%);
+  filter: blur(50px);
+  border-radius: 9999px;
+  will-change: transform;
+}
+
+/* Text Gradient Brand Utility */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #853953 0%, #743663 50%, #612D53 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .text-gradient-brand,
+[data-theme="dark"] .text-gradient-brand {
+  background: linear-gradient(135deg, #C57BB2 0%, #A74B6A 50%, #7E3B6C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Glass panel & cards adhering to theme variables */

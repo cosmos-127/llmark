@@ -58,3 +58,45 @@ async def test_headless_cli_fail_threshold():
 
     exit_code = await run_headless_benchmark(config, fail_under_goodput=101.0)
     assert exit_code == 1
+
+
+def test_evaluate_assertions_unit():
+    """Verify evaluate_assertions correctly assesses multiple metric conditions."""
+    from app.cli import evaluate_assertions
+    from app.models.db.models import BenchmarkRun
+
+    run_record = BenchmarkRun(
+        id="test_run",
+        name="Test Run",
+        vendor="openai",
+        model="gpt-4o",
+        ttft_p50=120.0,
+        ttft_p95=350.0,
+        itl_p95=25.0,
+        tps_decode=65.0,
+        goodput_pct=99.2,
+        error_rate_pct=0.0,
+        total_cost_usd=0.045,
+    )
+
+    passed, logs = evaluate_assertions(
+        run_record,
+        [
+            "p95_ttft < 500",
+            "goodput >= 95",
+            "tps >= 50",
+            "max_cost <= 0.10",
+        ],
+    )
+    assert passed is True
+    assert len(logs) == 4
+
+    failed, fail_logs = evaluate_assertions(
+        run_record,
+        [
+            "p95_ttft < 200",  # 350 < 200 is False
+            "goodput >= 99.5", # 99.2 >= 99.5 is False
+        ],
+    )
+    assert failed is False
+    assert any("[FAIL]" in l for l in fail_logs)

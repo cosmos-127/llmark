@@ -84,6 +84,11 @@ import {
 } from "@/components/ui/select";
 import { DonutChart } from "@/components/tremor/DonutChart";
 import { ProviderLogo } from "@/components/common/BrandLogos";
+import { WaveformSimulationGraph } from "@/components/test-configurator/WaveformSimulationGraph";
+import { PrefillDecodeBalanceGauge } from "@/components/test-configurator/PrefillDecodeBalanceGauge";
+import { SamplingEntropyDistributionGraph } from "@/components/test-configurator/SamplingEntropyDistributionGraph";
+import { SloGoodputDistributionGraph } from "@/components/test-configurator/SloGoodputDistributionGraph";
+import { SpendTrajectoryGraph } from "@/components/test-configurator/SpendTrajectoryGraph";
 
 interface TestConfiguratorProps {
   config: BenchmarkConfig;
@@ -135,7 +140,7 @@ const PRESET_OPTIONS: {
     icon: Layers,
     promptTokens: 4000,
     genTokens: 2,
-    tag: "Prefill & TTFT focus",
+    tag: "Prefill & TTFT",
     metrics: ["TTFT P95/P99", "Prefill tok/s", "DNS/TCP/TLS", "Goodput"],
   },
   {
@@ -146,7 +151,7 @@ const PRESET_OPTIONS: {
     icon: Zap,
     promptTokens: 40,
     genTokens: 800,
-    tag: "Decode & ITL focus",
+    tag: "Decode & ITL",
     metrics: ["Decode tok/s", "ITL P95", "Max Freeze", "TPOT Mean"],
   },
   {
@@ -168,7 +173,7 @@ const PRESET_OPTIONS: {
     icon: Wrench,
     promptTokens: 1200,
     genTokens: 150,
-    tag: "Function invocation",
+    tag: "Function Invocation",
     metrics: ["Tool Latency", "Schema Validity %", "Constrained TPS", "Goodput"],
   },
   {
@@ -190,7 +195,7 @@ const PRESET_OPTIONS: {
     icon: Code2,
     promptTokens: 1500,
     genTokens: 800,
-    tag: "Developer workflow",
+    tag: "Developer Workflow",
     metrics: ["Decode tok/s", "ITL P95", "TPOT Mean", "Max Freeze"],
   },
   {
@@ -201,7 +206,7 @@ const PRESET_OPTIONS: {
     icon: FileSearch,
     promptTokens: 3500,
     genTokens: 400,
-    tag: "Context heavy / RAG",
+    tag: "Enterprise RAG",
     metrics: ["E2E Latency", "TTFT P95", "Decode TPS", "Goodput"],
   },
   {
@@ -223,7 +228,7 @@ const PRESET_OPTIONS: {
     icon: MessagesSquare,
     promptTokens: 2500,
     genTokens: 350,
-    tag: "Session continuity",
+    tag: "Session Continuity",
     metrics: ["Turn Latency", "TTFT P95", "Decode TPS", "Goodput"],
   },
   {
@@ -245,7 +250,7 @@ const PRESET_OPTIONS: {
     icon: FileText,
     promptTokens: 16000,
     genTokens: 300,
-    tag: "16k context / Needle",
+    tag: "16k Needle Context",
     metrics: ["TTFT P95/P99", "Prefill tok/s", "E2E Latency", "Goodput"],
   },
   {
@@ -256,7 +261,7 @@ const PRESET_OPTIONS: {
     icon: FileSpreadsheet,
     promptTokens: 4500,
     genTokens: 300,
-    tag: "Text distillation",
+    tag: "Text Distillation",
     metrics: ["TTFT P95", "Decode TPS", "TPOT Mean", "Goodput"],
   },
   {
@@ -267,7 +272,7 @@ const PRESET_OPTIONS: {
     icon: Braces,
     promptTokens: 600,
     genTokens: 300,
-    tag: "Grammar constraint",
+    tag: "Grammar Constraint",
     metrics: ["Schema Validity %", "Constrained TPS", "TPOT Mean", "Parse Errors"],
   },
   {
@@ -278,7 +283,7 @@ const PRESET_OPTIONS: {
     icon: ShieldAlert,
     promptTokens: 5,
     genTokens: 2,
-    tag: "Micro-cost / 429 probe",
+    tag: "Micro-cost / 429 Probe",
     metrics: ["HTTP 429 %", "Saturated RPM", "Saturated TPM", "Status Codes"],
   },
   {
@@ -289,7 +294,7 @@ const PRESET_OPTIONS: {
     icon: Sliders,
     promptTokens: 500,
     genTokens: 500,
-    tag: "User custom",
+    tag: "User Custom",
     metrics: ["TTFT P95", "ITL P95", "Decode tok/s", "Full Suite"],
   },
 ];
@@ -323,6 +328,12 @@ const LOAD_CURVE_OPTIONS: {
     label: "Linear Ramp-Up",
     desc: "Gradually scales 1 → N workers over duration",
     icon: TrendingUp,
+  },
+  {
+    id: "saturation_knee",
+    label: "Saturation Knee Probe",
+    desc: "Auto-steps 1→3→8→16→50 to discover KV/queue knee",
+    icon: Gauge,
   },
   {
     id: "spike",
@@ -389,6 +400,66 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
     return config.json_schema ? JSON.stringify(config.json_schema, null, 2) : DEFAULT_JSON_SCHEMA;
   });
   const [jsonSchemaError, setJsonSchemaError] = useState<string | null>(null);
+
+  // Custom JSONL Dataset Replay
+  const [rawJsonlInput, setRawJsonlInput] = useState<string>(() => {
+    return config.custom_dataset ? config.custom_dataset.map(p => JSON.stringify({ prompt: p })).join("\n") : "";
+  });
+  const [jsonlParseStats, setJsonlParseStats] = useState<{ count: number; avgChars: number } | null>(() => {
+    if (config.custom_dataset && config.custom_dataset.length > 0) {
+      const avgLen = Math.round(config.custom_dataset.reduce((acc, p) => acc + p.length, 0) / config.custom_dataset.length);
+      return { count: config.custom_dataset.length, avgChars: avgLen };
+    }
+    return null;
+  });
+
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleJsonlChange = (text: string) => {
+    setRawJsonlInput(text);
+    if (!text.trim()) {
+      setJsonlParseStats(null);
+      onChange({ ...config, custom_dataset: undefined, dataset_type: "synthetic" });
+      return;
+    }
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    const parsedPrompts: string[] = [];
+    for (const line of lines) {
+      try {
+        const obj = JSON.parse(line);
+        if (typeof obj === "string") {
+          parsedPrompts.push(obj);
+        } else if (obj.prompt && typeof obj.prompt === "string") {
+          parsedPrompts.push(obj.prompt);
+        } else if (obj.text && typeof obj.text === "string") {
+          parsedPrompts.push(obj.text);
+        } else if (obj.input && typeof obj.input === "string") {
+          parsedPrompts.push(obj.input);
+        } else if (obj.messages && Array.isArray(obj.messages)) {
+          const userMsg = obj.messages.find((m: any) => m.role === "user");
+          if (userMsg && userMsg.content) parsedPrompts.push(String(userMsg.content));
+          else parsedPrompts.push(JSON.stringify(obj.messages));
+        } else {
+          parsedPrompts.push(line);
+        }
+      } catch {
+        parsedPrompts.push(line);
+      }
+    }
+    if (parsedPrompts.length > 0) {
+      const avgLen = Math.round(parsedPrompts.reduce((acc, p) => acc + p.length, 0) / parsedPrompts.length);
+      setJsonlParseStats({ count: parsedPrompts.length, avgChars: avgLen });
+      onChange({ ...config, custom_dataset: parsedPrompts, dataset_type: "jsonl" });
+    } else {
+      setJsonlParseStats(null);
+      onChange({ ...config, custom_dataset: undefined, dataset_type: "synthetic" });
+    }
+  };
 
   // Custom per-1M token price overrides — pre-filled from registry when model/vendor changes
   const [customPromptPrice, setCustomPromptPrice] = useState<string>("");
@@ -683,10 +754,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
   };
 
   const steps = [
-    { num: 1, title: "Provider & Infrastructure", desc: "Driver, Auth & Target Model" },
-    { num: 2, title: "Workload & Payload", desc: "Token Shape & Prompt Schema" },
-    { num: 3, title: "Traffic & Guardrails", desc: "Concurrency, Curves & SLOs" },
-    { num: 4, title: "Review & Launch", desc: "Pre-Flight Validation & Run" },
+    { num: 1, title: "Provider & Connection", desc: "Protocol, Auth & Model Pricing" },
+    { num: 2, title: "Workload & Payload", desc: "Profiles, Datasets & Sampling" },
+    { num: 3, title: "Traffic & Guardrails", desc: "Concurrency, SLOs & Spend Cap" },
+    { num: 4, title: "Review & Launch", desc: "Pre-Flight Audit & Live Run" },
   ];
 
   const selectedPreset = PRESET_OPTIONS.find((p) => p.id === config.workload_preset) || PRESET_OPTIONS[0];
@@ -776,324 +847,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           </motion.div>
         )}
 
-        {/* Responsive Grid: Left Sidebar (Diagnostics/Visuals for Steps 2, 3, 4) + Main Flow */}
+        {/* Responsive Grid: Left Sidebar (Diagnostics/Visuals for Step 4) + Main Flow */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* ========================================================================= */}
-          {/* 1. LEFT SIDEBAR PANEL (DIAGNOSTICS & TELEMETRY BLUEPRINT FOR STEPS 2, 3, 4)*/}
+          {/* 1. LEFT SIDEBAR PANEL (PRE-FLIGHT AUDIT & EXPORT FOR STEP 4)              */}
           {/* ========================================================================= */}
-          {currentStep !== 1 && (
+          {currentStep === 4 && (
             <div className="lg:col-span-4 xl:col-span-4 space-y-4 lg:sticky lg:top-4">
               <AnimatePresence mode="wait">
-                {/* STEP 2 SIDEBAR */}
-                {currentStep === 2 && (
-                <motion.div
-                  key="sidebar-step-2"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.18 }}
-                  className="space-y-4"
-                >
-                  <Card className="overflow-hidden border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
-                    <CardHeader className="p-4 pb-2.5 bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
-                            <Layers className="h-3.5 w-3.5" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Workload Token Dynamics
-                            </CardTitle>
-                            <CardDescription className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-                              Prefill vs decode distribution
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Badge variant="default" className="text-[11px] font-sans tabular-nums px-2 py-0.5 font-medium">
-                          Step 2 / 4
-                        </Badge>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-4 space-y-3.5">
-                      <div className="p-2.5 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-normal">Selected Profile:</span>
-                          <Badge variant="default" className="font-medium text-[11px]">
-                            {selectedPreset.name}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
-                          {selectedPreset.desc}
-                        </p>
-                      </div>
-
-                      {/* Visual Donut Chart */}
-                      <div className="p-3 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-2.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">Token Distribution</span>
-                          <span className="font-sans tabular-nums text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-medium">
-                            ~{(selectedPreset.promptTokens + Math.min(config.max_tokens, selectedPreset.genTokens)).toLocaleString()} tok / call
-                          </span>
-                        </div>
-
-                        <div className="w-full flex items-center justify-center py-1">
-                          <DonutChart
-                            data={[
-                              { name: "Prompt Prefill", value: selectedPreset.promptTokens, color: "#612D53" },
-                              { name: "Max Generation", value: Math.min(config.max_tokens, selectedPreset.genTokens), color: "#853953" },
-                            ]}
-                            label="Total Tokens"
-                            showLegend={false}
-                            innerRadius={38}
-                            outerRadius={54}
-                            heightClass="h-32"
-                          />
-                        </div>
-
-                        {/* Visual Ratio Progress Bar */}
-                        <div className="space-y-1">
-                          <div className="h-1.5 w-full rounded-full bg-[#F3F4F4] dark:bg-[#2C2C2C] overflow-hidden flex">
-                            <div
-                              style={{
-                                width: `${Math.round(
-                                  (selectedPreset.promptTokens /
-                                    Math.max(1, selectedPreset.promptTokens + Math.min(config.max_tokens, selectedPreset.genTokens))) *
-                                    100
-                                )}%`,
-                              }}
-                              className="h-full bg-[#612D53] dark:bg-[#7E3B6C]"
-                            />
-                            <div
-                              style={{
-                                width: `${
-                                  100 -
-                                  Math.round(
-                                    (selectedPreset.promptTokens /
-                                      Math.max(1, selectedPreset.promptTokens + Math.min(config.max_tokens, selectedPreset.genTokens))) *
-                                      100
-                                  )
-                                }%`,
-                              }}
-                              className="h-full bg-[#853953] dark:bg-[#A74B6A]"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Legend Mini Cards */}
-                        <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-xs">
-                          <div className="p-2 rounded-lg bg-[#612D53]/10 dark:bg-[#7E3B6C]/20 border border-[#612D53]/20 flex flex-col justify-between overflow-hidden">
-                            <div className="flex items-center justify-between text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              <span className="truncate font-medium">Prefill (In)</span>
-                              <span className="font-sans tabular-nums font-semibold text-[#612D53] dark:text-[#C57BB2] shrink-0">
-                                {Math.round(
-                                  (selectedPreset.promptTokens /
-                                    Math.max(1, selectedPreset.promptTokens + Math.min(config.max_tokens, selectedPreset.genTokens))) *
-                                    100
-                                )}%
-                              </span>
-                            </div>
-                            <div className="font-semibold font-sans tabular-nums text-xs text-[#612D53] dark:text-[#C57BB2] truncate mt-1">
-                              {selectedPreset.promptTokens.toLocaleString()}{" "}
-                              <span className="text-[11px] font-normal opacity-80">tok</span>
-                            </div>
-                          </div>
-
-                          <div className="p-2 rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/20 border border-[#853953]/20 flex flex-col justify-between overflow-hidden">
-                            <div className="flex items-center justify-between text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              <span className="truncate font-medium">Decode (Out)</span>
-                              <span className="font-sans tabular-nums font-semibold text-[#853953] dark:text-[#A74B6A] shrink-0">
-                                {100 -
-                                  Math.round(
-                                    (selectedPreset.promptTokens /
-                                      Math.max(1, selectedPreset.promptTokens + Math.min(config.max_tokens, selectedPreset.genTokens))) *
-                                      100
-                                  )}%
-                              </span>
-                            </div>
-                            <div className="font-semibold font-sans tabular-nums text-xs text-[#853953] dark:text-[#A74B6A] truncate mt-1">
-                              {Math.min(config.max_tokens, selectedPreset.genTokens).toLocaleString()}{" "}
-                              <span className="text-[11px] font-normal opacity-80">tok</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Isolated Metrics */}
-                      <div className="space-y-1.5">
-                        <div className="text-[11px] font-sans tabular-nums uppercase tracking-wider text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-medium">
-                          Target Metrics Isolated for this Workload:
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedPreset.metrics.map((m) => (
-                            <span
-                              key={m}
-                              className="text-[11px] font-sans tabular-nums px-2 py-0.5 rounded bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 font-medium"
-                            >
-                              {m}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5">
-                    <CardContent className="p-3.5 space-y-2 text-xs">
-                      <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
-                        <Lightbulb className="h-3.5 w-3.5" />
-                        <span>Prefill vs Decode Compute Phases</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Prefill</span> computes over the entire prompt at once in parallel (GPU compute/bandwidth bound). <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Decode</span> generates tokens sequentially one by one (memory latency bound). Workload shapes isolate each phase separately.
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-
-              {/* STEP 3 SIDEBAR */}
-              {currentStep === 3 && (
-                <motion.div
-                  key="sidebar-step-3"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.18 }}
-                  className="space-y-4"
-                >
-                  <Card className="overflow-hidden border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
-                    <CardHeader className="p-4 pb-2.5 bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
-                            <TrendingUp className="h-3.5 w-3.5" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Load Waveform Simulation
-                            </CardTitle>
-                            <CardDescription className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-                              Parallel stream orchestration
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Badge variant="default" className="text-[11px] font-sans tabular-nums px-2 py-0.5 font-medium">
-                          Step 3 / 4
-                        </Badge>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-4 space-y-3.5">
-                      <div className="p-3 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Traffic Shape:</span>
-                          <Badge variant="default" className="font-medium text-[11px] capitalize">
-                            {config.load_curve.replace("_", " ")}
-                          </Badge>
-                        </div>
-
-                        {/* Waveform mini visual */}
-                        <div className="h-16 w-full rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] flex items-center justify-center p-2 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                          {config.load_curve === "constant" && (
-                            <div className="w-full flex items-center justify-between gap-1 px-3">
-                              {[...Array(6)].map((_, i) => (
-                                <div key={i} className="flex-1 h-6 rounded-xs bg-[#853953] dark:bg-[#A74B6A] opacity-80" />
-                              ))}
-                            </div>
-                          )}
-                          {config.load_curve === "ramp_up" && (
-                            <div className="w-full flex items-end justify-between gap-1 px-3 h-10">
-                              {[...Array(6)].map((_, i) => (
-                                <div
-                                  key={i}
-                                  style={{ height: `${((i + 1) / 6) * 100}%` }}
-                                  className="flex-1 rounded-t-xs bg-[#853953] dark:bg-[#A74B6A]"
-                                />
-                              ))}
-                            </div>
-                          )}
-                          {config.load_curve === "spike" && (
-                            <div className="w-full flex items-end justify-between gap-1 px-3 h-10">
-                              {[30, 95, 35, 100, 40, 90].map((h, i) => (
-                                <div
-                                  key={i}
-                                  style={{ height: `${h}%` }}
-                                  className="flex-1 rounded-t-xs bg-[#853953] dark:bg-[#A74B6A]"
-                                />
-                              ))}
-                            </div>
-                          )}
-                          {config.load_curve === "poisson" && (
-                            <div className="w-full flex items-end justify-between gap-1 px-3 h-10">
-                              {[45, 80, 25, 90, 60, 30].map((h, i) => (
-                                <div
-                                  key={i}
-                                  style={{ height: `${h}%` }}
-                                  className="flex-1 rounded-t-xs bg-[#612D53] dark:bg-[#C57BB2]"
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 pt-0.5">
-                          <span>{config.concurrency} worker streams</span>
-                          <span>
-                            {isRequestMode
-                              ? `${config.total_requests || 50} total requests`
-                              : `${config.duration_seconds}s sustained stream`}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Spend Velocity & Cap Guard */}
-                      <div className="p-3 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-1.5">
-                            <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            Live Cost Guard Forecast
-                          </span>
-                          <span className="font-sans tabular-nums font-semibold text-xs text-emerald-700 dark:text-emerald-400">
-                            {formatUsd(estCost)}
-                          </span>
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                            <span>Spend Forecast</span>
-                            <span>Cap: {formatUsd(capVal)}</span>
-                          </div>
-                          <div className="h-1.5 w-full rounded-full bg-[#F3F4F4] dark:bg-[#2C2C2C] overflow-hidden">
-                            <div
-                              style={{ width: `${spendPct}%` }}
-                              className={`h-full transition-all ${
-                                willTripCap ? "bg-rose-500" : "bg-emerald-500"
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5">
-                    <CardContent className="p-3.5 space-y-2 text-xs">
-                      <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
-                        <Lightbulb className="h-3.5 w-3.5" />
-                        <span>Understanding Queuing Theory</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
-                        Under high concurrency, LLM clusters run out of KV cache VRAM slots and begin queuing requests. Measuring load curves reveals the exact concurrency threshold where queue backpressure starts degrading TTFT.
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-
-              {/* STEP 4 SIDEBAR */}
-              {currentStep === 4 && (
+                {/* STEP 4 SIDEBAR */}
                 <motion.div
                   key="sidebar-step-4"
                   initial={{ opacity: 0, x: -8 }}
@@ -1220,15 +982,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     </CardContent>
                   </Card>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+              </AnimatePresence>
+            </div>
+          )}
 
-        {/* ========================================================================= */}
-        {/* 2. MAIN FLOW (STEPS 1 - 4 WITH CLEAN CONCERN SEGREGATION)                 */}
-        {/* ========================================================================= */}
-        <div className={`${currentStep === 1 ? "lg:col-span-12" : "lg:col-span-8 xl:col-span-8"} space-y-6`}>
+          {/* ========================================================================= */}
+          {/* 2. MAIN FLOW (STEPS 1 - 4 WITH CLEAN CONCERN SEGREGATION)                 */}
+          {/* ========================================================================= */}
+          <div className={`${currentStep === 4 ? "lg:col-span-8 xl:col-span-8" : "lg:col-span-12"} space-y-6`}>
             <AnimatePresence mode="wait">
               {/* ===================================================================== */}
               {/* STEP 1: PROVIDER INFRASTRUCTURE, AUTH & MODEL SELECTION               */}
@@ -1251,11 +1012,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <Sliders className="h-4 w-4" />
                           </div>
                           <div>
-                            <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
+                            <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
                               Provider Infrastructure & Connection
                             </CardTitle>
                             <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Define test session name, target inference provider, and ephemeral authentication
+                              Define benchmark session label, select target wire protocol, and configure in-memory credentials.
                             </CardDescription>
                           </div>
                         </div>
@@ -1813,11 +1574,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <Sparkles className="h-4 w-4" />
                           </div>
                           <div>
-                            <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
+                            <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
                               Target Model & Token Economics
                             </CardTitle>
                             <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Select or enter the target model identifier and configure per-million token pricing
+                              Select model identifier or fetch live models from active endpoint, with per-1M token catalog rates.
                             </CardDescription>
                           </div>
                         </div>
@@ -2015,10 +1776,49 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="space-y-6"
+                  className="space-y-4"
                 >
-                  {/* Card 1: Workload Profile Selection */}
-                  <Card>
+                  {/* Step 2 Sticky Mini-Anchor Quick Navigation Bar */}
+                  <div className="sticky top-2 z-10 p-1.5 rounded-xl bg-white/95 dark:bg-[#252426]/95 backdrop-blur-md border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs flex items-center gap-1.5 overflow-x-auto">
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-2a")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <Layers className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <span className="font-semibold">2A. Workload Profile</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1">
+                        {selectedPreset.name}
+                      </Badge>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-2b")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <FileCode className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <span className="font-semibold">2B. Payload & Dataset</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 capitalize">
+                        {config.dataset_type === "jsonl" ? "JSONL Replay" : "Synthetic"}
+                      </Badge>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-2c")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <Sliders className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <span className="font-semibold">2C. Model Sampling</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 font-sans">
+                        {config.max_tokens} tok @ T={config.temperature}
+                      </Badge>
+                    </button>
+                  </div>
+
+                  {/* SUB-STEP 2A: WORKLOAD PROFILE & TOKEN DYNAMICS */}
+                  <Card id="section-2a" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
@@ -2026,148 +1826,245 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <Layers className="h-4 w-4" />
                           </div>
                           <div>
-                            <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Workload Profile Selection
+                            <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                              Workload Profile & Token Dynamics
                             </CardTitle>
                             <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Select specialized prompt distributions to isolate TTFT, decode throughput, or 429 rate limits
+                              Select the prompt-to-completion token ratio to isolate prefill compute vs. streaming decode speed.
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Step 2 of 4</Badge>
+                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2A of 2C</Badge>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-5 pt-2 space-y-4">
-                      {/* Search Bar & Category Filter Strip */}
-                      <div className="space-y-3 p-3.5 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50" />
-                          <Input
-                            type="text"
-                            value={workloadSearchQuery}
-                            onChange={(e) => setWorkloadSearchQuery(e.target.value)}
-                            placeholder="Search profiles by name, tag, or metrics (e.g. '429', 'prefill', 'jitter', 'reasoning')..."
-                            className="pl-9 pr-8 h-9 text-xs font-sans bg-white dark:bg-[#252426]"
-                          />
-                          {workloadSearchQuery && (
-                            <button
-                              type="button"
-                              onClick={() => setWorkloadSearchQuery("")}
-                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] cursor-pointer"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                        </div>
+                          <CardContent className="p-5 pt-2 space-y-5">
+                            {/* Search Bar & Category Filter Strip */}
+                            <div className="space-y-3 p-3.5 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                              <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50" />
+                                <Input
+                                  type="text"
+                                  value={workloadSearchQuery}
+                                  onChange={(e) => setWorkloadSearchQuery(e.target.value)}
+                                  placeholder="Search profiles by name, tag, or metrics (e.g. '429', 'prefill', 'jitter', 'reasoning')..."
+                                  className="pl-9 pr-8 h-9 text-xs font-sans bg-white dark:bg-[#252426]"
+                                />
+                                {workloadSearchQuery && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setWorkloadSearchQuery("")}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] cursor-pointer"
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                              </div>
 
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                          {CATEGORY_TABS.map((cat) => {
-                            const isCatActive = selectedCategory === cat.id;
-                            return (
-                              <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => setSelectedCategory(cat.id)}
-                                className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all cursor-pointer ${
-                                  isCatActive
-                                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white border-[#853953] dark:border-[#A74B6A] shadow-2xs font-semibold"
-                                    : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#e6e8e8] dark:hover:bg-[#353337] hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-                                }`}
-                              >
-                                {cat.label}
-                              </button>
-                            );
-                          })}
-                        </div>
+                              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                                {CATEGORY_TABS.map((cat) => {
+                                  const isCatActive = selectedCategory === cat.id;
+                                  return (
+                                    <button
+                                      key={cat.id}
+                                      type="button"
+                                      onClick={() => setSelectedCategory(cat.id)}
+                                      className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all cursor-pointer ${
+                                        isCatActive
+                                          ? "bg-[#853953] dark:bg-[#A74B6A] text-white border-[#853953] dark:border-[#A74B6A] shadow-2xs font-semibold"
+                                          : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#e6e8e8] dark:hover:bg-[#353337] hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                                      }`}
+                                    >
+                                      {cat.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
 
-                        <div className="flex items-center justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 pt-0.5">
-                          <span>
-                            Showing <strong>{filteredPresets.length}</strong> of {PRESET_OPTIONS.length} profiles
-                          </span>
-                          {(workloadSearchQuery || selectedCategory !== "all") && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setWorkloadSearchQuery("");
-                                setSelectedCategory("all");
-                              }}
-                              className="text-[#853953] dark:text-[#A74B6A] hover:underline cursor-pointer"
-                            >
-                              Reset filters
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                              <div className="flex items-center justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 pt-0.5">
+                                <span>
+                                  Showing <strong>{filteredPresets.length}</strong> of {PRESET_OPTIONS.length} profiles
+                                </span>
+                                {(workloadSearchQuery || selectedCategory !== "all") && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setWorkloadSearchQuery("");
+                                      setSelectedCategory("all");
+                                    }}
+                                    className="text-[#853953] dark:text-[#A74B6A] hover:underline cursor-pointer"
+                                  >
+                                    Reset filters
+                                  </button>
+                                )}
+                              </div>
+                            </div>
 
-                      {/* Preset Cards Grid */}
-                      {filteredPresets.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                          {filteredPresets.map((preset) => {
-                            const Icon = preset.icon;
-                            const isSelected = config.workload_preset === preset.id;
-                            const total = preset.promptTokens + preset.genTokens;
-                            const promptPct = (preset.promptTokens / total) * 100;
-                            const genPct = (preset.genTokens / total) * 100;
+                            {/* Preset Cards Grid */}
+                            {filteredPresets.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                {filteredPresets.map((preset) => {
+                                  const Icon = preset.icon;
+                                  const isSelected = config.workload_preset === preset.id;
+                                  const total = preset.promptTokens + preset.genTokens;
+                                  const promptPct = (preset.promptTokens / total) * 100;
+                                  const genPct = (preset.genTokens / total) * 100;
 
-                            return (
-                              <div
-                                key={preset.id}
-                                onClick={() => {
-                                  onChange({
-                                    ...config,
-                                    workload_preset: preset.id,
-                                    max_tokens: preset.genTokens,
-                                  });
-                                }}
-                                className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between relative overflow-hidden group font-sans active:scale-[0.99] ${
-                                  isSelected
-                                    ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 shadow-xs ring-1 ring-[#853953]/30 text-[#853953] dark:text-[#A74B6A]"
-                                    : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/40 hover:bg-[#F3F4F4]/50 dark:hover:bg-[#353337]/50 text-[#2C2C2C] dark:text-[#F3F4F4]"
-                                }`}
-                              >
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2.5">
-                                      <div
-                                        className={`p-2 rounded-lg border transition-colors ${
-                                          isSelected
-                                            ? "bg-[#853953] dark:bg-[#A74B6A] text-white border-[#853953] dark:border-[#A74B6A]"
-                                            : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70"
-                                        }`}
-                                      >
-                                        <Icon className="h-4 w-4" />
+                                  return (
+                                    <div
+                                      key={preset.id}
+                                      onClick={() => {
+                                        onChange({
+                                          ...config,
+                                          workload_preset: preset.id,
+                                          max_tokens: preset.genTokens,
+                                        });
+                                      }}
+                                      className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between relative overflow-hidden group font-sans active:scale-[0.99] ${
+                                        isSelected
+                                          ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 shadow-xs ring-1 ring-[#853953]/30 text-[#853953] dark:text-[#A74B6A]"
+                                          : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/40 hover:bg-[#F3F4F4]/50 dark:hover:bg-[#353337]/50 text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                      }`}
+                                    >
+                                      <div className="space-y-2.5">
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                                            <div
+                                              className={`p-2 rounded-lg border transition-colors shrink-0 ${
+                                                isSelected
+                                                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white border-[#853953] dark:border-[#A74B6A]"
+                                                  : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70"
+                                              }`}
+                                            >
+                                              <Icon className="h-4 w-4" />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                              <div className="text-xs font-semibold leading-snug text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                                {preset.name}
+                                              </div>
+                                              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                                <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums font-normal">
+                                                  {(preset.promptTokens + preset.genTokens).toLocaleString()} tok
+                                                </span>
+                                                <span className="text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30 text-[10px]">•</span>
+                                                <Badge
+                                                  variant={isSelected ? "default" : "secondary"}
+                                                  className="text-[10px] px-1.5 py-0 h-4.5 font-normal max-w-full truncate"
+                                                  title={preset.tag}
+                                                >
+                                                  {preset.tag}
+                                                </Badge>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          {isSelected && (
+                                            <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5 font-sans tabular-nums font-medium shrink-0">
+                                              Active
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed pt-1 font-normal line-clamp-2" title={preset.desc}>
+                                          {preset.desc}
+                                        </p>
+
+                                        <div className="pt-2">
+                                          <div className="text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 mb-1 font-medium uppercase tracking-wider">
+                                            Metrics Shown in UI:
+                                          </div>
+                                          <div className="flex flex-wrap gap-1">
+                                            {preset.metrics.map((m) => (
+                                              <span
+                                                key={m}
+                                                className={`text-[11px] font-sans tabular-nums px-1.5 py-0.5 rounded-md border font-normal ${
+                                                  isSelected
+                                                    ? "bg-[#853953]/20 dark:bg-[#A74B6A]/25 border-[#853953]/40 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] font-medium"
+                                                    : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/75"
+                                                }`}
+                                              >
+                                                {m}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
                                       </div>
-                                      <div>
-                                        <div className="text-xs font-semibold">{preset.name}</div>
-                                        <div className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums font-normal">
-                                          {(preset.promptTokens + preset.genTokens).toLocaleString()} tok baseline
+
+                                      <div className="mt-4 pt-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-1.5">
+                                        <div className="flex justify-between text-[11px] font-sans tabular-nums font-normal">
+                                          <span className="text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                                            In: <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">{preset.promptTokens.toLocaleString()}</span>
+                                          </span>
+                                          <span className="text-[#853953] dark:text-[#A74B6A]">
+                                            Out: <span className="font-medium">{preset.genTokens.toLocaleString()}</span>
+                                          </span>
+                                        </div>
+                                        <div className="h-1.5 w-full rounded-full bg-[#F3F4F4] dark:bg-[#2C2C2C] flex overflow-hidden border border-[#2C2C2C]/10">
+                                          <div style={{ width: `${promptPct}%` }} className="bg-[#612D53] dark:bg-[#7E3B6C]" />
+                                          <div style={{ width: `${genPct}%` }} className="bg-[#853953] dark:bg-[#A74B6A]" />
                                         </div>
                                       </div>
                                     </div>
-                                    {isSelected ? (
-                                      <Badge variant="default" className="text-[11px] px-1.5 py-0 h-5 font-sans tabular-nums font-medium">Active</Badge>
-                                    ) : (
-                                      <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-5 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-medium">
-                                        {preset.tag}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed pt-1 font-normal">{preset.desc}</p>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="p-8 text-center rounded-xl border border-dashed border-[#2C2C2C]/20 dark:border-[#F3F4F4]/15 space-y-2">
+                                <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
+                                  No workload profiles found matching &ldquo;{workloadSearchQuery}&rdquo;
+                                </p>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setWorkloadSearchQuery("");
+                                    setSelectedCategory("all");
+                                  }}
+                                  className="text-xs cursor-pointer"
+                                >
+                                  Clear Search Filter
+                                </Button>
+                              </div>
+                            )}
 
-                                  <div className="pt-2">
-                                    <div className="text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 mb-1 font-medium uppercase tracking-wider">
-                                      Metrics Shown in UI:
+                            {/* Selected Profile Token Dynamics & Architectural Blueprint (Merged from sidebar) */}
+                            <div className="pt-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                              <div className="rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/25 bg-gradient-to-br from-[#853953]/8 to-[#612D53]/4 dark:from-[#A74B6A]/12 dark:to-[#7E3B6C]/6 p-4 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                  <div className="flex items-start sm:items-center gap-2.5 min-w-0 flex-1">
+                                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 shrink-0 mt-0.5 sm:mt-0">
+                                      <Layers className="h-3.5 w-3.5" />
                                     </div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {preset.metrics.map((m) => (
+                                    <div className="min-w-0 flex-1">
+                                      <div className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] truncate">
+                                        Active Profile Blueprint: <span className="text-[#853953] dark:text-[#A74B6A]">{selectedPreset.name}</span>
+                                      </div>
+                                      <div className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate">
+                                        ~{(selectedPreset.promptTokens + Math.min(config.max_tokens, selectedPreset.genTokens)).toLocaleString()} tok baseline per call • {selectedPreset.desc}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Badge variant="default" className="text-[11px] shrink-0 self-start sm:self-auto">
+                                    {selectedPreset.tag}
+                                  </Badge>
+                                </div>
+
+                                <div className="space-y-4">
+                                  <PrefillDecodeBalanceGauge
+                                    promptTokens={selectedPreset.promptTokens}
+                                    maxTokens={Math.min(config.max_tokens, selectedPreset.genTokens)}
+                                    presetName={selectedPreset.name}
+                                    cacheBust={config.cache_bust}
+                                  />
+
+                                  <div className="rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 p-3.5 space-y-2">
+                                    <div className="text-[11px] font-sans uppercase tracking-wider text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-medium">
+                                      Target Metrics Isolated by {selectedPreset.name}:
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {selectedPreset.metrics.map((m) => (
                                         <span
                                           key={m}
-                                          className={`text-[11px] font-sans tabular-nums px-1.5 py-0.5 rounded-md border font-normal ${
-                                            isSelected
-                                              ? "bg-[#853953]/20 dark:bg-[#A74B6A]/25 border-[#853953]/40 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] font-medium"
-                                              : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/75"
-                                          }`}
+                                          className="text-[11px] font-sans px-2.5 py-1 rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 font-medium"
                                         >
                                           {m}
                                         </span>
@@ -2175,199 +2072,305 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     </div>
                                   </div>
                                 </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
 
-                                <div className="mt-4 pt-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-1.5">
-                                  <div className="flex justify-between text-[11px] font-sans tabular-nums font-normal">
-                                    <span className="text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                                      In: <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">{preset.promptTokens.toLocaleString()}</span>
-                                    </span>
-                                    <span className="text-[#853953] dark:text-[#A74B6A]">
-                                      Out: <span className="font-medium">{preset.genTokens.toLocaleString()}</span>
-                                    </span>
-                                  </div>
-                                  <div className="h-1.5 w-full rounded-full bg-[#F3F4F4] dark:bg-[#2C2C2C] flex overflow-hidden border border-[#2C2C2C]/10">
-                                    <div style={{ width: `${promptPct}%` }} className="bg-[#612D53] dark:bg-[#7E3B6C]" />
-                                    <div style={{ width: `${genPct}%` }} className="bg-[#853953] dark:bg-[#A74B6A]" />
-                                  </div>
+                        {/* SUB-STEP 2B: PAYLOAD CONTEXT & DATASET SOURCE */}
+                        <Card id="section-2b" className="scroll-mt-16">
+                          <CardHeader className="p-5 pb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
+                                  <FileCode className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                    Payload Context & Dataset Source
+                                  </CardTitle>
+                                  <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                    Supply custom prompt text, replay production JSONL datasets, and test cold vs. cached prefill.
+                                  </CardDescription>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="p-8 text-center rounded-xl border border-dashed border-[#2C2C2C]/20 dark:border-[#F3F4F4]/15 space-y-2">
-                          <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
-                            No workload profiles found matching &ldquo;{workloadSearchQuery}&rdquo;
-                          </p>
+                              <div className="flex items-center gap-2">
+                                {config.dataset_type === "jsonl" && jsonlParseStats && (
+                                  <Badge variant="emerald" className="text-[11px] font-sans tabular-nums">
+                                    {jsonlParseStats.count} Prompts Loaded
+                                  </Badge>
+                                )}
+                                <Badge variant="default" className="text-xs font-medium">Sub-Step 2B of 2C</Badge>
+                              </div>
+                            </div>
+                          </CardHeader>
+
+                          <CardContent className="p-5 pt-2 space-y-4">
+                            {/* Payload Source Mode Switcher */}
+                            <div className="flex items-center gap-2 p-1 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onChange({ ...config, dataset_type: "synthetic" });
+                                }}
+                                className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                                  config.dataset_type !== "jsonl"
+                                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-2xs font-semibold"
+                                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                                }`}
+                              >
+                                Standard / Synthetic Prompt
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onChange({ ...config, dataset_type: "jsonl" });
+                                }}
+                                className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                                  config.dataset_type === "jsonl"
+                                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-2xs font-semibold"
+                                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                                }`}
+                              >
+                                Production JSONL Dataset Replay
+                              </button>
+                            </div>
+
+                            {/* Standard Mode: Custom Prompt Override */}
+                            {config.dataset_type !== "jsonl" ? (
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-xs font-semibold">Custom Prompt Payload (Optional)</Label>
+                                  <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">Leave blank to use profile preset prompt</span>
+                                </div>
+                                <textarea
+                                  value={config.custom_prompt || ""}
+                                  onChange={(e) => onChange({ ...config, custom_prompt: e.target.value })}
+                                  placeholder="Override the preset benchmark prompt with your exact application payload..."
+                                  rows={3}
+                                  className="w-full text-xs font-sans tabular-nums p-3 rounded-xl border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426] focus:ring-1 focus:ring-[#853953]"
+                                />
+                              </div>
+                            ) : (
+                              /* JSONL Dataset Replay Mode */
+                              <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
+                                <div className="flex items-center justify-between">
+                                  <div className="space-y-0.5">
+                                    <Label className="text-xs font-semibold flex items-center gap-1.5 text-[#853953] dark:text-[#A74B6A]">
+                                      <Database className="h-3.5 w-3.5" />
+                                      Paste or Upload JSONL Prompt Dataset
+                                    </Label>
+                                    <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                      Each line can be a JSON object like {`{"prompt": "..."}`} or raw prompt text. Workers sample prompts in round-robin sequence.
+                                    </p>
+                                  </div>
+                                  <label className="cursor-pointer">
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-[#2C2C2C]/20 bg-white dark:bg-[#252426] hover:bg-[#F3F4F4]">
+                                      Upload .jsonl
+                                    </span>
+                                    <input
+                                      type="file"
+                                      accept=".jsonl,.json,.txt"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          const reader = new FileReader();
+                                          reader.onload = (evt) => {
+                                            const text = evt.target?.result as string;
+                                            handleJsonlChange(text);
+                                          };
+                                          reader.readAsText(file);
+                                        }
+                                      }}
+                                    />
+                                  </label>
+                                </div>
+
+                                <textarea
+                                  value={rawJsonlInput}
+                                  onChange={(e) => handleJsonlChange(e.target.value)}
+                                  placeholder={`{"prompt": "Analyze query performance for user #991"}\n{"prompt": "Summarize customer feedback ticket #402"}\n{"prompt": "Generate unit test suite for payment gateway"}`}
+                                  rows={5}
+                                  className="w-full text-xs font-mono tabular-nums p-2.5 rounded-lg border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426]"
+                                />
+
+                                {jsonlParseStats && (
+                                  <div className="flex items-center justify-between text-[11px] font-sans text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-1">
+                                    <span>Dataset parsed: <strong>{jsonlParseStats.count}</strong> prompts</span>
+                                    <span>Avg prompt length: <strong>~{jsonlParseStats.avgChars}</strong> chars (~{Math.round(jsonlParseStats.avgChars / 4)} tokens)</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* KV Cache Bypass Switch & Architectural Insight (Merged from sidebar) */}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center">
+                              <div className="md:col-span-7 flex items-center justify-between p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
+                                <div className="space-y-0.5 pr-2">
+                                  <Label className="text-xs font-semibold cursor-pointer">Bypass KV Prefix Cache (Unique Nonce)</Label>
+                                  <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                    Appends random per-request nonce to defeat prompt caching and measure cold GPU prefill throughput
+                                  </p>
+                                </div>
+                                <Switch
+                                  checked={config.cache_bust}
+                                  onCheckedChange={(checked) => onChange({ ...config, cache_bust: checked })}
+                                />
+                              </div>
+
+                              <div className="md:col-span-5 p-3 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-1 text-xs">
+                                <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                                  <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+                                  <span>Raw Prefill Verification</span>
+                                </div>
+                                <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
+                                  Modern LLM providers cache shared prefixes. Nonce injection forces true cold GPU execution per stream.
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Structured JSON Schema Editor */}
+                            {(config.workload_preset === "structured_json" ||
+                              config.workload_preset === "json_schema" ||
+                              config.workload_preset === "agentic_tool_calling" ||
+                              config.workload_preset === "tool_calling" ||
+                              Boolean(config.json_schema)) && (
+                              <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-xs font-semibold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
+                                    <Braces className="h-3.5 w-3.5" />
+                                    JSON Schema Validation Contract
+                                  </Label>
+                                  {jsonSchemaError ? (
+                                    <Badge variant="destructive" className="text-[11px]">
+                                      {jsonSchemaError}
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="emerald" className="text-[11px]">
+                                      Valid JSON Schema
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <textarea
+                                  value={rawJsonSchema}
+                                  onChange={(e) => handleJsonSchemaChange(e.target.value)}
+                                  rows={6}
+                                  className="w-full text-xs font-sans tabular-nums p-2.5 rounded-lg border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426]"
+                                />
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        {/* SUB-STEP 2C: MODEL SAMPLING & OUTPUT CEILINGS */}
+                        <Card id="section-2c" className="scroll-mt-16">
+                          <CardHeader className="p-5 pb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
+                                  <Sliders className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                    Model Sampling & Output Ceilings
+                                  </CardTitle>
+                                  <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                    Set maximum generation token bounds and sampling temperature for deterministic vs. creative output.
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              <Badge variant="default" className="text-xs font-medium">Sub-Step 2C of 2C</Badge>
+                            </div>
+                          </CardHeader>
+
+                          <CardContent className="p-5 pt-2 space-y-5">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                              {/* Left Column: Sliders & Sampling Blueprint */}
+                              <div className="lg:col-span-5 space-y-4">
+                                {/* Max Tokens Slider */}
+                                <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
+                                  <div className="flex justify-between items-center text-xs">
+                                    <Label className="font-semibold">Max Output Tokens (max_tokens)</Label>
+                                    <Badge variant="default" className="font-sans tabular-nums text-xs font-semibold">
+                                      {config.max_tokens} tokens
+                                    </Badge>
+                                  </div>
+                                  <Slider
+                                    min={1}
+                                    max={4096}
+                                    step={1}
+                                    value={[config.max_tokens]}
+                                    onValueChange={(val) => onChange({ ...config, max_tokens: val[0] })}
+                                  />
+                                  <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
+                                    <span>1 (Micro-probe)</span>
+                                    <span>512 (Standard)</span>
+                                    <span>4096 (Deep code/RAG)</span>
+                                  </div>
+                                </div>
+
+                                {/* Temperature Slider */}
+                                <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
+                                  <div className="flex justify-between items-center text-xs">
+                                    <Label className="font-semibold">Sampling Temperature</Label>
+                                    <Badge variant="default" className="font-sans tabular-nums text-xs font-semibold">
+                                      {getTemperatureLabel(config.temperature)}
+                                    </Badge>
+                                  </div>
+                                  <Slider
+                                    min={0.0}
+                                    max={1.5}
+                                    step={0.05}
+                                    value={[config.temperature]}
+                                    onValueChange={(val) => onChange({ ...config, temperature: Number(val[0].toFixed(2)) })}
+                                  />
+                                  <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
+                                    <span>0.0 (Deterministic)</span>
+                                    <span>0.7 (Standard)</span>
+                                    <span>1.5 (Creative)</span>
+                                  </div>
+                                </div>
+
+                                <div className="p-3.5 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-1.5 text-xs">
+                                  <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                                    <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+                                    <span>Temperature & Benchmark Reproducibility</span>
+                                  </div>
+                                  <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
+                                    Setting temperature to <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">0.0</strong> enables greedy decoding, guaranteeing 100% deterministic token paths across benchmark runs.
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Right Column: Live Softmax Probability Density Simulation */}
+                              <div className="lg:col-span-7">
+                                <SamplingEntropyDistributionGraph
+                                  temperature={config.temperature}
+                                  maxTokens={config.max_tokens}
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Step 2 Bottom Navigation Bar */}
+                        <div className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
+                          <span className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                            Configured: <strong className="text-[#853953] dark:text-[#A74B6A]">{selectedPreset.name}</strong> (~{totalPresetTokens} tok) • <strong className="capitalize">{config.dataset_type === "jsonl" ? "JSONL Replay" : "Synthetic"}</strong> • <strong className="text-[#853953] dark:text-[#A74B6A]">{config.max_tokens} max tok</strong>
+                          </span>
                           <Button
                             type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setWorkloadSearchQuery("");
-                              setSelectedCategory("all");
-                            }}
-                            className="text-xs cursor-pointer"
+                            onClick={handleNext}
+                            className="text-xs bg-[#853953] hover:bg-[#743663] text-white cursor-pointer flex items-center gap-1.5"
                           >
-                            Clear Search Filter
+                            <span>Continue to Step 3: Traffic & Guardrails</span>
+                            <ChevronRight className="h-3.5 w-3.5" />
                           </Button>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Card 2: Payload, Context & Cache Rules (Moved from sidebar to main flow) */}
-                  <Card>
-                    <CardHeader className="p-5 pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
-                            <FileCode className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Payload, Context & Cache Rules
-                            </CardTitle>
-                            <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Customize KV cache busting nonce, custom prompt text, and structured grammar schemas
-                            </CardDescription>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-5 pt-2 space-y-4">
-                      {/* KV Cache Bypass */}
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
-                        <div className="space-y-0.5">
-                          <Label className="text-xs font-semibold cursor-pointer">Bypass KV Prefix Cache (Unique Nonce)</Label>
-                          <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                            Appends random per-request nonce to defeat prompt caching and measure cold GPU prefill throughput
-                          </p>
-                        </div>
-                        <Switch
-                          checked={config.cache_bust}
-                          onCheckedChange={(checked) => onChange({ ...config, cache_bust: checked })}
-                        />
-                      </div>
-
-                      {/* Custom Prompt Override */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-xs font-semibold">Custom Prompt Payload (Optional)</Label>
-                          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">Leave blank to use profile preset prompt</span>
-                        </div>
-                        <textarea
-                          value={config.custom_prompt || ""}
-                          onChange={(e) => onChange({ ...config, custom_prompt: e.target.value })}
-                          placeholder="Override the preset benchmark prompt with your exact application payload..."
-                          rows={3}
-                          className="w-full text-xs font-sans tabular-nums p-3 rounded-xl border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426] focus:ring-1 focus:ring-[#853953]"
-                        />
-                      </div>
-
-                      {/* Structured JSON Schema Editor */}
-                      {(config.workload_preset === "structured_json" ||
-                        config.workload_preset === "json_schema" ||
-                        config.workload_preset === "agentic_tool_calling" ||
-                        config.workload_preset === "tool_calling" ||
-                        Boolean(config.json_schema)) && (
-                        <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-xs font-semibold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
-                              <Braces className="h-3.5 w-3.5" />
-                              JSON Schema Validation Contract
-                            </Label>
-                            {jsonSchemaError ? (
-                              <Badge variant="destructive" className="text-[11px]">
-                                {jsonSchemaError}
-                              </Badge>
-                            ) : (
-                              <Badge variant="emerald" className="text-[11px]">
-                                Valid JSON Schema
-                              </Badge>
-                            )}
-                          </div>
-
-                          <textarea
-                            value={rawJsonSchema}
-                            onChange={(e) => handleJsonSchemaChange(e.target.value)}
-                            rows={6}
-                            className="w-full text-xs font-sans tabular-nums p-2.5 rounded-lg border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426]"
-                          />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Card 3: Output Generation Sampling */}
-                  <Card>
-                    <CardHeader className="p-5 pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
-                            <Sliders className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Output Generation Sampling
-                            </CardTitle>
-                            <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Configure max output token ceilings and decoding temperature
-                            </CardDescription>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-5 pt-2 space-y-5">
-                      {/* Max Tokens Slider */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-xs">
-                          <Label>Max Output Tokens (max_tokens)</Label>
-                          <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
-                            {config.max_tokens} tokens
-                          </Badge>
-                        </div>
-                        <Slider
-                          min={1}
-                          max={4096}
-                          step={1}
-                          value={[config.max_tokens]}
-                          onValueChange={(val) => onChange({ ...config, max_tokens: val[0] })}
-                        />
-                        <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                          <span>1 (Micro-probe)</span>
-                          <span>512 (Standard)</span>
-                          <span>4096 (Deep code/RAG)</span>
-                        </div>
-                      </div>
-
-                      {/* Temperature Slider */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-xs">
-                          <Label>Sampling Temperature</Label>
-                          <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
-                            {getTemperatureLabel(config.temperature)}
-                          </Badge>
-                        </div>
-                        <Slider
-                          min={0.0}
-                          max={1.5}
-                          step={0.05}
-                          value={[config.temperature]}
-                          onValueChange={(val) => onChange({ ...config, temperature: Number(val[0].toFixed(2)) })}
-                        />
-                        <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                          <span>0.0 (Deterministic)</span>
-                          <span>0.7 (Standard)</span>
-                          <span>1.5 (Creative)</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
+                      </motion.div>
+                    )}
 
               {/* ===================================================================== */}
               {/* STEP 3: TRAFFIC DYNAMICS, SLO GUARDRAILS & SPEND CAP                  */}
@@ -2379,10 +2382,49 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="space-y-6"
+                  className="space-y-4"
                 >
-                  {/* Card 1: Traffic Orchestration & Concurrency Strategy */}
-                  <Card>
+                  {/* Step 3 Sticky Mini-Anchor Quick Navigation Bar */}
+                  <div className="sticky top-2 z-10 p-1.5 rounded-xl bg-white/95 dark:bg-[#252426]/95 backdrop-blur-md border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs flex items-center gap-1.5 overflow-x-auto">
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-3a")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <TrendingUp className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <span className="font-semibold">3A. Traffic Dynamics</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 capitalize">
+                        {config.concurrency} streams • {config.load_curve.replace("_", " ")}
+                      </Badge>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-3b")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <Gauge className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="font-semibold">3B. Reliability SLOs</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1">
+                        TTFT ≤ {config.slo.max_ttft_ms}ms
+                      </Badge>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection("section-3c")}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
+                    >
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="font-semibold">3C. Financial Guardrails</span>
+                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 font-sans">
+                        {formatUsd(config.hard_spend_cap || 2.0)} cap
+                      </Badge>
+                    </button>
+                  </div>
+
+                  {/* SUB-STEP 3A: TRAFFIC DYNAMICS & WAVEFORM SIMULATION */}
+                  <Card id="section-3a" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
@@ -2390,432 +2432,477 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <TrendingUp className="h-4 w-4" />
                           </div>
                           <div>
-                            <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Traffic Orchestration & Concurrency Strategy
+                            <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                              Traffic Orchestration & Concurrency
                             </CardTitle>
                             <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Define workload execution mode, concurrency pool, arrival load curve, and warmup requests
+                              Configure parallel worker streams, test duration or request batches, and arrival load waveforms.
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Step 3 of 4</Badge>
+                        <Badge variant="default" className="text-xs font-medium">Sub-Step 3A of 3C</Badge>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-5 pt-2 space-y-5">
-                      {/* Strategy Mode Toggle */}
-                      <div className="space-y-2">
-                        <Label className="text-xs font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                          Benchmark Execution Strategy
-                        </Label>
-                        <div className="grid grid-cols-2 gap-2.5">
-                          <button
-                            type="button"
-                            onClick={() => onChange({ ...config, test_mode: "duration" })}
-                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                              !isRequestMode
-                                ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/30 shadow-xs"
-                                : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-1.5">
-                                <Clock className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                                <span className="text-xs font-medium">Time-Based (Duration)</span>
+                          <CardContent className="p-5 pt-2 space-y-5">
+                            {/* Strategy Mode Toggle */}
+                            <div className="space-y-2">
+                              <Label className="text-xs font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                Benchmark Execution Strategy
+                              </Label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <button
+                                  type="button"
+                                  onClick={() => onChange({ ...config, test_mode: "duration" })}
+                                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                    !isRequestMode
+                                      ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/30 shadow-xs"
+                                      : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <Clock className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                                      <span className="text-xs font-medium">Time-Based (Duration)</span>
+                                    </div>
+                                    {!isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
+                                  </div>
+                                  <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-2">
+                                    Continuous load stream over fixed seconds • Evaluates sustained throughput
+                                  </p>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => onChange({ ...config, test_mode: "requests" })}
+                                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                    isRequestMode
+                                      ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/30 shadow-xs"
+                                      : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <Target className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                                      <span className="text-xs font-medium">Request-Based (Count)</span>
+                                    </div>
+                                    {isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
+                                  </div>
+                                  <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-2">
+                                    Exact total request batch • 100% deterministic budget and sample volume
+                                  </p>
+                                </button>
                               </div>
-                              {!isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
                             </div>
-                            <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-2">
-                              Continuous load stream over fixed seconds • Evaluates sustained throughput
-                            </p>
-                          </button>
 
-                          <button
-                            type="button"
-                            onClick={() => onChange({ ...config, test_mode: "requests" })}
-                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                              isRequestMode
-                                ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/30 shadow-xs"
-                                : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-1.5">
-                                <Target className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                                <span className="text-xs font-medium">Request-Based (Count)</span>
-                              </div>
-                              {isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
-                            </div>
-                            <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-2">
-                              Exact total request batch • 100% deterministic budget and sample volume
-                            </p>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Scope Slider */}
-                      {isRequestMode ? (
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center text-xs">
-                            <Label className="flex items-center gap-1.5">
-                              <Target className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                              Total Request Batch Volume
-                            </Label>
-                            <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
-                              {config.total_requests || 50} total requests
-                            </Badge>
-                          </div>
-                          <Slider
-                            min={5}
-                            max={500}
-                            step={5}
-                            value={[config.total_requests || 50]}
-                            onValueChange={(val) => onChange({ ...config, total_requests: val[0] })}
-                          />
-                          <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                            <span>5 reqs (canary)</span>
-                            <span>100 reqs (eval)</span>
-                            <span>500 reqs (batch)</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center text-xs">
-                            <Label className="flex items-center gap-1.5">
-                              <Clock className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                              Test Duration
-                            </Label>
-                            <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
-                              {config.duration_seconds} seconds
-                            </Badge>
-                          </div>
-                          <Slider
-                            min={5}
-                            max={120}
-                            step={5}
-                            value={[config.duration_seconds]}
-                            onValueChange={(val) => onChange({ ...config, duration_seconds: val[0] })}
-                          />
-                          <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                            <span>5s quick test</span>
-                            <span>60s standard</span>
-                            <span>120s soak</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Concurrency Slider */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-xs">
-                          <Label>Parallel Worker Streams (Concurrency)</Label>
-                          <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
-                            {config.concurrency} concurrent streams
-                          </Badge>
-                        </div>
-                        <Slider
-                          min={1}
-                          max={50}
-                          step={1}
-                          value={[config.concurrency]}
-                          onValueChange={(val) => onChange({ ...config, concurrency: val[0] })}
-                        />
-                        <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                          <span>1 worker</span>
-                          <span>25 workers</span>
-                          <span>50 workers (saturation)</span>
-                        </div>
-                      </div>
-
-                      {/* Arrival Load Curve */}
-                      <div className="space-y-2">
-                        <Label className="text-xs font-medium">Arrival Load Curve</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          {LOAD_CURVE_OPTIONS.map((curve) => {
-                            const Icon = curve.icon;
-                            const isSelected = config.load_curve === curve.id;
-                            return (
-                              <button
-                                key={curve.id}
-                                type="button"
-                                onClick={() => onChange({ ...config, load_curve: curve.id })}
-                                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer select-none active:scale-[0.98] ${
-                                  isSelected
-                                    ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/20 font-medium shadow-xs"
-                                    : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
-                                }`}
-                              >
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  <Icon className="h-3.5 w-3.5" />
-                                  <span className="text-[11px] truncate font-medium">{curve.label}</span>
+                            {/* Scope & Concurrency Sliders Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                              {/* Scope Slider */}
+                              {isRequestMode ? (
+                                <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10">
+                                  <div className="flex justify-between items-center text-xs">
+                                    <Label className="flex items-center gap-1.5">
+                                      <Target className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                                      Total Request Batch Volume
+                                    </Label>
+                                    <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
+                                      {config.total_requests || 50} requests
+                                    </Badge>
+                                  </div>
+                                  <Slider
+                                    min={5}
+                                    max={500}
+                                    step={5}
+                                    value={[config.total_requests || 50]}
+                                    onValueChange={(val) => onChange({ ...config, total_requests: val[0] })}
+                                  />
+                                  <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
+                                    <span>5 reqs (canary)</span>
+                                    <span>100 reqs (eval)</span>
+                                    <span>500 reqs (batch)</span>
+                                  </div>
                                 </div>
-                                <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 line-clamp-1">{curve.desc}</p>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
+                              ) : (
+                                <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10">
+                                  <div className="flex justify-between items-center text-xs">
+                                    <Label className="flex items-center gap-1.5">
+                                      <Clock className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                                      Test Duration
+                                    </Label>
+                                    <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
+                                      {config.duration_seconds} seconds
+                                    </Badge>
+                                  </div>
+                                  <Slider
+                                    min={5}
+                                    max={120}
+                                    step={5}
+                                    value={[config.duration_seconds]}
+                                    onValueChange={(val) => onChange({ ...config, duration_seconds: val[0] })}
+                                  />
+                                  <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
+                                    <span>5s quick test</span>
+                                    <span>60s standard</span>
+                                    <span>120s soak</span>
+                                  </div>
+                                </div>
+                              )}
 
-                      {/* Warmup Requests Slider (Moved from sidebar to main flow) */}
-                      <div className="space-y-2 pt-1 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                        <div className="flex justify-between items-center text-xs">
-                          <Label className="flex items-center gap-1.5">
-                            <RotateCw className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                            Warmup Requests (Discarded from Latency Stats)
-                          </Label>
-                          <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
-                            {config.warmup_requests || 0} warmup reqs
-                          </Badge>
-                        </div>
-                        <Slider
-                          min={0}
-                          max={10}
-                          step={1}
-                          value={[config.warmup_requests || 0]}
-                          onValueChange={(val) => onChange({ ...config, warmup_requests: val[0] })}
-                        />
-                        <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                          <span>0 (Immediate)</span>
-                          <span>2 (Recommended to prime TCP/TLS sockets)</span>
-                          <span>10 (Full cache prime)</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                              {/* Concurrency Slider */}
+                              <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10">
+                                <div className="flex justify-between items-center text-xs">
+                                  <Label>Parallel Worker Streams (Concurrency)</Label>
+                                  <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
+                                    {config.concurrency} concurrent streams
+                                  </Badge>
+                                </div>
+                                <Slider
+                                  min={1}
+                                  max={50}
+                                  step={1}
+                                  value={[config.concurrency]}
+                                  onValueChange={(val) => onChange({ ...config, concurrency: val[0] })}
+                                />
+                                <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
+                                  <span>1 worker</span>
+                                  <span>25 workers</span>
+                                  <span>50 workers (saturation)</span>
+                                </div>
+                              </div>
+                            </div>
 
-                  {/* Card 2: Service Level Objectives (SLO Guardrails) */}
-                  <Card>
-                    <CardHeader className="p-5 pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                            <Gauge className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Service Level Objectives (SLO Guardrails)
-                            </CardTitle>
-                            <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Define maximum acceptable latency ceilings and error rates for Goodput scoring
-                            </CardDescription>
-                          </div>
-                        </div>
+                            {/* Arrival Load Curve Selector & Integrated Waveform Preview */}
+                            <div className="space-y-3 pt-2 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                              <Label className="text-xs font-medium">Arrival Load Curve Profile</Label>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                {LOAD_CURVE_OPTIONS.map((curve) => {
+                                  const Icon = curve.icon;
+                                  const isSelected = config.load_curve === curve.id;
+                                  return (
+                                    <button
+                                      key={curve.id}
+                                      type="button"
+                                      onClick={() => onChange({ ...config, load_curve: curve.id })}
+                                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer select-none active:scale-[0.98] ${
+                                        isSelected
+                                          ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/20 font-medium shadow-xs"
+                                          : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-1.5 mb-1">
+                                        <Icon className="h-3.5 w-3.5" />
+                                        <span className="text-xs truncate font-medium">{curve.label}</span>
+                                      </div>
+                                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 line-clamp-1">{curve.desc}</p>
+                                    </button>
+                                  );
+                                })}
+                              </div>
 
-                        {/* Quick Presets */}
-                        <div className="flex items-center gap-1">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApplySloPreset("strict")}
-                            className="h-6 text-[11px] px-2 font-sans tabular-nums"
-                          >
-                            Strict
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApplySloPreset("interactive")}
-                            className="h-6 text-[11px] px-2 font-sans tabular-nums"
-                          >
-                            Standard
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApplySloPreset("batch")}
-                            className="h-6 text-[11px] px-2 font-sans tabular-nums"
-                          >
-                            Batch
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
+                              {/* Integrated Waveform Visualization & Queuing Insight */}
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start pt-1">
+                                <div className="lg:col-span-8">
+                                  <WaveformSimulationGraph
+                                    loadCurve={config.load_curve}
+                                    concurrency={config.concurrency}
+                                    testMode={config.test_mode}
+                                    durationSeconds={config.duration_seconds}
+                                    totalRequests={config.total_requests}
+                                    warmupRequests={config.warmup_requests}
+                                  />
+                                </div>
 
-                    <CardContent className="p-5 pt-2 space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Max TTFT */}
-                        <div className="space-y-1.5 p-3 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
-                          <div className="flex justify-between items-center text-xs">
-                            <Label className="font-semibold">Max TTFT SLO Ceiling</Label>
-                            <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#853953] dark:text-[#A74B6A] font-semibold">
-                              ≤ {config.slo.max_ttft_ms} ms
-                            </Badge>
-                          </div>
-                          <Slider
-                            min={100}
-                            max={5000}
-                            step={100}
-                            value={[config.slo.max_ttft_ms]}
-                            onValueChange={(val) =>
-                              onChange({ ...config, slo: { ...config.slo, max_ttft_ms: val[0] } })
-                            }
-                          />
-                          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">Time to First Token budget</span>
-                        </div>
+                                <div className="lg:col-span-4 p-4 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-2.5 text-xs">
+                                  <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                                    <Lightbulb className="h-4 w-4 shrink-0" />
+                                    <span>Queuing Theory & Load Curves</span>
+                                  </div>
+                                  <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
+                                    Under high concurrency, LLM clusters exhaust KV cache VRAM slots and begin buffering streams. Testing arrival curves isolates the concurrency threshold where queue backpressure begins degrading TTFT.
+                                  </p>
+                                  <div className="pt-2.5 border-t border-[#853953]/15 text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 space-y-1.5">
+                                    <div className="flex justify-between">
+                                      <span>Selected Waveform:</span>
+                                      <span className="font-semibold text-[#853953] dark:text-[#A74B6A] capitalize">
+                                        {config.load_curve.replace("_", " ")}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Concurrency Pool:</span>
+                                      <span className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                        {config.concurrency} worker streams
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Execution Mode:</span>
+                                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4] capitalize">
+                                        {isRequestMode ? `${config.total_requests || 50} requests` : `${config.duration_seconds}s sustained`}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
 
-                        {/* Max TPOT */}
-                        <div className="space-y-1.5 p-3 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
-                          <div className="flex justify-between items-center text-xs">
-                            <Label className="font-semibold">Max TPOT (Inter-Token Latency)</Label>
-                            <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#612D53] dark:text-[#C57BB2] font-semibold">
-                              ≤ {config.slo.max_tpot_ms} ms/tok
-                            </Badge>
-                          </div>
-                          <Slider
-                            min={10}
-                            max={150}
-                            step={5}
-                            value={[config.slo.max_tpot_ms]}
-                            onValueChange={(val) =>
-                              onChange({ ...config, slo: { ...config.slo, max_tpot_ms: val[0] } })
-                            }
-                          />
-                          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">Streaming decode smoothness limit</span>
-                        </div>
+                            {/* Warmup Requests Slider */}
+                            <div className="space-y-2 pt-2 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                              <div className="flex justify-between items-center text-xs">
+                                <Label className="flex items-center gap-1.5">
+                                  <RotateCw className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                                  Warmup Requests (Prime TCP/TLS Sockets, Discarded from Latency)
+                                </Label>
+                                <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
+                                  {config.warmup_requests || 0} warmup reqs
+                                </Badge>
+                              </div>
+                              <Slider
+                                min={0}
+                                max={10}
+                                step={1}
+                                value={[config.warmup_requests || 0]}
+                                onValueChange={(val) => onChange({ ...config, warmup_requests: val[0] })}
+                              />
+                              <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
+                                <span>0 (Immediate)</span>
+                                <span>2 (Recommended to prime sockets)</span>
+                                <span>10 (Full cluster prime)</span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
 
-                        {/* Max E2E */}
-                        <div className="space-y-1.5 p-3 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
-                          <div className="flex justify-between items-center text-xs">
-                            <Label className="font-semibold">Max E2E Duration</Label>
-                            <Badge variant="outline" className="font-sans tabular-nums text-xs font-semibold">
-                              ≤ {(config.slo.max_e2e_ms / 1000).toFixed(1)} s
-                            </Badge>
-                          </div>
-                          <Slider
-                            min={1000}
-                            max={30000}
-                            step={1000}
-                            value={[config.slo.max_e2e_ms]}
-                            onValueChange={(val) =>
-                              onChange({ ...config, slo: { ...config.slo, max_e2e_ms: val[0] } })
-                            }
-                          />
-                          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">Full turn end-to-end timeout threshold</span>
-                        </div>
+                        {/* SUB-STEP 3B: RELIABILITY SLOS & GOODPUT SCORING */}
+                        <Card id="section-3b" className="scroll-mt-16">
+                          <CardHeader className="p-5 pb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                  <Gauge className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                    Reliability SLOs & Goodput Ceilings
+                                  </CardTitle>
+                                  <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                    Establish latency and error thresholds to measure the percentage of production-grade requests (Goodput).
+                                  </CardDescription>
+                                </div>
+                              </div>
 
-                        {/* Max Error Rate */}
-                        <div className="space-y-1.5 p-3 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
-                          <div className="flex justify-between items-center text-xs">
-                            <Label className="font-semibold">Max Error Rate Budget</Label>
-                            <Badge variant="outline" className="font-sans tabular-nums text-xs text-rose-700 dark:text-rose-400 font-semibold">
-                              ≤ {config.slo.max_error_rate_pct}%
-                            </Badge>
-                          </div>
-                          <Slider
-                            min={0.0}
-                            max={10.0}
-                            step={0.5}
-                            value={[config.slo.max_error_rate_pct]}
-                            onValueChange={(val) =>
-                              onChange({ ...config, slo: { ...config.slo, max_error_rate_pct: Number(val[0].toFixed(1)) } })
-                            }
-                          />
-                          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">HTTP 429 & 5xx error percentage limit</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                              {/* Quick Presets */}
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApplySloPreset("strict")}
+                                  className="h-6 text-[11px] px-2 font-sans tabular-nums"
+                                >
+                                  Strict
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApplySloPreset("interactive")}
+                                  className="h-6 text-[11px] px-2 font-sans tabular-nums"
+                                >
+                                  Standard
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApplySloPreset("batch")}
+                                  className="h-6 text-[11px] px-2 font-sans tabular-nums"
+                                >
+                                  Batch
+                                </Button>
+                              </div>
+                            </div>
+                          </CardHeader>
 
-                  {/* Card 3: Financial Circuit Breaker & Budget Guard */}
-                  <Card>
-                    <CardHeader className="p-5 pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                          <DollarSign className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                            Financial Circuit Breaker & Spend Projections
-                          </CardTitle>
-                          <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                            {isRequestMode
-                              ? "100% deterministic cost based on exact request count"
-                              : "Pre-flight estimate calculated from worker throughput"}
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
+                          <CardContent className="p-5 pt-2 space-y-5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Max TTFT */}
+                              <div className="space-y-1.5 p-3.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
+                                <div className="flex justify-between items-center text-xs">
+                                  <Label className="font-semibold">Max TTFT SLO Ceiling</Label>
+                                  <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#853953] dark:text-[#A74B6A] font-semibold">
+                                    ≤ {config.slo.max_ttft_ms} ms
+                                  </Badge>
+                                </div>
+                                <Slider
+                                  min={100}
+                                  max={5000}
+                                  step={100}
+                                  value={[config.slo.max_ttft_ms]}
+                                  onValueChange={(val) =>
+                                    onChange({ ...config, slo: { ...config.slo, max_ttft_ms: val[0] } })
+                                  }
+                                />
+                                <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">Time to First Token budget</span>
+                              </div>
 
-                    <CardContent className="p-5 pt-2 space-y-4">
-                      {/* Hard Spend Cap Slider */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-xs">
-                          <Label>Hard spend cap ceiling</Label>
-                          <Badge variant="emerald" className="font-sans tabular-nums text-xs font-medium">
-                            {formatUsd(config.hard_spend_cap)} max
-                          </Badge>
-                        </div>
-                        <Slider
-                          min={0.25}
-                          max={10.0}
-                          step={0.25}
-                          value={[config.hard_spend_cap || 2.0]}
-                          onValueChange={(val) => onChange({ ...config, hard_spend_cap: val[0] })}
-                        />
-                        <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                          <span>$0.25</span>
-                          <span>$5.00</span>
-                          <span>$10.00</span>
-                        </div>
-                      </div>
+                              {/* Max TPOT */}
+                              <div className="space-y-1.5 p-3.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
+                                <div className="flex justify-between items-center text-xs">
+                                  <Label className="font-semibold">Max TPOT (Inter-Token Latency)</Label>
+                                  <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#612D53] dark:text-[#C57BB2] font-semibold">
+                                    ≤ {config.slo.max_tpot_ms} ms/tok
+                                  </Badge>
+                                </div>
+                                <Slider
+                                  min={10}
+                                  max={150}
+                                  step={5}
+                                  value={[config.slo.max_tpot_ms]}
+                                  onValueChange={(val) =>
+                                    onChange({ ...config, slo: { ...config.slo, max_tpot_ms: val[0] } })
+                                  }
+                                />
+                                <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">Streaming decode smoothness limit</span>
+                              </div>
 
-                      {/* Spend Projection Details */}
-                      <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 p-4 space-y-3">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 font-medium flex items-center gap-1.5">
-                            <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                            {isRequestMode ? "Deterministic total spend" : "Pre-flight calculated spend"}
-                          </span>
-                          <span className="text-sm font-semibold font-sans tabular-nums text-[#853953] dark:text-[#A74B6A]">
-                            {formatUsd(estCost)}
-                          </span>
-                        </div>
+                              {/* Max E2E */}
+                              <div className="space-y-1.5 p-3.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
+                                <div className="flex justify-between items-center text-xs">
+                                  <Label className="font-semibold">Max E2E Duration</Label>
+                                  <Badge variant="outline" className="font-sans tabular-nums text-xs font-semibold">
+                                    ≤ {(config.slo.max_e2e_ms / 1000).toFixed(1)} s
+                                  </Badge>
+                                </div>
+                                <Slider
+                                  min={1000}
+                                  max={30000}
+                                  step={1000}
+                                  value={[config.slo.max_e2e_ms]}
+                                  onValueChange={(val) =>
+                                    onChange({ ...config, slo: { ...config.slo, max_e2e_ms: val[0] } })
+                                  }
+                                />
+                                <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">Full turn end-to-end timeout threshold</span>
+                              </div>
 
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-[11px] font-sans">
-                            <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">Spend cap utilization:</span>
-                            <span className={`font-sans tabular-nums font-semibold ${willTripCap ? "text-rose-700 dark:text-rose-400" : "text-[#612D53] dark:text-[#C57BB2]"}`}>
-                              {spendPct}% of {formatUsd(capVal)}
-                            </span>
-                          </div>
-                          <div className="h-2 w-full rounded-full bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 overflow-hidden">
-                            <motion.div
-                              className={`h-full rounded-full transition-all duration-150 ${
-                                willTripCap ? "bg-rose-600 dark:bg-rose-500" : "bg-[#853953] dark:bg-[#A74B6A]"
-                              }`}
-                              style={{ width: `${Math.min(100, (estCost / capVal) * 100)}%` }}
+                              {/* Max Error Rate */}
+                              <div className="space-y-1.5 p-3.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 border border-[#2C2C2C]/10">
+                                <div className="flex justify-between items-center text-xs">
+                                  <Label className="font-semibold">Max Error Rate Budget</Label>
+                                  <Badge variant="outline" className="font-sans tabular-nums text-xs text-rose-700 dark:text-rose-400 font-semibold">
+                                    ≤ {config.slo.max_error_rate_pct}%
+                                  </Badge>
+                                </div>
+                                <Slider
+                                  min={0.0}
+                                  max={10.0}
+                                  step={0.5}
+                                  value={[config.slo.max_error_rate_pct]}
+                                  onValueChange={(val) =>
+                                    onChange({ ...config, slo: { ...config.slo, max_error_rate_pct: Number(val[0].toFixed(1)) } })
+                                  }
+                                />
+                                <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 block font-normal">HTTP 429 & 5xx error percentage limit</span>
+                              </div>
+                            </div>
+
+                            {/* Interactive Goodput Yield & Latency Distribution Graph */}
+                            <SloGoodputDistributionGraph
+                              maxTtftMs={config.slo.max_ttft_ms}
+                              maxTpotMs={config.slo.max_tpot_ms}
+                              maxErrorRatePct={config.slo.max_error_rate_pct}
+                              maxE2eMs={config.slo.max_e2e_ms}
                             />
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
 
-                        {willTripCap && (
-                          <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-[11px] text-rose-800 dark:text-rose-300 font-medium flex items-center gap-1.5">
-                            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-rose-600 dark:text-rose-400" />
-                            <span>Estimated spend ({formatUsd(estCost)}) exceeds cap. Test will circuit-break early!</span>
-                          </div>
-                        )}
+                        {/* SUB-STEP 3C: FINANCIAL SAFETY & SPEND PROJECTIONS */}
+                        <Card id="section-3c" className="scroll-mt-16">
+                          <CardHeader className="p-5 pb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                  <DollarSign className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                    Financial Guardrails & Spend Projections
+                                  </CardTitle>
+                                  <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                    Arm an automated spend cap circuit breaker and preview estimated token costs before launching.
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              <Badge variant="default" className="text-xs font-medium">Sub-Step 3C of 3C</Badge>
+                            </div>
+                          </CardHeader>
 
-                        <div className="flex justify-between text-xs font-sans tabular-nums text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-2 border-t border-[#2C2C2C]/10">
-                          <span>
-                            {isRequestMode ? "Target requests: " : "Est. requests: "}
-                            <span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              {costEstimate?.estimated_requests || 0}
-                            </span>
+                          <CardContent className="p-5 pt-2 space-y-5">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                              {/* Left Column: Hard Spend Cap Control & Safety Guarantee */}
+                              <div className="lg:col-span-5 space-y-4">
+                                <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
+                                  <div className="flex justify-between items-center text-xs">
+                                    <Label className="font-semibold">Hard Spend Cap Ceiling</Label>
+                                    <Badge variant="emerald" className="font-sans tabular-nums text-xs font-semibold">
+                                      {formatUsd(config.hard_spend_cap)} max
+                                    </Badge>
+                                  </div>
+                                  <Slider
+                                    min={0.25}
+                                    max={10.0}
+                                    step={0.25}
+                                    value={[config.hard_spend_cap || 2.0]}
+                                    onValueChange={(val) => onChange({ ...config, hard_spend_cap: val[0] })}
+                                  />
+                                  <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
+                                    <span>$0.25 (Micro)</span>
+                                    <span>$5.00</span>
+                                    <span>$10.00 (Deep Soak)</span>
+                                  </div>
+                                </div>
+
+                                <div className="p-3.5 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-1.5 text-xs">
+                                  <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                                    <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+                                    <span>Zero Bill-Shock Circuit Breaker</span>
+                                  </div>
+                                  <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
+                                    If live benchmark spend reaches the hard spend cap at any millisecond during execution, the runner immediately terminates all worker streams and finalizes the report cleanly.
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Right Column: Live Spend Trajectory & Circuit Breaker Graph */}
+                              <div className="lg:col-span-7">
+                                <SpendTrajectoryGraph
+                                  hardSpendCap={config.hard_spend_cap || 2.0}
+                                  estimatedCost={estCost}
+                                  testMode={config.test_mode}
+                                  durationSeconds={config.duration_seconds}
+                                  totalRequests={config.total_requests}
+                                  concurrency={config.concurrency}
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Step 3 Bottom Navigation Bar */}
+                        <div className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
+                          <span className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                            Configured: <strong className="text-[#853953] dark:text-[#A74B6A]">{config.concurrency} streams</strong> • <strong className="capitalize">{config.load_curve.replace("_", " ")}</strong> • <strong>{isRequestMode ? `${config.total_requests || 50} reqs` : `${config.duration_seconds}s`}</strong> • <strong className="text-emerald-700 dark:text-emerald-400">{formatUsd(config.hard_spend_cap || 2.0)} cap</strong>
                           </span>
-                          <span>
-                            Total tokens:{" "}
-                            <span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              ~{costEstimate?.estimated_total_tokens.toLocaleString() || 0}
-                            </span>
-                          </span>
+                          <Button
+                            type="button"
+                            onClick={handleNext}
+                            className="text-xs bg-[#853953] hover:bg-[#743663] text-white cursor-pointer flex items-center gap-1.5"
+                          >
+                            <span>Continue to Step 4: Review & Launch</span>
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
+                      </motion.div>
+                    )}
 
               {/* ===================================================================== */}
               {/* STEP 4: PRE-FLIGHT COCKPIT & LAUNCH REVIEW                            */}
@@ -2841,7 +2928,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               Pre-Flight Configuration Cockpit
                             </CardTitle>
                             <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Verify benchmark target parameters, load dynamics, budget limits, and latency SLOs
+                              Verify benchmark target parameters, load dynamics, budget limits, and latency SLOs before live execution.
                             </CardDescription>
                           </div>
                         </div>

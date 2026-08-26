@@ -24,6 +24,7 @@ import {
   Scale,
   Copy,
   Check,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,7 +93,7 @@ const SpotlightCard: React.FC<{
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [hoveredBadge, setHoveredBadge] = useState(false);
 
-  // The 3 core operations of LLMark
+  // The 4 core operations of LLMark
   const operations = [
     {
       id: "benchmark" as NavTab,
@@ -105,7 +106,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       gradient: "from-[#853953] to-[#612D53]",
       badgeText: "Real-Time 100Hz",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.22)",
+      glowColor: "rgba(133, 57, 83, 0.35)",
       features: [
         "Interactive Waterfall: DNS + TCP + TLS + Prefill + Decode",
         "Deterministic Cost Guard & Financial Spend Cap Protection",
@@ -126,7 +127,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       gradient: "from-[#853953] to-[#612D53]",
       badgeText: "Statistical Deltas",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.22)",
+      glowColor: "rgba(133, 57, 83, 0.35)",
       features: [
         "Unaggregated tail latency delta distribution matrix",
         "Side-by-side token economics & prompt/completion spread",
@@ -142,16 +143,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       subtitle: "Persistent Runs & Exports",
       tagline: "SQLite WAL Audit Archive & Raw Telemetry",
       description:
-        "Browse all historical test sessions stored locally in SQLite. Filter by vendor, concurrency, or latency percentiles. Download complete .llmark test bundles, raw CSVs, or branded PDF reports.",
+        "Browse all historical test sessions stored locally in SQLite. Model prompt caching ROI from actual run telemetry, inspect unaggregated tail percentiles, and download standardized PDF reports.",
       icon: History,
       gradient: "from-[#853953] to-[#612D53]",
       badgeText: "Local SQLite WAL",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.22)",
+      glowColor: "rgba(133, 57, 83, 0.35)",
       features: [
         "Complete historical timeline with client-side sort & search",
         "Granular percentile inspectors (P50 / P95 / P99 / Max ITL)",
-        "Standardized multi-format export for CI/CD regression gates",
+        "Integrated Prompt Cache ROI Modeler & multi-format exports",
       ],
       buttonLabel: "Explore Run History",
       buttonClass: "btn-brand-glow text-white shadow-md shadow-[#853953]/25",
@@ -179,42 +180,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            onMouseEnter={() => setHoveredBadge(true)}
-            onMouseLeave={() => setHoveredBadge(false)}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#853953]/10 dark:bg-[#A74B6A]/15 border border-[#853953]/25 dark:border-[#A74B6A]/30 text-xs font-medium text-[#853953] dark:text-[#A74B6A] cursor-pointer hover:bg-[#853953]/15 transition-all"
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="space-y-4"
           >
-            <LiveStreamWave active={true} className="h-3.5 w-8" />
-            <span>High-Throughput • Microsecond-Precision LLM Benchmarking</span>
+            {/* Ambient Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#853953]/10 dark:bg-[#A74B6A]/15 border border-[#853953]/25 dark:border-[#A74B6A]/35 text-[#853953] dark:text-[#A74B6A] text-xs font-medium shadow-xs">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Microsecond-Accurate LLM Inference Telemetry</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#FAFAFA] font-sans leading-tight">
+              Enterprise LLM <span className="text-gradient-brand">Inference Telemetry</span> & Benchmarking
+            </h1>
+
+            <p className="text-sm sm:text-base text-[#2C2C2C]/70 dark:text-[#FAFAFA]/80 max-w-2xl mx-auto leading-relaxed">
+              Stress-test model APIs with sub-millisecond socket waterfall profiling, deterministic cost limits, unaggregated tail latencies, and Goodput SLO tracking.
+            </p>
           </motion.div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.05 }}
-            className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#F3F4F4] font-sans leading-[1.12]"
-          >
-            The Precision Load Tester & Profiler for{" "}
-            <span className="bg-gradient-to-r from-[#853953] via-[#743663] to-[#612D53] dark:from-[#A74B6A] dark:via-[#C57BB2] dark:to-[#7E3B6C] bg-clip-text text-transparent">
-              LLM Endpoints
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.1 }}
-            className="text-base sm:text-lg text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 max-w-3xl mx-auto leading-relaxed font-sans"
-          >
-            Stress test Time to First Token (<span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">TTFT</span>), Inter-Token Latency (<span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">ITL</span>), Time Per Output Token (<span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">TPOT</span>), socket waterfall stages, and token spend across proprietary & local models in real time.
-          </motion.p>
-
-          {/* Quick Metrics Bar */}
+          {/* Quick Stats Banner */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.15 }}
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 pt-2 text-xs font-sans font-medium text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
+            transition={{ duration: 0.28, delay: 0.05, ease: "easeOut" }}
+            className="flex flex-wrap items-center justify-center gap-3 text-xs font-sans text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-2"
           >
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#252426]/80 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
               <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />

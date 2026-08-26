@@ -11,6 +11,7 @@ import {
   Table as TableIcon,
   Activity,
   LineChart,
+  DollarSign,
 } from "lucide-react";
 import { BenchmarkConfig, MetricsSnapshot } from "@/lib/types";
 import { formatMs, formatPct, formatUsd, downloadFile } from "@/lib/utils";
@@ -18,6 +19,7 @@ import { MetricCards } from "./MetricCards";
 import { KpiSummaryTable } from "./KpiSummaryTable";
 import { WaterfallBar } from "./WaterfallBar";
 import { StreamingChart } from "./StreamingChart";
+import { ProductionCostCalculator } from "./ProductionCostCalculator";
 import { TimeSeriesPoint } from "@/hooks/useBenchmarkSSE";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -191,6 +193,16 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
+                      className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer bg-white dark:bg-[#252426]"
+                      onClick={() => setActiveTab("cost")}
+                    >
+                      <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      Forecast Production Cost
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer"
                       onClick={() => downloadFile(`/api/export/pdf/${benchmarkId}`, `llmark_report_${benchmarkId}.pdf`)}
                     >
@@ -238,7 +250,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
         {/* 1. Real-Time KPI Metric Cards Row (Profile Filtered) */}
         <MetricCards snapshot={snapshot} workloadPreset={config.workload_preset} />
 
-        {/* 2. Interactive View Switcher: Telemetry Table vs Visual Charts */}
+        {/* 2. Interactive View Switcher: Telemetry Table vs Visual Charts vs Production Cost Forecast */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
           <div className="flex items-center justify-between">
             <TabsList className="h-9 p-1">
@@ -249,6 +261,10 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
               <TabsTrigger value="table" className="gap-1.5 cursor-pointer text-xs">
                 <TableIcon className="h-3.5 w-3.5" />
                 <span>Executive Telemetry Matrix</span>
+              </TabsTrigger>
+              <TabsTrigger value="cost" className="gap-1.5 cursor-pointer text-xs">
+                <DollarSign className="h-3.5 w-3.5" />
+                <span>Production Cost Forecast</span>
               </TabsTrigger>
               <TabsTrigger value="all" className="gap-1.5 cursor-pointer text-xs">
                 <Activity className="h-3.5 w-3.5" />
@@ -275,11 +291,39 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
             <KpiSummaryTable snapshot={snapshot} config={config} />
           </TabsContent>
 
-          {/* Tab 3: Combined View */}
+          {/* Tab 3: Dedicated Production Cost & Scale Forecast (Auto-populated with run metrics) */}
+          <TabsContent value="cost" className="space-y-6 mt-0">
+            <ProductionCostCalculator
+              vendor={config.vendor}
+              model={config.model}
+              measuredPromptTokens={snapshot?.waterfall_avg ? Math.round(snapshot.waterfall_avg.ttft_ms > 0 ? (snapshot.ttft_p50 || 1200) : 1200) : 1200}
+              measuredGenTokens={config.max_tokens}
+              customPromptPrice={config.custom_prompt_price_per_1m}
+              customCompletionPrice={config.custom_completion_price_per_1m}
+              measuredTtftMs={snapshot?.ttft_p50 || snapshot?.ttft_p95}
+              tpsDecode={snapshot?.tps_decode}
+              benchmarkName={config.name}
+              title={`Production Cost & Scale Forecast: ${config.model}`}
+              description={`Forecast your daily and monthly production budget based on this benchmark run's measured token payload.`}
+            />
+          </TabsContent>
+
+          {/* Tab 4: Combined View */}
           <TabsContent value="all" className="space-y-6 mt-0">
             <KpiSummaryTable snapshot={snapshot} config={config} />
             <WaterfallBar waterfall={snapshot?.waterfall_avg} />
             <StreamingChart data={timeSeries} workloadPreset={config.workload_preset} />
+            <ProductionCostCalculator
+              vendor={config.vendor}
+              model={config.model}
+              measuredPromptTokens={1200}
+              measuredGenTokens={config.max_tokens}
+              customPromptPrice={config.custom_prompt_price_per_1m}
+              customCompletionPrice={config.custom_completion_price_per_1m}
+              measuredTtftMs={snapshot?.ttft_p50 || snapshot?.ttft_p95}
+              tpsDecode={snapshot?.tps_decode}
+              benchmarkName={config.name}
+            />
           </TabsContent>
         </Tabs>
       </div>

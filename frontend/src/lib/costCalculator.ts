@@ -214,3 +214,235 @@ export function calculateInstantCostEstimate(config: Partial<BenchmarkConfig>): 
     exceeds_cap: exceedsCap,
   };
 }
+
+export interface CacheSavingsProjection {
+  cacheHitRatePct: number;
+  basePromptPricePer1M: number;
+  discountedPromptPricePer1M: number;
+  effectiveBlendedPromptPrice: number;
+  monthlySavings100k: number;
+  monthlySavings500k: number;
+  monthlySavings1M: number;
+  monthlySavings5M: number;
+  ttftReductionPct: number;
+  inTokens: number;
+  outTokens: number;
+  baseCostPerReq: number;
+  cachedCostPerReq: number;
+  savingsPerReq: number;
+  measuredTtftMs?: number;
+  estimatedCachedTtftMs?: number;
+  cacheDiscountPct: number;
+}
+
+export function calculateCacheSavings(
+  vendor: string,
+  model: string,
+  workloadPreset: WorkloadPreset,
+  cacheHitRatePct: number,
+  customPromptPrice?: number | null,
+  customCompletionPrice?: number | null,
+  measuredPromptTokens?: number | null,
+  measuredGenTokens?: number | null,
+  measuredTtftMs?: number | null,
+): CacheSavingsProjection {
+  const [promptPrice, completionPrice] = getModelPricing(vendor, model, customPromptPrice, customCompletionPrice);
+  const [presetIn, presetOut] = PRESET_TOKEN_PROFILES[workloadPreset] || [500, 200];
+  
+  const inTokens = measuredPromptTokens && measuredPromptTokens > 0 ? measuredPromptTokens : presetIn;
+  const outTokens = measuredGenTokens && measuredGenTokens > 0 ? measuredGenTokens : presetOut;
+
+  const isDeepSeekOrGemini = model.toLowerCase().includes("deepseek") || model.toLowerCase().includes("gemini");
+  const cacheDiscountPct = isDeepSeekOrGemini ? 0.75 : 0.50;
+  const discountedPromptPrice = promptPrice * (1.0 - cacheDiscountPct);
+
+  const hitRatio = Math.max(0, Math.min(100, cacheHitRatePct)) / 100.0;
+  const effectivePromptPrice = (promptPrice * (1.0 - hitRatio)) + (discountedPromptPrice * hitRatio);
+
+  const baseCostPerReq = (inTokens * promptPrice + outTokens * completionPrice) / 1_000_000.0;
+  const cachedCostPerReq = (inTokens * effectivePromptPrice + outTokens * completionPrice) / 1_000_000.0;
+  const savingsPerReq = Math.max(0, baseCostPerReq - cachedCostPerReq);
+
+  const ttftReductionPct = Math.round(hitRatio * 70);
+  const estimatedCachedTtftMs = measuredTtftMs && measuredTtftMs > 0
+    ? Math.max(15, Math.round(measuredTtftMs * (1.0 - (hitRatio * 0.70))))
+    : undefined;
+
+  return {
+    cacheHitRatePct,
+    basePromptPricePer1M: promptPrice,
+    discountedPromptPricePer1M: discountedPromptPrice,
+    effectiveBlendedPromptPrice: effectivePromptPrice,
+    monthlySavings100k: savingsPerReq * 100_000,
+    monthlySavings500k: savingsPerReq * 500_000,
+    monthlySavings1M: savingsPerReq * 1_000_000,
+    monthlySavings5M: savingsPerReq * 5_000_000,
+    ttftReductionPct,
+    inTokens,
+    outTokens,
+    baseCostPerReq,
+    cachedCostPerReq,
+    savingsPerReq,
+    measuredTtftMs: measuredTtftMs || undefined,
+    estimatedCachedTtftMs,
+    cacheDiscountPct: Math.round(cacheDiscountPct * 100),
+  };
+}
+
+export interface ModelCostComparisonItem {
+  model: string;
+  vendor: string;
+  label: string;
+  monthlyCost: number;
+  dailyCost: number;
+  costPer1kReqs: number;
+  deltaDollars: number;
+  deltaPct: number;
+  isCheaper: boolean;
+  isCurrent: boolean;
+}
+
+export interface ProductionCostProjection {
+  vendor: string;
+  model: string;
+  promptTokens: number;
+  genTokens: number;
+  totalTokensPerReq: number;
+  dailyRequests: number;
+  monthlyRequests: number;
+  annualRequests: number;
+  inputPricePer1M: number;
+  outputPricePer1M: number;
+  inputCostPerReq: number;
+  outputCostPerReq: number;
+  costPerReq: number;
+  costPer1kReqs: number;
+  blendedPricePer1MTokens: number;
+  dailyCost: number;
+  monthlyCost: number;
+  annualCost: number;
+  dailyTokens: number;
+  monthlyTokens: number;
+  annualTokens: number;
+  inputCostSharePct: number;
+  outputCostSharePct: number;
+  avgQps: number;
+  peakQps: number;
+  recommendedConcurrency: number;
+  comparisons: ModelCostComparisonItem[];
+}
+
+const COMPARISON_MODELS: Array<{ model: string; vendor: string; label: string }> = [
+  { model: "gpt-4o", vendor: "openai", label: "GPT-4o (Flagship)" },
+  { model: "gpt-4o-mini", vendor: "openai", label: "GPT-4o mini (Low-Cost)" },
+  { model: "claude-3-7-sonnet", vendor: "anthropic", label: "Claude 3.7 Sonnet (Reasoning)" },
+  { model: "claude-3-5-haiku", vendor: "anthropic", label: "Claude 3.5 Haiku (Fast)" },
+  { model: "gemini-1.5-pro", vendor: "gcp_vertex", label: "Gemini 1.5 Pro (Long-Context)" },
+  { model: "gemini-2.0-flash", vendor: "gcp_vertex", label: "Gemini 2.0 Flash (Ultra-Fast)" },
+  { model: "deepseek-ai/deepseek-r1", vendor: "openai_compatible", label: "DeepSeek R1 (Open Reasoning)" },
+  { model: "deepseek-v3", vendor: "openai_compatible", label: "DeepSeek V3 (Economic)" },
+];
+
+export function calculateProductionCost(
+  vendor: string,
+  model: string,
+  dailyRequests: number = 10_000,
+  measuredPromptTokens?: number | null,
+  measuredGenTokens?: number | null,
+  customPromptPrice?: number | null,
+  customCompletionPrice?: number | null,
+  measuredTtftMs?: number | null,
+  tpsDecode?: number | null,
+): ProductionCostProjection {
+  const [promptPrice, completionPrice] = getModelPricing(vendor, model, customPromptPrice, customCompletionPrice);
+  const inTokens = Math.max(1, measuredPromptTokens && measuredPromptTokens > 0 ? measuredPromptTokens : 1200);
+  const outTokens = Math.max(1, measuredGenTokens && measuredGenTokens > 0 ? measuredGenTokens : 300);
+  const totalTokensPerReq = inTokens + outTokens;
+
+  const validDailyReqs = Math.max(10, dailyRequests || 10_000);
+  const monthlyRequests = validDailyReqs * 30;
+  const annualRequests = validDailyReqs * 365;
+
+  const inputCostPerReq = (inTokens * promptPrice) / 1_000_000.0;
+  const outputCostPerReq = (outTokens * completionPrice) / 1_000_000.0;
+  const costPerReq = inputCostPerReq + outputCostPerReq;
+  const costPer1kReqs = costPerReq * 1_000.0;
+  const blendedPricePer1MTokens = totalTokensPerReq > 0
+    ? (costPerReq / totalTokensPerReq) * 1_000_000.0
+    : 0;
+
+  const dailyCost = costPerReq * validDailyReqs;
+  const monthlyCost = costPerReq * monthlyRequests;
+  const annualCost = costPerReq * annualRequests;
+
+  const dailyTokens = totalTokensPerReq * validDailyReqs;
+  const monthlyTokens = totalTokensPerReq * monthlyRequests;
+  const annualTokens = totalTokensPerReq * annualRequests;
+
+  const inputCostSharePct = costPerReq > 0
+    ? Math.round((inputCostPerReq / costPerReq) * 100)
+    : 50;
+  const outputCostSharePct = 100 - inputCostSharePct;
+
+  const avgQps = validDailyReqs / (24 * 3600);
+  const peakQps = avgQps * 3.0; // Assume 3x peak multiplier
+  const avgTurnaroundSec = ((measuredTtftMs || 350) / 1000.0) + (outTokens / (tpsDecode || 45.0));
+  const recommendedConcurrency = Math.max(1, Math.ceil(peakQps * avgTurnaroundSec));
+
+  // Build model comparisons
+  const comparisons: ModelCostComparisonItem[] = COMPARISON_MODELS.map((item) => {
+    const isCurrent = (model.toLowerCase().includes(item.model.toLowerCase()) || item.model.toLowerCase().includes(model.toLowerCase())) &&
+      (vendor.toLowerCase() === item.vendor.toLowerCase() || item.vendor === "openai_compatible");
+    const [itemInPrice, itemOutPrice] = getModelPricing(item.vendor, item.model);
+    const itemCostPerReq = (inTokens * itemInPrice + outTokens * itemOutPrice) / 1_000_000.0;
+    const itemMonthlyCost = itemCostPerReq * monthlyRequests;
+    const itemDailyCost = itemCostPerReq * validDailyReqs;
+    const itemCostPer1k = itemCostPerReq * 1_000.0;
+    const deltaDollars = itemMonthlyCost - monthlyCost;
+    const deltaPct = monthlyCost > 0 ? ((itemMonthlyCost - monthlyCost) / monthlyCost) * 100 : 0;
+
+    return {
+      model: item.model,
+      vendor: item.vendor,
+      label: item.label,
+      monthlyCost: itemMonthlyCost,
+      dailyCost: itemDailyCost,
+      costPer1kReqs: itemCostPer1k,
+      deltaDollars,
+      deltaPct: Math.round(deltaPct),
+      isCheaper: deltaDollars < -0.01,
+      isCurrent,
+    };
+  });
+
+  return {
+    vendor,
+    model,
+    promptTokens: inTokens,
+    genTokens: outTokens,
+    totalTokensPerReq,
+    dailyRequests: validDailyReqs,
+    monthlyRequests,
+    annualRequests,
+    inputPricePer1M: promptPrice,
+    outputPricePer1M: completionPrice,
+    inputCostPerReq,
+    outputCostPerReq,
+    costPerReq,
+    costPer1kReqs,
+    blendedPricePer1MTokens,
+    dailyCost,
+    monthlyCost,
+    annualCost,
+    dailyTokens,
+    monthlyTokens,
+    annualTokens,
+    inputCostSharePct,
+    outputCostSharePct,
+    avgQps,
+    peakQps,
+    recommendedConcurrency,
+    comparisons,
+  };
+}
+

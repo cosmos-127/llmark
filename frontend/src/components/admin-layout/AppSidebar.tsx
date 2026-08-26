@@ -20,8 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThemeToggle } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-
-export type NavTab = "landing" | "benchmark" | "diff" | "history";
+import { NavTab } from "@/lib/types";
 
 interface AppSidebarProps {
   activeTab: NavTab;
@@ -43,7 +42,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: Sparkles,
       badge: "Hub",
       badgeVariant: "default" as const,
-      description: "Landing hub with the 3 core operations",
+      description: "Landing hub with core operations",
     },
     {
       id: "benchmark" as NavTab,
