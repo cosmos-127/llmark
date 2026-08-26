@@ -28,6 +28,7 @@ import {
   AlertCircle,
   Clock,
   RotateCw,
+  RotateCcw,
   Edit3,
   ListFilter,
   Cpu,
@@ -67,6 +68,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DonutChart } from "@/components/tremor/DonutChart";
+import { ProviderLogo } from "@/components/common/BrandLogos";
 import { KpiCard } from "@/components/tremor/KpiCard";
 
 interface TestConfiguratorProps {
@@ -382,17 +384,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
               const isDone = currentStep > s.num;
               const isCurrent = currentStep === s.num;
               return (
-                <motion.button
+                <button
                   key={s.num}
                   type="button"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
                   onClick={() => {
                     if (s.num < currentStep || validateCurrentStep(currentStep)) {
                       setCurrentStep(s.num);
                     }
                   }}
-                  className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all cursor-pointer font-sans ${
+                  className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all cursor-pointer font-sans active:scale-[0.99] ${
                     isCurrent
                       ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/40 dark:border-[#A74B6A]/40 shadow-xs ring-1 ring-[#853953]/20 dark:ring-[#A74B6A]/30"
                       : isDone
@@ -425,7 +425,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     </span>
                     <p className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 truncate hidden sm:block">{s.desc}</p>
                   </div>
-                </motion.button>
+                </button>
               );
             })}
           </div>
@@ -499,36 +499,47 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                       {[
-                        { id: "mock", label: "Mock engine", desc: "Local 0-cost simulator", badge: "Free" },
-                        { id: "openai", label: "OpenAI", desc: "GPT-4o, o3-mini, o1", badge: "Direct" },
-                        { id: "anthropic", label: "Anthropic", desc: "Claude 3.5 Sonnet", badge: "Direct" },
-                        { id: "openai_compatible", label: "vLLM / Groq", desc: "OpenRouter & self-hosted", badge: "Custom" },
+                        { id: "mock", label: "Mock Engine", desc: "Local 0-cost simulator", badge: "Free", vendor: "mock" },
+                        { id: "openai", label: "OpenAI", desc: "GPT-4o, o3-mini, o1", badge: "Direct", vendor: "openai" },
+                        { id: "anthropic", label: "Anthropic", desc: "Claude 3.7 & 3.5 Sonnet", badge: "Direct", vendor: "anthropic" },
+                        { id: "openai_compatible", label: "vLLM / Groq", desc: "OpenRouter & self-hosted", badge: "Custom", vendor: "openrouter" },
                       ].map((v) => {
                         const isSelected = config.vendor === v.id;
                         return (
                           <motion.button
                             key={v.id}
                             type="button"
-                            whileHover={{ scale: 1.015 }}
-                            whileTap={{ scale: 0.985 }}
+                            whileHover={{ y: -1, scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
                             onClick={() => {
                               const newVendor = v.id as VendorType;
                               onChange({ ...config, vendor: newVendor });
                             }}
-                            className={`group rounded-xl p-3.5 text-left border transition-all cursor-pointer font-sans ${
+                            className={`group rounded-xl p-3.5 text-left border transition-all cursor-pointer font-sans select-none flex flex-col justify-between gap-2.5 ${
                               isSelected
                                 ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 shadow-xs ring-1 ring-[#853953]/30 dark:ring-[#A74B6A]/40 text-[#853953] dark:text-[#A74B6A]"
-                                : "border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] hover:border-[#2C2C2C]/20 text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                : "border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/30 text-[#2C2C2C] dark:text-[#F3F4F4]"
                             }`}
                           >
-                            <div className="flex items-center justify-between mb-1">
-                              <span
-                                className={`text-xs font-medium ${
-                                  isSelected ? "text-[#853953] dark:text-[#A74B6A] font-bold" : "text-[#2C2C2C] dark:text-[#F3F4F4]"
-                                }`}
-                              >
-                                {v.label}
-                              </span>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                                    isSelected
+                                      ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-2xs"
+                                      : "bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A]"
+                                  }`}
+                                >
+                                  <ProviderLogo vendor={v.vendor} className="h-3.5 w-3.5" />
+                                </div>
+                                <span
+                                  className={`text-xs font-semibold ${
+                                    isSelected ? "text-[#853953] dark:text-[#A74B6A] font-bold" : "text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                  }`}
+                                >
+                                  {v.label}
+                                </span>
+                              </div>
                               {isSelected ? (
                                 <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
                               ) : (
@@ -573,54 +584,21 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                        {/* API Key */}
-                        <div className="space-y-1.5">
-                          <Label htmlFor="api-key-input" className="text-xs font-medium">
-                            {config.vendor === "anthropic" ? "Anthropic API Key" : "Provider API Key"}
-                            {config.vendor === "openai_compatible" && (
-                              <span className="text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-normal ml-1">
-                                (optional for local vLLM/Ollama)
-                              </span>
-                            )}
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              id="api-key-input"
-                              type={showKey ? "text" : "password"}
-                              value={credential.api_key || ""}
-                              onChange={(e) => onCredentialChange({ ...credential, api_key: e.target.value })}
-                              placeholder={config.vendor === "anthropic" ? "sk-ant-api03-..." : "sk-proj-..."}
-                              className="pr-10 font-mono text-xs"
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setShowKey(!showKey)}
-                              className="absolute right-1 top-0.5 h-8 w-8 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-                            >
-                              {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Base URL (if custom or openai) */}
-                        {(config.vendor === "openai_compatible" || config.vendor === "openai") && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* LEFT COLUMN: Endpoint Base URL & Presets */}
+                        <div className="rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 p-4 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-3 flex flex-col justify-between">
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                              <Label htmlFor="base-url-input" className="text-xs font-medium">
+                              <Label htmlFor="base-url-input" className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-1.5">
+                                <Server className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
                                 Endpoint Base URL
-                                <span className="text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-normal ml-1">
-                                  {config.vendor === "openai" ? "(optional proxy)" : "(select preset or type custom URL)"}
-                                </span>
                               </Label>
                               <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-mono">
-                                {POPULAR_BASE_URLS.length} Endpoints
+                                {POPULAR_BASE_URLS.length} Presets
                               </span>
                             </div>
 
-                            {/* Base URL Preset Dropdown */}
+                            {/* Preset Dropdown */}
                             <Select
                               value={
                                 POPULAR_BASE_URLS.find((p) => p.baseUrl === credential.base_url)?.id ||
@@ -636,8 +614,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 }
                               }}
                             >
-                              <SelectTrigger className="w-full h-9 font-sans text-xs bg-white dark:bg-[#252426]">
-                                <SelectValue placeholder="Choose popular provider Base URL..." />
+                              <SelectTrigger className="w-full h-9 font-sans text-xs bg-white dark:bg-[#252426] border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15">
+                                <SelectValue placeholder="Select provider preset..." />
                               </SelectTrigger>
                               <SelectContent className="max-h-72">
                                 {(["Aggregator", "Fast Inference", "Frontier Provider", "Local Self-Hosted"] as const).map((category) => (
@@ -646,9 +624,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                       {category}
                                     </SelectLabel>
                                     {POPULAR_BASE_URLS.filter((p) => p.category === category).map((p) => (
-                                      <SelectItem key={p.id} value={p.id} className="text-xs py-1.5">
+                                      <SelectItem key={p.id} value={p.id} className="text-xs py-1.5 cursor-pointer">
                                         <div className="flex items-center justify-between gap-4 w-full">
-                                          <span className="font-medium">{p.name}</span>
+                                          <div className="flex items-center gap-2">
+                                            <ProviderLogo vendor={p.id} className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A] shrink-0" />
+                                            <span className="font-medium">{p.name}</span>
+                                          </div>
                                           <span className="font-mono text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 truncate max-w-[180px]">
                                             {p.baseUrl}
                                           </span>
@@ -660,44 +641,101 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               </SelectContent>
                             </Select>
 
-                            {/* Custom URL Input Field */}
+                            {/* Direct URL Input */}
                             <div className="relative">
                               <Input
                                 id="base-url-input"
                                 type="text"
                                 value={credential.base_url || ""}
                                 onChange={(e) => onCredentialChange({ ...credential, base_url: e.target.value })}
-                                placeholder="e.g. https://openrouter.ai/api/v1 or https://api.groq.com/openai/v1"
-                                className="pr-9 font-mono text-xs"
+                                placeholder={
+                                  config.vendor === "anthropic"
+                                    ? "https://api.anthropic.com/v1"
+                                    : config.vendor === "openai"
+                                    ? "https://api.openai.com/v1"
+                                    : "https://openrouter.ai/api/v1 or http://localhost:8000/v1"
+                                }
+                                className="font-mono text-xs bg-white dark:bg-[#252426]"
                               />
-                              <Server className="absolute right-3 top-2.5 h-4 w-4 text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 pointer-events-none" />
-                            </div>
-
-                            {/* Quick Preset Chips */}
-                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                              <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">Presets:</span>
-                              {POPULAR_BASE_URLS.slice(0, 6).map((p) => (
-                                <button
-                                  key={p.id}
-                                  type="button"
-                                  onClick={() => {
-                                    onCredentialChange({ ...credential, base_url: p.baseUrl });
-                                    if (p.suggestedModels?.[0]) {
-                                      onChange({ ...config, model: p.suggestedModels[0] });
-                                    }
-                                  }}
-                                  className={`h-5 text-[10px] px-2 rounded-md font-mono border transition-colors cursor-pointer ${
-                                    credential.base_url === p.baseUrl
-                                      ? "bg-[#853953]/10 dark:bg-[#A74B6A]/20 border-[#853953]/40 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] font-bold"
-                                      : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#F3F4F4] dark:hover:bg-[#353337]"
-                                  }`}
-                                >
-                                  {p.id}
-                                </button>
-                              ))}
                             </div>
                           </div>
-                        )}
+
+                          {/* Quick Chips */}
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[#2C2C2C]/8 dark:border-[#F3F4F4]/8">
+                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">Quick pick:</span>
+                            {POPULAR_BASE_URLS.slice(0, 6).map((p) => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => {
+                                  onCredentialChange({ ...credential, base_url: p.baseUrl });
+                                  if (p.suggestedModels?.[0]) {
+                                    onChange({ ...config, model: p.suggestedModels[0] });
+                                  }
+                                }}
+                                className={`h-5 text-[10px] px-2 rounded-md font-mono border transition-colors cursor-pointer ${
+                                  credential.base_url === p.baseUrl
+                                    ? "bg-[#853953]/10 dark:bg-[#A74B6A]/20 border-[#853953]/40 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] font-bold"
+                                    : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#F3F4F4] dark:hover:bg-[#353337]"
+                                }`}
+                              >
+                                {p.id}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* RIGHT COLUMN: API Key & Ephemeral Auth */}
+                        <div className="rounded-xl bg-[#F3F4F4]/50 dark:bg-[#2C2C2C]/30 p-4 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-3 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label htmlFor="api-key-input" className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-1.5">
+                                <Lock className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                                {config.vendor === "anthropic" ? "Anthropic API Key" : "Provider API Key"}
+                              </Label>
+                              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
+                                In-Memory Only
+                              </span>
+                            </div>
+
+                            <div className="relative">
+                              <Input
+                                id="api-key-input"
+                                type={showKey ? "text" : "password"}
+                                value={credential.api_key || ""}
+                                onChange={(e) => onCredentialChange({ ...credential, api_key: e.target.value })}
+                                placeholder={
+                                  config.vendor === "anthropic"
+                                    ? "sk-ant-api03-..."
+                                    : config.vendor === "openai"
+                                    ? "sk-proj-..."
+                                    : "sk-or-v1-... or gsk_... (optional for local)"
+                                }
+                                className="pr-10 font-mono text-xs bg-white dark:bg-[#252426]"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setShowKey(!showKey)}
+                                className="absolute right-1 top-0.5 h-8 w-8 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4] cursor-pointer"
+                              >
+                                {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                              </Button>
+                            </div>
+
+                            <p className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 leading-relaxed">
+                              {config.vendor === "openai_compatible"
+                                ? "API key is passed in the Authorization header. Leave blank for self-hosted local engines."
+                                : "Bearer token used exclusively for socket telemetry requests during this test session."}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 pt-1 border-t border-[#2C2C2C]/8 dark:border-[#F3F4F4]/8 text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span>Zero disk storage • Key is never logged to disk or reports</span>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -834,10 +872,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             setCustomPromptPrice(p.toFixed(4));
                             setCustomCompletionPrice(c.toFixed(4));
                           }}
-                          className="text-[10px] text-[#853953] dark:text-[#A74B6A] hover:underline font-medium font-mono cursor-pointer"
+                          className="flex items-center gap-1 text-[10px] text-[#853953] dark:text-[#A74B6A] hover:underline font-medium font-mono cursor-pointer"
                           title="Reset to registry rate"
                         >
-                          ↺ Reset to standard
+                          <RotateCcw className="h-2.5 w-2.5" />
+                          <span>Reset to standard</span>
                         </button>
                       </div>
 
@@ -952,15 +991,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       const genPct = (preset.genTokens / total) * 100;
 
                       return (
-                        <motion.div
+                        <div
                           key={preset.id}
-                          whileHover={{ scale: 1.015 }}
-                          whileTap={{ scale: 0.985 }}
                           onClick={() => onChange({ ...config, workload_preset: preset.id })}
-                          className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between relative overflow-hidden group font-sans ${
+                          className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between relative overflow-hidden group font-sans active:scale-[0.99] ${
                             isSelected
                               ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 shadow-xs ring-1 ring-[#853953]/30 dark:ring-[#A74B6A]/40 text-[#853953] dark:text-[#A74B6A]"
-                              : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#2C2C2C]/20 hover:bg-[#F3F4F4]/50 dark:hover:bg-[#2C2C2C]"
+                              : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/30 hover:bg-[#F3F4F4]/50 dark:hover:bg-[#2C2C2C]"
                           }`}
                         >
                           <div className="space-y-2">
@@ -976,16 +1013,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   <Icon className="h-4 w-4" />
                                 </div>
                                 <div>
-                                  <h4
-                                    className={`text-xs font-medium ${
-                                      isSelected ? "text-[#853953] dark:text-[#A74B6A] font-bold" : "text-[#2C2C2C] dark:text-[#F3F4F4]"
-                                    }`}
-                                  >
-                                    {preset.name}
-                                  </h4>
-                                  <span className="text-[11px] font-mono text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">{preset.tag}</span>
+                                  <div className="text-xs font-bold">{preset.name}</div>
+                                  <div className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-mono">
+                                    {(preset.promptTokens + preset.genTokens).toLocaleString()} tok total
+                                  </div>
                                 </div>
                               </div>
+                              {isSelected && <span className="h-2 w-2 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
                             </div>
                             <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed pt-1">{preset.desc}</p>
                           </div>
@@ -1005,7 +1039,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               <div style={{ width: `${genPct}%` }} className="bg-[#853953] dark:bg-[#A74B6A]" />
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
                       );
                     })}
                   </div>
@@ -1261,15 +1295,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               key={curve.id}
                               type="button"
                               onClick={() => onChange({ ...config, load_curve: curve.id })}
-                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer select-none active:scale-[0.98] ${
                                 isSelected
-                                  ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/20 font-medium"
-                                  : "border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                  ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/20 font-medium shadow-xs"
+                                  : "border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/30 text-[#2C2C2C] dark:text-[#F3F4F4]"
                               }`}
                             >
                               <div className="flex items-center gap-1.5 mb-1">
                                 <Icon className="h-3.5 w-3.5" />
-                                <span className="text-[11px] truncate">{curve.label}</span>
+                                <span className="text-[11px] truncate font-medium">{curve.label}</span>
                               </div>
                               <p className="text-[9px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 line-clamp-1">{curve.desc}</p>
                             </button>
@@ -1580,20 +1614,18 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                 </CardContent>
               </Card>
 
-              {/* Launch Action Button with spring tap animation */}
-              <motion.div whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
-                <Button
-                  type="button"
-                  variant="amberGlow"
-                  size="lg"
-                  onClick={onLaunch}
-                  disabled={isLaunching}
-                  className="w-full h-14 text-sm font-bold gap-3 shadow-md cursor-pointer"
-                >
-                  <Play className="h-4 w-4 fill-white" />
-                  {isLaunching ? "Initializing benchmark session..." : "Launch live benchmark studio (microsecond telemetry stream)"}
-                </Button>
-              </motion.div>
+              {/* Launch Action Button */}
+              <Button
+                type="button"
+                variant="amberGlow"
+                size="lg"
+                onClick={onLaunch}
+                disabled={isLaunching}
+                className="w-full h-14 text-sm font-bold gap-3 shadow-md hover:shadow-lg cursor-pointer transition-all active:scale-[0.99]"
+              >
+                <Play className="h-4 w-4 fill-white" />
+                {isLaunching ? "Initializing benchmark session..." : "Launch live benchmark studio (microsecond telemetry stream)"}
+              </Button>
             </motion.div>
           )}
 

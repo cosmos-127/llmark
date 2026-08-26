@@ -130,21 +130,21 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/60 hover:bg-[#F3F4F4]/70">
-                <TableHead className="w-[34%] font-medium text-xs text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  Performance Dimension & Metric
+              <TableRow className="bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/5 hover:bg-[#2C2C2C]/5 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                <TableHead className="w-[34%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 pl-4">
+                  Dimension & Metric
                 </TableHead>
-                <TableHead className="w-[18%] font-medium text-xs text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  P50 / Nominal Value
+                <TableHead className="w-[18%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                  P50 / Nominal
                 </TableHead>
-                <TableHead className="w-[20%] font-medium text-xs text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  P95 / P99 Tail Latency
+                <TableHead className="w-[22%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                  Tail Latency (P95 / P99)
                 </TableHead>
-                <TableHead className="w-[14%] font-medium text-xs text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  Active SLO Target
+                <TableHead className="w-[13%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                  SLO Target
                 </TableHead>
-                <TableHead className="w-[14%] font-medium text-xs text-[#2C2C2C] dark:text-[#F3F4F4] text-right pr-4">
-                  SLO Compliance
+                <TableHead className="w-[13%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 text-right pr-4">
+                  Compliance
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -153,10 +153,12 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* 1. LATENCY & RESPONSIVENESS GROUP                                         */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#853953]/5 dark:bg-[#A74B6A]/5 hover:bg-[#853953]/5 border-y border-[#853953]/20 dark:border-[#A74B6A]/20">
-                <TableCell colSpan={5} className="py-2 px-4 font-bold text-[#853953] dark:text-[#A74B6A] uppercase tracking-wider text-[10px] font-mono flex items-center gap-1.5">
-                  <Gauge className="h-3.5 w-3.5" />
-                  1. Latency & Responsiveness Dynamics
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <Gauge className="h-3.5 w-3.5" />
+                    <span>1. Latency & Responsiveness Dynamics</span>
+                  </div>
                 </TableCell>
               </TableRow>
 
@@ -302,10 +304,12 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* 2. THROUGHPUT & TRANSACTIONAL CAPACITY                                    */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#853953]/5 dark:bg-[#A74B6A]/5 hover:bg-[#853953]/5 border-y border-[#853953]/20 dark:border-[#A74B6A]/20">
-                <TableCell colSpan={5} className="py-2 px-4 font-bold text-[#853953] dark:text-[#A74B6A] uppercase tracking-wider text-[10px] font-mono flex items-center gap-1.5">
-                  <Zap className="h-3.5 w-3.5" />
-                  2. Throughput & Cluster Capacity
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="h-3.5 w-3.5" />
+                    <span>2. Throughput & Cluster Capacity</span>
+                  </div>
                 </TableCell>
               </TableRow>
 
@@ -320,10 +324,10 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     Cluster-wide aggregate generation output tokens per second across all workers
                   </p>
                 </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400">
+                <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
                   {(snapshot?.current_tps || 0).toFixed(1)} tok/s
                 </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
                   Active aggregate
                 </TableCell>
                 <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
@@ -345,10 +349,10 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     Completed transactional volume per elapsed wall-clock second
                   </p>
                 </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
                   {(snapshot?.current_rps || 0).toFixed(1)} req/s
                 </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
                   {config.concurrency} concurrent streams
                 </TableCell>
                 <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
@@ -362,10 +366,12 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* 3. RELIABILITY & STRICT SLO YIELD                                         */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#853953]/5 dark:bg-[#A74B6A]/5 hover:bg-[#853953]/5 border-y border-[#853953]/20 dark:border-[#A74B6A]/20">
-                <TableCell colSpan={5} className="py-2 px-4 font-bold text-[#853953] dark:text-[#A74B6A] uppercase tracking-wider text-[10px] font-mono flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  3. Reliability & Strict SLO Compliance
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    <span>3. Reliability & Strict SLO Compliance</span>
+                  </div>
                 </TableCell>
               </TableRow>
 
@@ -380,13 +386,13 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     Percentage of total requests strictly satisfying TTFT, TPOT, E2E & error SLAs
                   </p>
                 </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400">
+                <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
                   {formatPct(snapshot?.goodput_pct)}
                 </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
                   {snapshot?.completed_requests || 0} passed / {snapshot?.failed_requests || 0} failed
                 </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 tabular-nums">
                   ≥ 99.0%
                 </TableCell>
                 <TableCell className="text-right pr-4">
@@ -407,13 +413,13 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     Network drops, rate limits (429), gateway timeouts (504), or dropped connections
                   </p>
                 </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
                   {formatPct(snapshot?.error_rate_pct)}
                 </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
                   {snapshot?.failed_requests || 0} failed requests
                 </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 tabular-nums">
                   ≤ {formatPct(maxErrorSLO)}
                 </TableCell>
                 <TableCell className="text-right pr-4">
@@ -426,10 +432,12 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* 4. NETWORK TRANSPORT WATERFALL (DNS, TCP, TLS)                            */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#853953]/5 dark:bg-[#A74B6A]/5 hover:bg-[#853953]/5 border-y border-[#853953]/20 dark:border-[#A74B6A]/20">
-                <TableCell colSpan={5} className="py-2 px-4 font-bold text-[#853953] dark:text-[#A74B6A] uppercase tracking-wider text-[10px] font-mono flex items-center gap-1.5">
-                  <Globe className="h-3.5 w-3.5" />
-                  4. Physical Network Transport Waterfall
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <Globe className="h-3.5 w-3.5" />
+                    <span>4. Physical Network Transport Waterfall</span>
+                  </div>
                 </TableCell>
               </TableRow>
 
@@ -444,7 +452,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     Domain name to socket IP resolution latency
                   </p>
                 </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
                   {formatMs(snapshot?.waterfall_avg?.dns_ms)}
                 </TableCell>
                 <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
@@ -469,7 +477,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     SYN / ACK round-trip socket connection establish
                   </p>
                 </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
                   {formatMs(snapshot?.waterfall_avg?.tcp_ms)}
                 </TableCell>
                 <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
@@ -494,7 +502,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     TLS 1.3 cryptographic key negotiation and cipher exchange
                   </p>
                 </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
                   {formatMs(snapshot?.waterfall_avg?.tls_ms)}
                 </TableCell>
                 <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
@@ -511,10 +519,12 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* 5. FINANCIAL SPEND & TOKEN ECONOMICS                                      */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#853953]/5 dark:bg-[#A74B6A]/5 hover:bg-[#853953]/5 border-y border-[#853953]/20 dark:border-[#A74B6A]/20">
-                <TableCell colSpan={5} className="py-2 px-4 font-bold text-[#853953] dark:text-[#A74B6A] uppercase tracking-wider text-[10px] font-mono flex items-center gap-1.5">
-                  <Coins className="h-3.5 w-3.5" />
-                  5. Financial Spend & Token Economics
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <Coins className="h-3.5 w-3.5" />
+                    <span>5. Financial Spend & Token Economics</span>
+                  </div>
                 </TableCell>
               </TableRow>
 

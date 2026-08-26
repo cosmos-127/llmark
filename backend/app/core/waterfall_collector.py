@@ -73,21 +73,26 @@ class WaterfallCollector:
             tcp_ms = max(0.1, (t_tcp_end - t_tcp_start) * 1000.0)
 
             # 3. TLS Handshake (if HTTPS)
-            if is_https:
-                ssl_ctx = ssl.create_default_context()
-                t_tls_start = time.perf_counter()
-                
-                # Wrap socket asynchronously in executor
-                def do_ssl_handshake():
-                    ssock = ssl_ctx.wrap_socket(sock, server_hostname=host)
-                    return ssock
+            try:
+                if is_https:
+                    ssl_ctx = ssl.create_default_context()
+                    t_tls_start = time.perf_counter()
 
-                wrapped_sock = await loop.run_in_executor(None, do_ssl_handshake)
-                t_tls_end = time.perf_counter()
-                tls_ms = max(0.1, (t_tls_end - t_tls_start) * 1000.0)
-                wrapped_sock.close()
-            else:
-                sock.close()
+                    # Wrap socket asynchronously in executor
+                    def do_ssl_handshake():
+                        ssock = ssl_ctx.wrap_socket(sock, server_hostname=host)
+                        return ssock
+
+                    wrapped_sock = await loop.run_in_executor(None, do_ssl_handshake)
+                    t_tls_end = time.perf_counter()
+                    tls_ms = max(0.1, (t_tls_end - t_tls_start) * 1000.0)
+                    wrapped_sock.close()
+            finally:
+                # Always close the underlying raw socket, even if TLS wrapping raised
+                try:
+                    sock.close()
+                except Exception:
+                    pass
 
             total_handshake_ms = dns_ms + tcp_ms + tls_ms
             return WaterfallTiming(

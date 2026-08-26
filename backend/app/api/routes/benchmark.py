@@ -24,7 +24,14 @@ router = APIRouter(prefix="/benchmark", tags=["benchmark"])
 @router.post("/run", status_code=status.HTTP_201_CREATED)
 async def start_benchmark(config: BenchmarkConfig) -> dict:
     """Start a new benchmark run in the background."""
-    benchmark_id = await BenchmarkOrchestrator.start_benchmark(config)
+    try:
+        benchmark_id = await BenchmarkOrchestrator.start_benchmark(config)
+    except Exception as exc:
+        logger.error("Failed to start benchmark", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start benchmark: {str(exc)}",
+        )
     return {"benchmark_id": benchmark_id, "status": "running", "name": config.name}
 
 

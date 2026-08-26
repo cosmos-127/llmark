@@ -9,27 +9,35 @@
   }
 
   body {
-    font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.5;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.011em;
     background-color: var(--bg-app);
     color: var(--text-main);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   code, pre, kbd {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875em;
-    letter-spacing: 0;
+    letter-spacing: -0.005em;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
   }
 
-  /* ── Type Scale (Comfortable 14px base for laptops & high-DPI displays) ──
-     Space Grotesk with relaxed tracking for crisp readability.
+  /* Enterprise Tabular Figures for Real-Time Metrics & Latency Numbers */
+  .tabular-nums, table, [data-metric] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /* ── Type Scale (Polished enterprise 14px base) ─────────────────────────
+     Plus Jakarta Sans with balanced tracking & crisp optical hierarchy.
      ─────────────────────────────────────────────────────────────────────── */
   :root {
     /* Meta / badge labels */
@@ -49,21 +57,22 @@
     /* Card / panel titles */
     --text-2xl: 22px;
     /* Page headings */
-    --text-3xl: 26px;
+    --text-3xl: 28px;
 
-    /* Font weights — Space Grotesk has true 300/400/500/600/700 */
+    /* Font weights — Plus Jakarta Sans has true 300/400/500/600/700/800 */
     --fw-light:    300;
     --fw-normal:   400;
     --fw-medium:   500;  /* Labels, captions, nav items */
-    --fw-semibold: 600;  /* Card titles, section headers — true 600 in Space Grotesk */
+    --fw-semibold: 600;  /* Card titles, section headers */
     --fw-bold:     700;  /* Hero KPI numbers, page headings */
+    --fw-extrabold: 800;
   }
 }
 
 @theme {
   /* ── Font families ─────────────────────────────────────────────────────── */
-  --font-sans: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* ── Colour tokens (Radix / shadcn HSL) ──────────────────────────────── */
   --color-background: hsl(var(--background));

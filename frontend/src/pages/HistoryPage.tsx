@@ -35,8 +35,9 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { HistoricalRunDetails, HistoricalRunSummary } from "@/lib/types";
-import { formatMs, formatPct, formatUsd, downloadFile } from "@/lib/utils";
+import { formatMs, formatPct, formatUsd, downloadFile, cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { ProviderLogo } from "@/components/common/BrandLogos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +116,10 @@ export const HistoryPage: React.FC = () => {
                   {r.model}
                 </Badge>
                 <span className="text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30">•</span>
-                <span className="text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">{r.vendor}</span>
+                <span className="text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 flex items-center gap-1">
+                  <ProviderLogo vendor={r.vendor} className="h-3 w-3 inline text-[#853953] dark:text-[#A74B6A]" />
+                  {r.vendor}
+                </span>
               </div>
             </div>
           );
@@ -234,19 +238,17 @@ export const HistoryPage: React.FC = () => {
         header: () => <div className="text-right">Inspect</div>,
         cell: ({ row }) => (
           <div className="text-right">
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="inline-block">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedRunId(row.original.id);
-                }}
-                className="h-8 w-8 rounded-xl shadow-xs cursor-pointer"
-              >
-                <ArrowUpRight className="h-4 w-4" />
-              </Button>
-            </motion.div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedRunId(row.original.id);
+              }}
+              className="h-8 w-8 rounded-xl shadow-2xs hover:shadow-xs cursor-pointer"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+            </Button>
           </div>
         ),
       },
@@ -294,17 +296,31 @@ export const HistoryPage: React.FC = () => {
           {/* Search & Vendor Filter */}
           <div className="flex items-center gap-2.5">
             <div className="hidden md:flex items-center gap-1 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] p-1 border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 text-xs font-sans">
-              {["all", "mock", "openai", "anthropic"].map((vf) => (
-                <Button
-                  key={vf}
-                  variant={vendorFilter === vf ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setVendorFilter(vf)}
-                  className={`h-7 px-2.5 rounded-lg capitalize text-xs ${vendorFilter === vf ? "bg-white dark:bg-[#252426] text-[#853953] dark:text-[#A74B6A] border border-[#853953]/20 dark:border-[#A74B6A]/30 shadow-xs font-medium" : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-medium"}`}
-                >
-                  {vf}
-                </Button>
-              ))}
+              {["all", "mock", "openai", "anthropic"].map((vf) => {
+                const isActive = vendorFilter === vf;
+                return (
+                  <button
+                    key={vf}
+                    onClick={() => setVendorFilter(vf)}
+                    className={cn(
+                      "relative flex items-center gap-1.5 h-7 px-3 rounded-lg capitalize text-xs font-medium transition-colors cursor-pointer select-none",
+                      isActive
+                        ? "text-[#853953] dark:text-[#A74B6A] font-bold"
+                        : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                    )}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="history-vendor-filter-pill"
+                        className="absolute inset-0 bg-white dark:bg-[#252426] rounded-lg shadow-xs border border-[#853953]/20 dark:border-[#A74B6A]/30"
+                        transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                      />
+                    )}
+                    {vf !== "all" && <ProviderLogo vendor={vf} className="relative z-10 h-3 w-3" />}
+                    <span className="relative z-10">{vf}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="relative w-full sm:w-64">
@@ -527,13 +543,13 @@ export const HistoryPage: React.FC = () => {
                       <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
                       PDF report
                     </Button>
-                    <Button variant="outline" size="sm" asChild className="rounded-xl font-medium shadow-2xs">
+                    <Button variant="outline" size="sm" asChild className="rounded-xl font-medium shadow-2xs cursor-pointer">
                       <a href={`/api/export/csv/${runDetails.id}`} download>
-                        <Download className="h-3.5 w-3.5 text-[#612D53] dark:text-[#C57BB2]" />
+                        <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
                         CSV data
                       </a>
                     </Button>
-                    <Button variant="default" size="sm" asChild className="rounded-xl bg-[#853953] dark:bg-[#A74B6A] text-white hover:bg-[#612D53] shadow-xs font-medium">
+                    <Button variant="default" size="sm" asChild className="rounded-xl bg-[#853953] dark:bg-[#A74B6A] text-white hover:bg-[#612D53] shadow-xs font-medium cursor-pointer">
                       <a href={`/api/export/bundle/${runDetails.id}`} download>
                         <Download className="h-3.5 w-3.5 text-white" />
                         .llmark bundle

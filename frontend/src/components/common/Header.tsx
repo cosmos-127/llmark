@@ -42,10 +42,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               variant={activeTab === "benchmark" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("benchmark")}
-              className={`rounded-lg px-3.5 font-medium transition-all ${
+              className={`rounded-lg px-3.5 font-medium transition-all cursor-pointer ${
                 activeTab === "benchmark"
                   ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#853953] dark:hover:text-[#A74B6A]"
               }`}
             >
               <Zap className="h-3.5 w-3.5" />
@@ -55,10 +55,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               variant={activeTab === "diff" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("diff")}
-              className={`rounded-lg px-3.5 font-medium transition-all ${
+              className={`rounded-lg px-3.5 font-medium transition-all cursor-pointer ${
                 activeTab === "diff"
-                  ? "bg-[#612D53] dark:bg-[#7E3B6C] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#853953] dark:hover:text-[#A74B6A]"
               }`}
             >
               <GitCompare className="h-3.5 w-3.5" />
@@ -68,10 +68,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               variant={activeTab === "history" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("history")}
-              className={`rounded-lg px-3.5 font-medium transition-all ${
+              className={`rounded-lg px-3.5 font-medium transition-all cursor-pointer ${
                 activeTab === "history"
-                  ? "bg-[#2C2C2C] dark:bg-[#353337] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#853953] dark:hover:text-[#A74B6A]"
               }`}
             >
               <History className="h-3.5 w-3.5" />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { KeyRound, Eye, EyeOff, ShieldCheck, Lock, Server, CheckCircle, Info } from "lucide-react";
 import { VendorCredential, VendorType } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -24,7 +25,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
 
   if (vendor === "mock") {
     return (
-      <Card className="border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/30 relative overflow-hidden group">
+      <Card className="border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/30 relative overflow-hidden group shadow-xs">
         <CardContent className="p-5 flex items-start gap-3.5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
             <CheckCircle className="h-5 w-5" />
@@ -50,19 +51,21 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
 
   return (
     <TooltipProvider>
-      <Card className="relative overflow-hidden">
+      <Card className="relative overflow-hidden shadow-xs">
         <CardHeader className="p-5 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div
+              <motion.div
+                animate={hasKey ? { scale: [1, 1.15, 1] } : {}}
+                transition={{ duration: 0.3 }}
                 className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
                   hasKey
                     ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/30 dark:border-[#A74B6A]/35 text-[#853953] dark:text-[#A74B6A] shadow-xs"
                     : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50"
                 }`}
               >
-                <Lock className="h-4 w-4" />
-              </div>
+                {hasKey ? <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Lock className="h-4 w-4" />}
+              </motion.div>
               <div>
                 <CardTitle className="text-sm flex items-center gap-2">
                   Ephemeral security vault

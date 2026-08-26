@@ -10,46 +10,57 @@ import {
   Tooltip as RechartsTooltip,
   CartesianGrid,
   Legend,
+  ReferenceLine,
 } from "recharts";
-import { Activity, Gauge, Zap, Sparkles } from "lucide-react";
+import { Activity, Gauge, Zap, CheckCircle2, DollarSign } from "lucide-react";
 import { TimeSeriesPoint } from "@/hooks/useBenchmarkSSE";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/lib/theme";
+import { formatMs, formatPct, formatUsd } from "@/lib/utils";
 
 interface StreamingChartProps {
   data: TimeSeriesPoint[];
 }
 
+type ChartMetricView = "throughput" | "latency" | "goodput" | "cost";
+
 export const StreamingChart: React.FC<StreamingChartProps> = ({ data }) => {
-  const [activeSeries, setActiveSeries] = useState<"latency" | "throughput" | "all">("latency");
+  const [activeMetric, setActiveMetric] = useState<ChartMetricView>("throughput");
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // Ensure there is at least an initial baseline trajectory if data is empty or single point
+  // Cleanly format and downsample data to prevent X-axis overcrowding
   const formattedData = React.useMemo(() => {
     if (!data || data.length === 0) {
       return [
-        { time: "0.0s", ttft_p95: 0, itl_p95: 0, tps: 0 },
-        { time: "0.5s", ttft_p95: 0, itl_p95: 0, tps: 0 },
+        { time: "0.0s", tps: 0, ttft_p95: 0, itl_p95: 0, goodput: 100, spend: 0 },
+        { time: "1.0s", tps: 0, ttft_p95: 0, itl_p95: 0, goodput: 100, spend: 0 },
       ];
     }
 
     return data.map((d) => ({
       time: `${(d.elapsed || 0).toFixed(1)}s`,
-      "TTFT P95 (ms)": Math.round(d.ttft_p95 * 10) / 10,
-      "ITL P95 (ms)": Math.round(d.itl_p95 * 10) / 10,
-      "TPS (tok/s)": Math.round(d.tps * 10) / 10,
+      "Throughput (tok/s)": Math.round((d.tps || 0) * 10) / 10,
+      "TTFT P95 (ms)": Math.round((d.ttft_p95 || 0) * 10) / 10,
+      "ITL P95 (ms)": Math.round((d.itl_p95 || 0) * 10) / 10,
+      "Goodput SLO Yield (%)": Math.round((d.goodput || 0) * 10) / 10,
+      "Total Cost ($)": Math.round((d.spend || 0) * 10000) / 10000,
     }));
   }, [data]);
 
-  const ttftColor = isDark ? "#E88EC4" : "#853953";
-  const itlColor = isDark ? "#A74B6A" : "#612D53";
-  const tpsColor = isDark ? "#34D399" : "#059669";
+  const latest = data[data.length - 1] || null;
+
+  // Theme palette colors
+  const primaryColor = isDark ? "#A74B6A" : "#853953";
+  const plumColor = isDark ? "#C57BB2" : "#612D53";
+  const emeraldColor = isDark ? "#34D399" : "#059669";
+  const gridStroke = isDark ? "rgba(243, 244, 244, 0.08)" : "#e1e4e4";
+  const axisColor = isDark ? "#8E9393" : "#6E6E6E";
 
   return (
-    <Card>
+    <Card className="shadow-xs border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
       <CardHeader className="p-5 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -57,39 +68,25 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data }) => {
               <Activity className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
-                Live Stream Latency & Throughput Trajectory
+              <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] font-sans">
+                Real-Time Telemetry Stream
               </CardTitle>
-              <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                Microsecond time-series stream buffer with dynamic scale interpolation
+              <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
+                Live 100Hz telemetry trajectory with adaptive time-scale decimation
               </CardDescription>
             </div>
           </div>
 
-          {/* View Switcher Controls */}
-          <div className="flex items-center gap-1 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] p-1 border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 text-xs font-sans">
+          {/* Metric Selector Buttons */}
+          <div className="flex items-center gap-1 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] p-1 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-xs font-sans">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setActiveSeries("latency")}
-              className={`h-7 px-3 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                activeSeries === "latency"
-                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs font-medium"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-              }`}
-            >
-              <Gauge className="h-3 w-3 mr-1" />
-              Latency (TTFT & ITL)
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveSeries("throughput")}
-              className={`h-7 px-3 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                activeSeries === "throughput"
-                  ? "bg-emerald-700 dark:bg-emerald-600 text-white shadow-xs font-medium"
+              onClick={() => setActiveMetric("throughput")}
+              className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                activeMetric === "throughput"
+                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
                   : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
               }`}
             >
@@ -100,69 +97,173 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data }) => {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setActiveSeries("all")}
-              className={`h-7 px-3 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                activeSeries === "all"
-                  ? "bg-white dark:bg-[#252426] text-[#853953] dark:text-[#A74B6A] border border-[#853953]/20 dark:border-[#A74B6A]/30 shadow-xs font-bold"
+              onClick={() => setActiveMetric("latency")}
+              className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                activeMetric === "latency"
+                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
                   : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
               }`}
             >
-              Dual-Axis View
+              <Gauge className="h-3 w-3 mr-1" />
+              Tail Latency (P95)
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveMetric("goodput")}
+              className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                activeMetric === "goodput"
+                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+              }`}
+            >
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              Goodput (SLO %)
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setActiveMetric("cost")}
+              className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                activeMetric === "cost"
+                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+              }`}
+            >
+              <DollarSign className="h-3 w-3 mr-1" />
+              Cost ($)
             </Button>
           </div>
+        </div>
+
+        {/* Live Snapshot Stat Badge Strip */}
+        <div className="flex items-center gap-3 pt-2 font-mono text-xs">
+          {activeMetric === "throughput" && (
+            <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+              <span>Current Rate:</span>
+              <Badge variant="emerald" className="font-mono text-xs font-bold tabular-nums">
+                {latest ? `${latest.tps.toFixed(1)} tok/s` : "0.0 tok/s"}
+              </Badge>
+            </div>
+          )}
+          {activeMetric === "latency" && (
+            <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+              <div className="flex items-center gap-1.5">
+                <span>TTFT P95:</span>
+                <Badge variant="default" className="font-mono text-xs font-bold tabular-nums">
+                  {formatMs(latest?.ttft_p95)}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span>ITL P95:</span>
+                <Badge variant="secondary" className="font-mono text-xs font-bold tabular-nums">
+                  {formatMs(latest?.itl_p95)}
+                </Badge>
+              </div>
+            </div>
+          )}
+          {activeMetric === "goodput" && (
+            <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+              <span>SLO Yield:</span>
+              <Badge variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"} className="font-mono text-xs font-bold tabular-nums">
+                {formatPct(latest?.goodput || 100)}
+              </Badge>
+            </div>
+          )}
+          {activeMetric === "cost" && (
+            <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+              <span>Total Accrued:</span>
+              <Badge variant="default" className="font-mono text-xs font-bold tabular-nums">
+                {formatUsd(latest?.spend || 0)}
+              </Badge>
+            </div>
+          )}
         </div>
       </CardHeader>
 
       <CardContent className="p-5 pt-2">
         <div className="h-72 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={formattedData} margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
+            <AreaChart data={formattedData} margin={{ top: 10, right: 15, left: -5, bottom: 0 }}>
               <defs>
+                <linearGradient id="colorThroughput" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={emeraldColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={emeraldColor} stopOpacity={0.02} />
+                </linearGradient>
                 <linearGradient id="colorTtft" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={ttftColor} stopOpacity={0.45} />
-                  <stop offset="95%" stopColor={ttftColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={primaryColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={primaryColor} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="colorItl" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={itlColor} stopOpacity={0.45} />
-                  <stop offset="95%" stopColor={itlColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={plumColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={plumColor} stopOpacity={0.02} />
                 </linearGradient>
-                <linearGradient id="colorTps" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={tpsColor} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={tpsColor} stopOpacity={0.02} />
+                <linearGradient id="colorGoodput" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={emeraldColor} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={emeraldColor} stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={primaryColor} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={primaryColor} stopOpacity={0.02} />
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(243, 244, 244, 0.08)" : "#e1e4e4"} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
 
+              {/* Contained, uncluttered X-Axis */}
               <XAxis
                 dataKey="time"
-                stroke={isDark ? "#8E9393" : "#6E6E6E"}
+                stroke={axisColor}
                 fontSize={10}
                 tickLine={false}
                 fontFamily="monospace"
+                minTickGap={50}
+                interval="preserveStartEnd"
               />
 
-              {/* Left Y-Axis: Latency (ms) */}
-              <YAxis
-                yAxisId="left"
-                stroke={isDark ? "#8E9393" : "#6E6E6E"}
-                fontSize={10}
-                tickLine={false}
-                fontFamily="monospace"
-                unit={activeSeries === "throughput" ? " t/s" : " ms"}
-                domain={activeSeries === "throughput" ? [0, "auto"] : [0, "auto"]}
-              />
-
-              {/* Right Y-Axis: Throughput (tok/s) for Dual-Axis */}
-              {activeSeries === "all" && (
+              {/* Dynamic Y-Axis per active metric */}
+              {activeMetric === "throughput" && (
                 <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  stroke={isDark ? "#34D399" : "#059669"}
+                  stroke={axisColor}
                   fontSize={10}
                   tickLine={false}
                   fontFamily="monospace"
-                  unit=" t/s"
+                  unit=" tok/s"
+                  domain={[0, "auto"]}
+                />
+              )}
+
+              {activeMetric === "latency" && (
+                <YAxis
+                  stroke={axisColor}
+                  fontSize={10}
+                  tickLine={false}
+                  fontFamily="monospace"
+                  unit=" ms"
+                  domain={[0, "auto"]}
+                />
+              )}
+
+              {activeMetric === "goodput" && (
+                <YAxis
+                  stroke={axisColor}
+                  fontSize={10}
+                  tickLine={false}
+                  fontFamily="monospace"
+                  unit="%"
+                  domain={[0, 100]}
+                />
+              )}
+
+              {activeMetric === "cost" && (
+                <YAxis
+                  stroke={axisColor}
+                  fontSize={10}
+                  tickLine={false}
+                  fontFamily="monospace"
+                  unit="$"
                   domain={[0, "auto"]}
                 />
               )}
@@ -171,34 +272,45 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data }) => {
                 contentStyle={{
                   backgroundColor: isDark ? "rgba(37, 36, 38, 0.98)" : "rgba(255, 255, 255, 0.98)",
                   borderColor: isDark ? "rgba(243, 244, 244, 0.15)" : "#2C2C2C20",
-                  borderRadius: "1rem",
-                  fontSize: "13px",
-                  fontFamily: "Roboto, system-ui, sans-serif",
+                  borderRadius: "0.75rem",
+                  fontSize: "12px",
+                  fontFamily: "var(--font-sans), sans-serif",
                   boxShadow: isDark ? "0 10px 25px -5px rgba(0, 0, 0, 0.5)" : "0 10px 25px -5px rgba(44, 44, 44, 0.1)",
                   color: isDark ? "#F3F4F4" : "#2C2C2C",
                 }}
               />
 
-              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "12px", fontFamily: "Roboto, system-ui, sans-serif" }} />
+              <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "12px", fontFamily: "var(--font-sans), sans-serif" }} />
 
-              {/* Latency Series */}
-              {(activeSeries === "latency" || activeSeries === "all") && (
+              {/* 1. Throughput View */}
+              {activeMetric === "throughput" && (
+                <Area
+                  type="monotone"
+                  dataKey="Throughput (tok/s)"
+                  stroke={emeraldColor}
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#colorThroughput)"
+                  isAnimationActive={false}
+                />
+              )}
+
+              {/* 2. Latency View */}
+              {activeMetric === "latency" && (
                 <>
                   <Area
-                    yAxisId="left"
                     type="monotone"
                     dataKey="TTFT P95 (ms)"
-                    stroke={ttftColor}
+                    stroke={primaryColor}
                     strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#colorTtft)"
                     isAnimationActive={false}
                   />
                   <Area
-                    yAxisId="left"
                     type="monotone"
                     dataKey="ITL P95 (ms)"
-                    stroke={itlColor}
+                    stroke={plumColor}
                     strokeWidth={2}
                     fillOpacity={1}
                     fill="url(#colorItl)"
@@ -207,16 +319,31 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data }) => {
                 </>
               )}
 
-              {/* Throughput Series */}
-              {(activeSeries === "throughput" || activeSeries === "all") && (
+              {/* 3. Goodput View */}
+              {activeMetric === "goodput" && (
+                <>
+                  <ReferenceLine y={95} stroke="#34D399" strokeDasharray="3 3" label={{ value: "95% Target", fill: "#34D399", fontSize: 10, position: "insideTopLeft" }} />
+                  <Area
+                    type="monotone"
+                    dataKey="Goodput SLO Yield (%)"
+                    stroke={emeraldColor}
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#colorGoodput)"
+                    isAnimationActive={false}
+                  />
+                </>
+              )}
+
+              {/* 4. Cost View */}
+              {activeMetric === "cost" && (
                 <Area
-                  yAxisId={activeSeries === "all" ? "right" : "left"}
                   type="monotone"
-                  dataKey="TPS (tok/s)"
-                  stroke={tpsColor}
+                  dataKey="Total Cost ($)"
+                  stroke={primaryColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
-                  fill="url(#colorTps)"
+                  fill="url(#colorCost)"
                   isAnimationActive={false}
                 />
               )}

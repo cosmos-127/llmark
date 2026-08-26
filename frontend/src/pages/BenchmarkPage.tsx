@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { BenchmarkConfig, VendorCredential } from "@/lib/types";
 import { TestConfigurator } from "@/components/test-configurator/TestConfigurator";
 import { LiveDashboard } from "@/components/live-dashboard/LiveDashboard";
@@ -33,6 +34,7 @@ const DEFAULT_CONFIG: BenchmarkConfig = {
 };
 
 export const BenchmarkPage: React.FC = () => {
+  const queryClient = useQueryClient();
   const [config, setConfig] = useState<BenchmarkConfig>(DEFAULT_CONFIG);
   const [credential, setCredential] = useState<VendorCredential>({});
   const [activeBenchmarkId, setActiveBenchmarkId] = useState<string | null>(null);
@@ -47,6 +49,12 @@ export const BenchmarkPage: React.FC = () => {
     isAborting,
     abort,
   } = useBenchmarkSSE(activeBenchmarkId);
+
+  useEffect(() => {
+    if (isFinished) {
+      queryClient.invalidateQueries({ queryKey: ["benchmark-history"] });
+    }
+  }, [isFinished, queryClient]);
 
   const handleLaunch = async () => {
     setIsLaunching(true);

@@ -1,123 +1,119 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
-  Menu,
   Zap,
   GitCompare,
   History,
-  ShieldCheck,
-  Cpu,
-  RotateCcw,
   Sparkles,
-  Command,
-  Search,
+  ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ThemeToggle } from "@/lib/theme";
-import { NavTab } from "./AppSidebar";
+import { NavTab } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface AdminHeaderProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
-  collapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
 }
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   activeTab,
   setActiveTab,
-  collapsed,
-  setCollapsed,
 }) => {
-  const getTabBreadcrumb = () => {
-    switch (activeTab) {
-      case "benchmark":
-        return "Benchmark studio";
-      case "diff":
-        return "Head-to-head diff matrix";
-      case "history":
-        return "Benchmark history & export";
-      default:
-        return "Dashboard";
-    }
-  };
+  const navTabs = [
+    { id: "landing" as NavTab, label: "Home", shortLabel: "Home", icon: Sparkles },
+    { id: "benchmark" as NavTab, label: "Benchmark Studio", shortLabel: "Studio", icon: Zap },
+    { id: "diff" as NavTab, label: "Diff Matrix", shortLabel: "Diff", icon: GitCompare },
+    { id: "history" as NavTab, label: "History Explorer", shortLabel: "History", icon: History },
+  ];
 
   return (
     <TooltipProvider delayDuration={150}>
-      <header className="sticky top-0 z-20 flex h-14 w-full items-center justify-between border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white/90 dark:bg-[#252426]/90 px-4 sm:px-6 lg:px-8 backdrop-blur-md transition-colors duration-200">
-        {/* Left: Mobile Toggle & Breadcrumb */}
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCollapsed(!collapsed)}
-            className="lg:hidden h-8 w-8 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4] hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C]"
+      <header className="sticky top-0 z-50 w-full border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white/90 dark:bg-[#181719]/90 backdrop-blur-md transition-colors duration-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
+          {/* Left: Brand Logo & Title */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-3 cursor-pointer select-none shrink-0 group"
+            onClick={() => setActiveTab("landing")}
+            title="Return to Landing Page"
           >
-            <Menu className="h-4 w-4" />
-          </Button>
-
-          <div className="flex items-center gap-2 text-xs font-sans">
-            <span className="text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-normal">LLMark</span>
-            <span className="text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30">/</span>
-            <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">{getTabBreadcrumb()}</span>
-          </div>
-        </div>
-
-        {/* Right: Quick Telemetry, Tab Switcher & Theme Toggle */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Quick Tab Switcher Pills */}
-          <div className="hidden sm:flex items-center gap-1 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] p-1 border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 text-[11px] font-sans transition-colors duration-200">
-            <button
-              onClick={() => setActiveTab("benchmark")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                activeTab === "benchmark"
-                  ? "bg-white dark:bg-[#252426] text-[#853953] dark:text-[#A74B6A] font-bold shadow-xs border border-[#853953]/20 dark:border-[#A74B6A]/30"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-              }`}
-            >
-              <Zap className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
-              Studio
-            </button>
-            <button
-              onClick={() => setActiveTab("diff")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                activeTab === "diff"
-                  ? "bg-white dark:bg-[#252426] text-[#612D53] dark:text-[#C57BB2] font-bold shadow-xs border border-[#612D53]/20 dark:border-[#7E3B6C]/30"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-              }`}
-            >
-              <GitCompare className="h-3 w-3 text-[#612D53] dark:text-[#C57BB2]" />
-              Diff
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
-                activeTab === "history"
-                  ? "bg-white dark:bg-[#252426] text-[#2C2C2C] dark:text-[#F3F4F4] font-bold shadow-xs border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-              }`}
-            >
-              <History className="h-3 w-3 text-[#2C2C2C] dark:text-[#F3F4F4]" />
-              History
-            </button>
-          </div>
-
-          {/* Theme Toggle Button */}
-          <ThemeToggle variant="icon" />
-
-          {/* Status Indicator */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 border border-emerald-200 dark:border-emerald-800 text-xs font-sans font-medium text-emerald-800 dark:text-emerald-300 shadow-xs cursor-pointer">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="hidden sm:inline">Engine ready</span>
+            <div className="relative flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#853953] via-[#743663] to-[#612D53] shadow-sm ring-1 ring-[#853953]/30 group-hover:scale-105 transition-transform">
+              <Zap className="h-4.5 w-4.5 text-white fill-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold tracking-tight text-[#2C2C2C] dark:text-[#F3F4F4] font-sans">
+                  LLMark
+                </span>
+                <span className="text-[#853953] dark:text-[#A74B6A] text-xs font-semibold tracking-wide">
+                  Stream
+                </span>
+                <Badge variant="default" className="text-[10px] px-1.5 py-0 font-medium">
+                  v0.1.0-alpha
+                </Badge>
               </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Backend API & telemetry stream connected</p>
-            </TooltipContent>
-          </Tooltip>
+              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-mono hidden md:block">
+                Microsecond Inference Telemetry
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Center: Sticky Top Nav Tab Switcher (The 4 core options) */}
+          <nav className="flex items-center gap-1 bg-[#F3F4F4] dark:bg-[#252426] p-1 rounded-xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 font-sans text-xs shadow-inner">
+            {navTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-lg font-medium transition-colors cursor-pointer select-none",
+                    isActive
+                      ? "text-[#853953] dark:text-[#A74B6A] font-bold"
+                      : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-top-nav-tab"
+                      className="absolute inset-0 bg-white dark:bg-[#2C2C2C] rounded-lg shadow-xs border border-[#853953]/25 dark:border-[#A74B6A]/35"
+                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <Icon className={cn("relative z-10 h-3.5 w-3.5", isActive && "text-[#853953] dark:text-[#A74B6A]")} />
+                  <span className="relative z-10 hidden sm:inline">{tab.label}</span>
+                  <span className="relative z-10 sm:hidden">{tab.shortLabel}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Right: Security Badge & Theme Toggle */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            {/* Ephemeral Security Badge with Dual Ripple */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 font-medium cursor-pointer shadow-xs select-none">
+                  <div className="relative flex h-2 w-2 items-center justify-center">
+                    <span className="absolute h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                    <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  </div>
+                  <span>Ephemeral Vault Active</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Tokens scrubbed on disconnect • Process memory only</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Theme Toggle Button */}
+            <ThemeToggle variant="icon" />
+          </div>
         </div>
       </header>
     </TooltipProvider>

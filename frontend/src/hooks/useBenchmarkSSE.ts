@@ -101,6 +101,7 @@ export function useBenchmarkSSE(benchmarkId: string | null, onComplete?: (finalS
 
     es.onerror = (err) => {
       console.warn("SSE stream event closed or disconnected", err);
+      setError("Live stream disconnected. The benchmark may still be running.");
       es.close();
     };
 

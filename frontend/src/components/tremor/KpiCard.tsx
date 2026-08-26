@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 export interface KpiCardProps {
   title: string;
   value: string | number;
+  unit?: string;
   subtext?: string;
   tooltip?: string;
   badge?: string;
@@ -26,6 +27,7 @@ export interface KpiCardProps {
 export const KpiCard: React.FC<KpiCardProps> = ({
   title,
   value,
+  unit,
   subtext,
   tooltip,
   badge,
@@ -94,24 +96,69 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 
   const currentTheme = accentColorMap[accentColor] || accentColorMap.mulberry;
 
+  const renderValue = () => {
+    if (typeof value === "number") {
+      return (
+        <div className="flex items-baseline gap-1 font-mono tabular-nums">
+          <span className={cn("text-2xl sm:text-3xl font-bold tracking-tight", currentTheme.text)}>
+            {value}
+          </span>
+          {unit && (
+            <span className="text-xs sm:text-sm font-medium text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+              {unit}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    const strValue = String(value);
+    const match = strValue.match(/^(\$)?([\d,]+(?:\.\d+)?|\—)\s*(.*)$/);
+    if (match) {
+      const [, prefix, num, matchedUnit] = match;
+      const finalUnit = unit || matchedUnit;
+      return (
+        <div className="flex items-baseline gap-0.5 font-mono tabular-nums">
+          {prefix && (
+            <span className={cn("text-lg sm:text-xl font-semibold opacity-70", currentTheme.text)}>
+              {prefix}
+            </span>
+          )}
+          <span className={cn("text-2xl sm:text-3xl font-bold tracking-tight", currentTheme.text)}>
+            {num}
+          </span>
+          {finalUnit && (
+            <span className="text-xs sm:text-sm font-medium text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 ml-1">
+              {finalUnit}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <span className={cn("text-2xl sm:text-3xl font-bold font-mono tracking-tight tabular-nums", currentTheme.text)}>
+        {strValue}
+      </span>
+    );
+  };
+
   const cardContent = (
-    <motion.div
-      whileHover={{ y: -2, transition: { duration: 0.12 } }}
-      className="h-full"
+    <Card
+      className={cn(
+        "group h-full flex flex-col justify-between transition-all duration-150 cursor-pointer bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs hover:shadow-xs hover:border-[#853953]/35 dark:hover:border-[#A74B6A]/35",
+        currentTheme.border,
+        className
+      )}
     >
-      <Card
-        className={cn(
-          "group h-full flex flex-col justify-between transition-all duration-200 cursor-pointer bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs hover:shadow-md",
-          currentTheme.border,
-          className
-        )}
-      >
         <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tracking-normal font-sans">{title}</span>
+              <span className="text-xs font-semibold text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tracking-tight font-sans">
+                {title}
+              </span>
               {badge && (
-                <Badge variant={badgeVariant} className="text-[10px] px-1.5 py-0 font-medium">
+                <Badge variant={badgeVariant} className="text-[10px] px-1.5 py-0 font-medium tracking-normal">
                   {badge}
                 </Badge>
               )}
@@ -124,9 +171,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           </div>
 
           <div className="my-2.5 flex items-baseline justify-between">
-            <span className={cn("text-2xl sm:text-3xl font-extrabold font-mono tracking-normal", currentTheme.text)}>
-              {value}
-            </span>
+            {renderValue()}
             {delta && (
               <span
                 className={cn(
@@ -147,13 +192,12 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           </div>
 
           {subtext && (
-            <div className="text-xs font-sans text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate flex items-center justify-between pt-2 border-t border-[#F3F4F4] dark:border-[#F3F4F4]/10">
+            <div className="text-xs font-sans font-normal text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate flex items-center justify-between pt-2 border-t border-[#2C2C2C]/5 dark:border-[#F3F4F4]/10 tabular-nums">
               <span>{subtext}</span>
             </div>
           )}
         </CardContent>
       </Card>
-    </motion.div>
   );
 
   if (tooltip) {

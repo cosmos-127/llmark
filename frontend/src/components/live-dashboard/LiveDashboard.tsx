@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Octagon,
@@ -11,23 +11,20 @@ import {
   Table as TableIcon,
   Activity,
   LineChart,
-  Terminal,
 } from "lucide-react";
 import { BenchmarkConfig, MetricsSnapshot } from "@/lib/types";
 import { formatMs, formatPct, formatUsd, downloadFile } from "@/lib/utils";
 import { MetricCards } from "./MetricCards";
-
 import { KpiSummaryTable } from "./KpiSummaryTable";
 import { WaterfallBar } from "./WaterfallBar";
 import { StreamingChart } from "./StreamingChart";
-import { TokenTerminal } from "./TokenTerminal";
 import { TimeSeriesPoint } from "@/hooks/useBenchmarkSSE";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LiveStreamWave } from "@/components/common/AnimatedSvg";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ProviderLogo } from "@/components/common/BrandLogos";
 
 interface LiveDashboardProps {
   config: BenchmarkConfig;
@@ -52,94 +49,94 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
   onAbort,
   onReset,
 }) => {
-  const [copied, setCopied] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState<string>("table");
-  const isCompleted = isFinished || snapshot?.status === "completed";
-  const isBudgetExceeded = snapshot?.status === "budget_exceeded";
+  const [activeTab, setActiveTab] = useState<string>("charts");
+  const [copied, setCopied] = useState(false);
 
-  const handleCopyMarkdown = async () => {
-    try {
-      const res = await fetch(`/api/export/markdown/${benchmarkId}`);
-      const text = await res.text();
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      console.error(e);
-    }
+  const handleCopyMarkdown = () => {
+    if (!snapshot) return;
+    const md = `### LLMark Run: ${config.vendor} / ${config.model}
+- **P50 / P95 / P99 TTFT**: ${formatMs(snapshot.ttft_p50)} / ${formatMs(snapshot.ttft_p95)} / ${formatMs(snapshot.ttft_p99)}
+- **Throughput**: ${snapshot.current_tps.toFixed(1)} tok/s
+- **Goodput SLO Yield**: ${snapshot.goodput_pct}%
+- **Total Cost**: ${formatUsd(snapshot.current_spend_usd)}`;
+    navigator.clipboard.writeText(md);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const statusLabel = snapshot?.status ? snapshot.status.replace("_", " ") : "Running";
+  const isCompleted = isFinished || snapshot?.status === "completed" || snapshot?.status === "aborted";
 
   return (
     <TooltipProvider>
-      <div className="space-y-6">
-        {/* Mission Control Top Bar */}
-        <Card className="relative overflow-hidden">
+      <div className="space-y-6 font-sans">
+        {/* Top Control Bar & Run Status */}
+        <Card className="border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
           <CardContent className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg sm:text-xl font-bold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-normal font-sans">
-                  {config.name}
-                </h2>
-                <Badge variant="default" className="text-xs font-medium">
-                  {config.model}
-                </Badge>
-                <Badge variant="secondary" className="text-xs capitalize font-medium">
-                  {config.vendor}
-                </Badge>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
+                <ProviderLogo vendor={config.vendor} className="h-5 w-5" />
               </div>
-              <p className="text-xs font-sans text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                Run ID: <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] font-mono">{benchmarkId}</strong> • Concurrency:{" "}
-                <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">{config.concurrency} streams</strong> • Mode:{" "}
-                <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] capitalize">
-                  {config.test_mode === "requests" ? `${config.total_requests || 50} Requests` : `${config.duration_seconds}s Duration`}
-                </strong>{" "}
-                • Workload: <strong className="text-[#2C2C2C] dark:text-[#F3F4F4] capitalize">{config.workload_preset}</strong>
-              </p>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-tight">
+                    {config.model}
+                  </h3>
+                  <Badge variant="outline" className="text-[11px] font-mono capitalize">
+                    {config.vendor.replace("_", " ")}
+                  </Badge>
+                  {snapshot?.status === "running" && (
+                    <Badge variant="default" className="text-[10px] bg-emerald-600 dark:bg-emerald-700 text-white animate-pulse">
+                      Live Socket
+                    </Badge>
+                  )}
+                  {snapshot?.status === "completed" && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      Completed
+                    </Badge>
+                  )}
+                  {snapshot?.status === "aborted" && (
+                    <Badge variant="destructive" className="text-[10px]">
+                      Aborted
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-mono mt-0.5">
+                  Concurrency: {config.concurrency} streams • Preset: {config.workload_preset} • Run: {benchmarkId.slice(0, 16)}...
+                </p>
+              </div>
             </div>
 
-            {/* Live Status Pill with Animated Stream Equalizer & Action Buttons */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2.5 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] px-3.5 py-1.5 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 font-sans text-xs shadow-xs">
-                {!isFinished ? (
-                  <LiveStreamWave active={true} className="h-3.5 w-6" />
-                ) : (
-                  <span className={`h-2 w-2 rounded-full ${isCompleted ? "bg-emerald-500" : "bg-rose-500"}`} />
-                )}
-                <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4] capitalize">
-                  {statusLabel} ({(snapshot?.elapsed_seconds || 0).toFixed(1)}s)
-                </span>
+              <div className="text-right hidden sm:block">
+                <div className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-mono">Elapsed Time</div>
+                <div className="text-sm font-bold font-mono text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
+                  {snapshot?.elapsed_seconds ? `${snapshot.elapsed_seconds.toFixed(1)}s` : "0.0s"}
+                </div>
               </div>
 
-              {/* Abort or Reset Button */}
               {!isFinished ? (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={onAbort}
-                    disabled={isAborting}
-                    className="rounded-xl px-4 py-2 font-medium h-9 shadow-xs cursor-pointer"
-                  >
-                    <Octagon className="h-4 w-4" />
-                    {isAborting ? "Aborting..." : "Instant abort"}
-                  </Button>
-                </motion.div>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={onAbort}
+                  disabled={isAborting}
+                  className="rounded-xl px-4 py-2 font-medium h-9 shadow-2xs hover:shadow-xs cursor-pointer text-xs"
+                >
+                  <Octagon className="h-4 w-4" />
+                  {isAborting ? "Aborting..." : "Instant abort"}
+                </Button>
               ) : (
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    type="button"
-                    variant="amberGlow"
-                    size="sm"
-                    onClick={onReset}
-                    className="rounded-xl px-4 py-2 text-xs font-bold h-9 shadow-sm cursor-pointer"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                    Configure next run
-                  </Button>
-                </motion.div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onReset}
+                  className="rounded-xl px-4 py-2 text-xs font-semibold h-9 shadow-xs hover:shadow-sm cursor-pointer"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Configure next run
+                </Button>
               )}
             </div>
           </CardContent>
@@ -168,13 +165,13 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
 
         {/* Completion Banner with Quick Export Hub */}
         <AnimatePresence>
-          {isCompleted && (
+          {isFinished && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
             >
-              <Card className="border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/30">
+              <Card className="border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/30 shadow-xs">
                 <CardContent className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
@@ -194,20 +191,42 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-xl font-medium shadow-2xs"
+                      className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer"
                       onClick={() => downloadFile(`/api/export/pdf/${benchmarkId}`, `llmark_report_${benchmarkId}.pdf`)}
                     >
                       <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                      Download PDF report
+                      Download PDF
                     </Button>
+
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleCopyMarkdown}
-                      className="rounded-xl font-medium shadow-2xs"
+                      className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer"
                     >
-                      {copied ? <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />}
-                      {copied ? "Copied markdown!" : "Copy markdown summary"}
+                        <AnimatePresence mode="wait" initial={false}>
+                          {copied ? (
+                            <motion.span
+                              key="check"
+                              initial={{ scale: 0.6, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0.6, opacity: 0 }}
+                              className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium"
+                            >
+                              <Check className="h-3.5 w-3.5" /> Copied!
+                            </motion.span>
+                          ) : (
+                            <motion.span
+                              key="copy"
+                              initial={{ scale: 0.6, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0.6, opacity: 0 }}
+                              className="flex items-center gap-1 text-[#853953] dark:text-[#A74B6A] font-medium"
+                            >
+                              <Copy className="h-3.5 w-3.5" /> Copy Summary
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
                     </Button>
                   </div>
                 </CardContent>
@@ -216,22 +235,22 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
           )}
         </AnimatePresence>
 
-        {/* 1. KPI Headline Cards */}
+        {/* 1. Real-Time KPI Metric Cards Row */}
         <MetricCards snapshot={snapshot} />
 
         {/* 2. Interactive View Switcher: Telemetry Table vs Visual Charts */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
           <div className="flex items-center justify-between">
-            <TabsList className="h-9">
-              <TabsTrigger value="table" className="gap-1.5 cursor-pointer">
+            <TabsList className="h-9 p-1">
+              <TabsTrigger value="charts" className="gap-1.5 cursor-pointer text-xs">
+                <LineChart className="h-3.5 w-3.5" />
+                <span>Waterfall & Streaming Charts</span>
+              </TabsTrigger>
+              <TabsTrigger value="table" className="gap-1.5 cursor-pointer text-xs">
                 <TableIcon className="h-3.5 w-3.5" />
                 <span>Executive Telemetry Matrix</span>
               </TabsTrigger>
-              <TabsTrigger value="charts" className="gap-1.5 cursor-pointer">
-                <LineChart className="h-3.5 w-3.5" />
-                <span>Live Stream & Waterfall</span>
-              </TabsTrigger>
-              <TabsTrigger value="all" className="gap-1.5 cursor-pointer">
+              <TabsTrigger value="all" className="gap-1.5 cursor-pointer text-xs">
                 <Activity className="h-3.5 w-3.5" />
                 <span>Combined View</span>
               </TabsTrigger>
@@ -242,50 +261,24 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
             </span>
           </div>
 
-          {/* Tab 1: Executive Telemetry Matrix Table */}
-          <TabsContent value="table" className="space-y-6 mt-0">
-            <KpiSummaryTable snapshot={snapshot} config={config} />
-          </TabsContent>
-
-          {/* Tab 2: Visual Streams & Charts */}
+          {/* Tab 1: Visual Streams & Charts */}
           <TabsContent value="charts" className="space-y-6 mt-0">
-            {/* Live Token Terminal & Waterfall Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-6">
-                <TokenTerminal
-                  status={snapshot?.status || "running"}
-                  elapsedSeconds={snapshot?.elapsed_seconds || 0}
-                  completedRequests={snapshot?.completed_requests || 0}
-                  currentTps={snapshot?.current_tps || 0}
-                />
-              </div>
-              <div className="lg:col-span-6 flex flex-col justify-between">
-                <WaterfallBar waterfall={snapshot?.waterfall_avg} />
-              </div>
-            </div>
+            {/* Full-Width Latency Waterfall Profiler */}
+            <WaterfallBar waterfall={snapshot?.waterfall_avg} />
 
             {/* Live Streaming Area Chart */}
             <StreamingChart data={timeSeries} />
           </TabsContent>
 
+          {/* Tab 2: Executive Telemetry Matrix Table */}
+          <TabsContent value="table" className="space-y-6 mt-0">
+            <KpiSummaryTable snapshot={snapshot} config={config} />
+          </TabsContent>
+
           {/* Tab 3: Combined View */}
           <TabsContent value="all" className="space-y-6 mt-0">
             <KpiSummaryTable snapshot={snapshot} config={config} />
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-6">
-                <TokenTerminal
-                  status={snapshot?.status || "running"}
-                  elapsedSeconds={snapshot?.elapsed_seconds || 0}
-                  completedRequests={snapshot?.completed_requests || 0}
-                  currentTps={snapshot?.current_tps || 0}
-                />
-              </div>
-              <div className="lg:col-span-6 flex flex-col justify-between">
-                <WaterfallBar waterfall={snapshot?.waterfall_avg} />
-              </div>
-            </div>
-
+            <WaterfallBar waterfall={snapshot?.waterfall_avg} />
             <StreamingChart data={timeSeries} />
           </TabsContent>
         </Tabs>

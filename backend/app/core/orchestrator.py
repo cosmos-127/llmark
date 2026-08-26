@@ -108,8 +108,9 @@ class BenchmarkOrchestrator:
         execution = BenchmarkExecution(benchmark_id, config)
         cls._active_runs[benchmark_id] = execution
 
-        # Launch background execution task
-        asyncio.create_task(cls._execute_benchmark_lifecycle(execution))
+        # Launch background execution task and retain a strong reference to prevent GC
+        task = asyncio.create_task(cls._execute_benchmark_lifecycle(execution))
+        execution._task = task  # type: ignore[attr-defined]
         return benchmark_id
 
     @classmethod
@@ -123,115 +124,132 @@ class BenchmarkOrchestrator:
         execution.status = "running"
         execution.start_time = time.perf_counter()
 
-        # Determine prompt content
-        base_prompt = config.custom_prompt or PROMPT_PRESET_TEXT.get(config.workload_preset, "Benchmark test prompt")
+        try:
+            # Determine prompt content
+            base_prompt = config.custom_prompt or PROMPT_PRESET_TEXT.get(config.workload_preset, "Benchmark test prompt")
 
-        # 1. Measure Network Waterfall Baseline (DNS, TCP, TLS)
-        execution.waterfall_baseline = await WaterfallCollector.measure_connection_waterfall(config)
-        await execution.broadcast("waterfall_baseline", execution.waterfall_baseline.model_dump())
+            # 1. Measure Network Waterfall Baseline (DNS, TCP, TLS)
+            execution.waterfall_baseline = await WaterfallCollector.measure_connection_waterfall(config)
+            await execution.broadcast("waterfall_baseline", execution.waterfall_baseline.model_dump())
 
-        # 2. Warmup Phase (Discarded from metrics)
-        for i in range(config.warmup_requests):
-            if execution.cancel_token.is_cancelled:
-                break
-            try:
-                async for _ in adapter.stream_completion(config.credential, config, base_prompt):
-                    pass
-            except Exception as e:
-                logger.warning("Warmup request failed", error=str(e))
+            # 2. Warmup Phase (Discarded from metrics)
+            for i in range(config.warmup_requests):
+                if execution.cancel_token.is_cancelled:
+                    break
+                try:
+                    async for _ in adapter.stream_completion(config.credential, config, base_prompt):
+                        pass
+                except Exception as e:
+                    logger.warning("Warmup request failed", error=str(e))
 
-        # 3. Workload Concurrency Execution
-        workers_count = config.concurrency
-        worker_tasks = []
-        request_counter = 0
-        counter_lock = asyncio.Lock()
+            # 3. Workload Concurrency Execution
+            workers_count = config.concurrency
+            request_counter = 0
+            counter_lock = asyncio.Lock()
 
-        async def worker_loop(worker_id: int):
-            nonlocal request_counter
-            while not execution.cancel_token.is_cancelled:
-                # Mode-based termination check
-                if config.test_mode == TestMode.REQUESTS and config.total_requests and config.total_requests > 0:
-                    async with counter_lock:
-                        if request_counter >= config.total_requests:
+            async def worker_loop(worker_id: int):
+                nonlocal request_counter
+                while not execution.cancel_token.is_cancelled:
+                    # Mode-based termination check
+                    if config.test_mode == TestMode.REQUESTS and config.total_requests and config.total_requests > 0:
+                        async with counter_lock:
+                            if request_counter >= config.total_requests:
+                                break
+                            request_counter += 1
+                    else:
+                        elapsed = time.perf_counter() - execution.start_time
+                        if elapsed >= config.duration_seconds:
                             break
-                        request_counter += 1
-                else:
-                    elapsed = time.perf_counter() - execution.start_time
-                    if elapsed >= config.duration_seconds:
+
+                    # Prepare prompt (Cache-warm vs Cache-bust nonce)
+                    prompt = base_prompt
+                    if config.cache_bust:
+                        prompt = f"{base_prompt} [Nonce: {uuid.uuid4().hex[:8]}]"
+
+                    # Check spend cap circuit breaker
+                    if CostGuard.is_spend_cap_exceeded(execution.total_cost_usd, config.hard_spend_cap):
+                        execution.cancel_token.cancel("Hard spend cap exceeded")
+                        execution.status = "budget_exceeded"
+                        await execution.broadcast(
+                            "budget_warning",
+                            {"current_spend_usd": execution.total_cost_usd, "spend_cap_usd": config.hard_spend_cap},
+                        )
                         break
 
-                # Prepare prompt (Cache-warm vs Cache-bust nonce)
-                prompt = base_prompt
-                if config.cache_bust:
-                    prompt = f"{base_prompt} [Nonce: {uuid.uuid4().hex[:8]}]"
-
-                # Check spend cap circuit breaker
-                if CostGuard.is_spend_cap_exceeded(execution.total_cost_usd, config.hard_spend_cap):
-                    execution.cancel_token.cancel("Hard spend cap exceeded")
-                    execution.status = "budget_exceeded"
-                    await execution.broadcast(
-                        "budget_warning",
-                        {"current_spend_usd": execution.total_cost_usd, "spend_cap_usd": config.hard_spend_cap},
+                    # Stream single request
+                    req_metric = await cls._stream_single_request(
+                        adapter, config, prompt, execution.waterfall_baseline
                     )
-                    break
+                    execution.metrics.append(req_metric)
+                    execution.total_cost_usd += req_metric.cost_usd
 
-                # Stream single request
-                req_metric = await cls._stream_single_request(
-                    adapter, config, prompt, execution.waterfall_baseline
-                )
-                execution.metrics.append(req_metric)
-                execution.total_cost_usd += req_metric.cost_usd
+                    # Yield control
+                    await asyncio.sleep(0.01)
 
-                # Yield control
-                await asyncio.sleep(0.01)
+            # Periodic SSE Snapshot Broadcaster Task
+            async def broadcast_loop():
+                while execution.status == "running" and not execution.cancel_token.is_cancelled:
+                    elapsed = time.perf_counter() - execution.start_time
+                    snapshot = StatisticsEngine.calculate_snapshot(
+                        benchmark_id=benchmark_id,
+                        status=execution.status,
+                        elapsed_seconds=elapsed,
+                        total_requests=len(execution.metrics),
+                        metrics=execution.metrics,
+                        slo=config.slo,
+                    )
+                    await execution.broadcast("progress_snapshot", snapshot.model_dump())
+                    await asyncio.sleep(0.1)
+
+            broadcast_task = asyncio.create_task(broadcast_loop())
+
+            # Run concurrent workers
+            try:
+                async with asyncio.TaskGroup() as tg:
+                    for w in range(workers_count):
+                        tg.create_task(worker_loop(w))
+            except* Exception as eg:
+                logger.error("Error during workload execution", errors=[str(e) for e in eg.exceptions])
+
+            # Finalize
+            broadcast_task.cancel()
+            if execution.status == "running":
+                execution.status = "completed"
+
+            total_elapsed = time.perf_counter() - execution.start_time
+            final_snapshot = StatisticsEngine.calculate_snapshot(
+                benchmark_id=benchmark_id,
+                status=execution.status,
+                elapsed_seconds=total_elapsed,
+                total_requests=len(execution.metrics),
+                metrics=execution.metrics,
+                slo=config.slo,
+            )
+
+            # Persist to database
+            await cls._persist_run_to_db(execution, final_snapshot)
+
+            # Broadcast completion
+            await execution.broadcast("run_complete", final_snapshot.model_dump())
+            logger.info("Benchmark finished", benchmark_id=benchmark_id, status=execution.status, completed=final_snapshot.completed_requests)
+
+        except Exception as e:
+            logger.error("Unhandled exception in benchmark lifecycle", benchmark_id=benchmark_id, error=str(e))
+            execution.cancel_token.cancel("Internal error")
+            execution.status = "failed"
+            total_elapsed = time.perf_counter() - execution.start_time
+            error_snapshot = StatisticsEngine.calculate_snapshot(
+                benchmark_id=benchmark_id,
+                status=execution.status,
+                elapsed_seconds=total_elapsed,
+                total_requests=len(execution.metrics),
+                metrics=execution.metrics,
+                slo=config.slo,
+            )
+            await cls._persist_run_to_db(execution, error_snapshot)
+            await execution.broadcast("run_complete", error_snapshot.model_dump())
 
 
-        # Periodic SSE Snapshot Broadcaster Task
-        async def broadcast_loop():
-            while execution.status == "running" and not execution.cancel_token.is_cancelled:
-                elapsed = time.perf_counter() - execution.start_time
-                snapshot = StatisticsEngine.calculate_snapshot(
-                    benchmark_id=benchmark_id,
-                    status=execution.status,
-                    elapsed_seconds=elapsed,
-                    total_requests=len(execution.metrics),
-                    metrics=execution.metrics,
-                    slo=config.slo,
-                )
-                await execution.broadcast("progress_snapshot", snapshot.model_dump())
-                await asyncio.sleep(0.1)
-
-        broadcast_task = asyncio.create_task(broadcast_loop())
-
-        # Run concurrent workers
-        try:
-            async with asyncio.TaskGroup() as tg:
-                for w in range(workers_count):
-                    tg.create_task(worker_loop(w))
-        except* Exception as eg:
-            logger.error("Error during workload execution", errors=[str(e) for e in eg.exceptions])
-
-        # Finalize
-        broadcast_task.cancel()
-        if execution.status == "running":
-            execution.status = "completed"
-
-        total_elapsed = time.perf_counter() - execution.start_time
-        final_snapshot = StatisticsEngine.calculate_snapshot(
-            benchmark_id=benchmark_id,
-            status=execution.status,
-            elapsed_seconds=total_elapsed,
-            total_requests=len(execution.metrics),
-            metrics=execution.metrics,
-            slo=config.slo,
-        )
-
-        # Persist to database
-        await cls._persist_run_to_db(execution, final_snapshot)
-
-        # Broadcast completion
-        await execution.broadcast("run_complete", final_snapshot.model_dump())
-        logger.info("Benchmark finished", benchmark_id=benchmark_id, status=execution.status, completed=final_snapshot.completed_requests)
 
 
     @classmethod

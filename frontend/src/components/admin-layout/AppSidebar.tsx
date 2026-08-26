@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
   Zap,
   History,
@@ -20,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ThemeToggle } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
-export type NavTab = "benchmark" | "diff" | "history";
+export type NavTab = "landing" | "benchmark" | "diff" | "history";
 
 interface AppSidebarProps {
   activeTab: NavTab;
@@ -36,6 +37,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   setCollapsed,
 }) => {
   const navItems = [
+    {
+      id: "landing" as NavTab,
+      label: "Home overview",
+      icon: Sparkles,
+      badge: "Hub",
+      badgeVariant: "default" as const,
+      description: "Landing hub with the 3 core operations",
+    },
     {
       id: "benchmark" as NavTab,
       label: "Benchmark studio",
@@ -73,9 +82,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         {/* Sidebar Header / Brand */}
         <div>
           <div className="flex h-16 items-center justify-between px-4 border-b border-[#F3F4F4] dark:border-[#F3F4F4]/10">
-            <div
-              onClick={() => setActiveTab("benchmark")}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setActiveTab("landing")}
               className="flex items-center gap-3 cursor-pointer overflow-hidden group"
+              title="Return to Landing Page"
             >
               <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#853953] via-[#743663] to-[#612D53] shadow-sm ring-1 ring-[#853953]/30 group-hover:scale-105 transition-transform">
                 <Zap className="h-4.5 w-4.5 text-white fill-white" />
@@ -93,7 +105,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate font-mono tracking-wide">v0.1.0-alpha</p>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Collapse toggle */}
             <Button
@@ -121,15 +133,24 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
-                    "group flex w-full items-center gap-3 rounded-xl p-2.5 text-xs font-medium transition-all cursor-pointer font-sans",
+                    "group relative flex w-full items-center gap-3 rounded-xl p-2.5 text-xs font-medium transition-all cursor-pointer font-sans select-none",
                     isActive
-                      ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/30 dark:border-[#A74B6A]/40 shadow-xs font-bold"
-                      : "text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4] border border-transparent"
+                      ? "text-[#853953] dark:text-[#A74B6A] font-bold"
+                      : "text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 hover:bg-[#F3F4F4]/70 dark:hover:bg-[#2C2C2C]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
                   )}
                 >
+                  {/* Sliding active background indicator */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-sidebar-pill"
+                      className="absolute inset-0 rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 border border-[#853953]/30 dark:border-[#A74B6A]/40 shadow-xs"
+                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                    />
+                  )}
+
                   <div
                     className={cn(
-                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
+                      "relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
                       isActive
                         ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
                         : "bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 group-hover:text-[#2C2C2C] dark:group-hover:text-[#F3F4F4] group-hover:bg-[#e6e8e8] dark:group-hover:bg-[#353337]"
@@ -138,7 +159,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     <Icon className={cn("h-3.5 w-3.5", isActive && "fill-white")} />
                   </div>
                   {!collapsed && (
-                    <div className="flex flex-1 items-center justify-between truncate">
+                    <div className="relative z-10 flex flex-1 items-center justify-between truncate">
                       <span className="truncate">{item.label}</span>
                       <Badge variant={isActive ? "default" : "secondary"} className="text-[10px] px-2 py-0.5 font-medium">
                         {item.badge}
