@@ -1,4 +1,3 @@
-import pytest
 from app.core.fallback_tokenizer import FallbackTokenizer
 
 

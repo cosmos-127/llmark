@@ -6,14 +6,18 @@ export interface TimeSeriesPoint {
   timestamp: number;
   elapsed: number;
   ttft_p95: number;
+  ttft_instant?: number;
   itl_p95: number;
+  itl_instant?: number;
   tps: number;
   goodput: number;
+  goodput_instant?: number;
   spend: number;
   rate_limit_pct?: number;
   rpm?: number;
   tpm?: number;
   prefill_tps_p95?: number;
+  prefill_tps_instant?: number;
   schema_validity_pct?: number;
   thinking_tokens_avg?: number;
 }
@@ -73,14 +77,18 @@ export function useBenchmarkSSE(benchmarkId: string | null, onComplete?: (finalS
             timestamp: Date.now(),
             elapsed: data.elapsed_seconds,
             ttft_p95: data.ttft_p95,
+            ttft_instant: data.ttft_instant ?? data.ttft_p95,
             itl_p95: data.itl_p95,
+            itl_instant: data.itl_instant ?? data.itl_p95,
             tps: data.current_tps,
             goodput: data.goodput_pct,
+            goodput_instant: data.goodput_instant ?? data.goodput_pct,
             spend: data.current_spend_usd,
             rate_limit_pct: data.rate_limit_pct,
             rpm: data.current_rpm || (data.current_rps || 0) * 60,
             tpm: data.current_tpm,
             prefill_tps_p95: data.prefill_tps_p95,
+            prefill_tps_instant: data.prefill_tps_instant ?? data.prefill_tps_p95,
             schema_validity_pct: data.schema_validity_pct,
             thinking_tokens_avg: data.thinking_tokens_avg,
           },

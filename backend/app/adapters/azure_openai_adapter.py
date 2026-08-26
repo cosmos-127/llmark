@@ -1,5 +1,6 @@
 import time
-from typing import AsyncIterator, Optional, List
+from collections.abc import AsyncIterator
+
 import structlog
 from openai import AsyncAzureOpenAI
 
@@ -15,7 +16,7 @@ class AzureOpenAIAdapter(VendorAdapter):
 
     async def stream_completion(
         self,
-        credential: Optional[VendorCredential],
+        credential: VendorCredential | None,
         config: BenchmarkConfig,
         prompt: str,
     ) -> AsyncIterator[TokenEvent]:
@@ -23,7 +24,11 @@ class AzureOpenAIAdapter(VendorAdapter):
         azure_endpoint = (
             credential.azure_endpoint
             if credential and credential.azure_endpoint
-            else (credential.base_url if credential and credential.base_url else "https://openai.azure.com")
+            else (
+                credential.base_url
+                if credential and credential.base_url
+                else "https://openai.azure.com"
+            )
         )
         azure_deployment = (
             credential.azure_deployment
@@ -114,7 +119,7 @@ class AzureOpenAIAdapter(VendorAdapter):
         finally:
             await client.close()
 
-    async def list_models(self, credential: Optional[VendorCredential]) -> List[str]:
+    async def list_models(self, credential: VendorCredential | None) -> list[str]:
         if not credential or not (credential.azure_endpoint or credential.base_url):
             return ["gpt-4o", "gpt-4o-mini", "o1", "o3-mini", "gpt-4-turbo"]
         api_key = credential.api_key if credential.api_key else "EMPTY"

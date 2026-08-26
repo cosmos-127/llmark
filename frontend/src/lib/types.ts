@@ -178,6 +178,22 @@ export interface MetricsSnapshot {
   network_edge_avg_ms?: number | null;
   server_gpu_compute_avg_ms?: number | null;
 
+  // Real-Time Dynamic Stream Tracking (Instant / Recent window)
+  ttft_instant?: number;
+  itl_instant?: number;
+  prefill_tps_instant?: number;
+  goodput_instant?: number;
+
+  // High-Impact Derived Performance & Economic Indicators
+  itl_jitter_cv?: number | null;
+  prefill_slope_ms_per_1k?: number | null;
+  cache_speedup_factor?: number | null;
+  thinking_wait_multiplier?: number | null;
+  thinking_cost_share_pct?: number | null;
+  grammar_penalty_pct?: number | null;
+  concurrency_scaling_efficiency_pct?: number | null;
+  cost_per_1k_goodput_usd?: number | null;
+
   profile_metrics?: string[];
   workload_preset?: string;
 }

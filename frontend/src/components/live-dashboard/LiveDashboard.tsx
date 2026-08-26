@@ -60,6 +60,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
 - **P50 / P95 / P99 TTFT**: ${formatMs(snapshot.ttft_p50)} / ${formatMs(snapshot.ttft_p95)} / ${formatMs(snapshot.ttft_p99)}
 - **Throughput**: ${snapshot.current_tps.toFixed(1)} tok/s
 - **Goodput SLO Yield**: ${snapshot.goodput_pct}%
+- **Cost / 1K Goodput Calls**: ${formatUsd(snapshot.cost_per_1k_goodput_usd || 0)}
 - **Total Cost**: ${formatUsd(snapshot.current_spend_usd)}`;
     navigator.clipboard.writeText(md);
     setCopied(true);
@@ -184,7 +185,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                         Benchmark completed successfully
                       </h4>
                       <p className="text-xs text-emerald-800 dark:text-emerald-300/80">
-                        {snapshot?.completed_requests} streams completed • {snapshot?.goodput_pct}% Goodput SLO yield • Total Spend: {formatUsd(snapshot?.current_spend_usd)}
+                        {snapshot?.completed_requests} streams completed • {snapshot?.goodput_pct}% Goodput SLO yield • Cost/1K: {formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)} • Total: {formatUsd(snapshot?.current_spend_usd)}
                       </p>
                     </div>
                   </div>

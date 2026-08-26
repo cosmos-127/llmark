@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +14,7 @@ router = APIRouter(prefix="/diff", tags=["diff"])
 async def compare_benchmark_runs(
     run_a: str = Query(..., description="Benchmark Run A ID"),
     run_b: str = Query(..., description="Benchmark Run B ID"),
-    run_c: Optional[str] = Query(None, description="Optional Benchmark Run C ID"),
+    run_c: str | None = Query(None, description="Optional Benchmark Run C ID"),
     db: AsyncSession = Depends(get_db),
 ) -> RunDiffResponse:
     """Compare up to three benchmark runs head-to-head and return metric percentage deltas."""

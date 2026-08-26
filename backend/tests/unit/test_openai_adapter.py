@@ -1,5 +1,7 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
+
 from app.adapters.openai_adapter import OpenAICompatAdapter
 from app.models.schemas import BenchmarkConfig, VendorCredential, VendorType
 
@@ -24,7 +26,9 @@ class DummyUsage:
 
 class DummyChunk:
     def __init__(self, content="", reasoning=None, usage=None):
-        self.choices = [DummyChoice(DummyChoiceDelta(content, reasoning))] if content or reasoning else []
+        self.choices = (
+            [DummyChoice(DummyChoiceDelta(content, reasoning))] if content or reasoning else []
+        )
         self.usage = usage
 
 
@@ -77,10 +81,14 @@ async def test_openai_adapter_list_models(mocker):
             self.data = data
 
     mock_client = MagicMock()
-    mock_client.models.list = AsyncMock(return_value=DummyModelList([
-        DummyModel("meta-llama/llama-3.3-70b-instruct"),
-        DummyModel("deepseek-ai/deepseek-r1"),
-    ]))
+    mock_client.models.list = AsyncMock(
+        return_value=DummyModelList(
+            [
+                DummyModel("meta-llama/llama-3.3-70b-instruct"),
+                DummyModel("deepseek-ai/deepseek-r1"),
+            ]
+        )
+    )
     mock_client.close = AsyncMock()
 
     mocker.patch("app.adapters.openai_adapter.AsyncOpenAI", return_value=mock_client)
@@ -89,4 +97,3 @@ async def test_openai_adapter_list_models(mocker):
     assert len(models) == 2
     assert "deepseek-ai/deepseek-r1" in models
     assert "meta-llama/llama-3.3-70b-instruct" in models
-

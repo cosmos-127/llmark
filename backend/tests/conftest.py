@@ -1,12 +1,12 @@
 import asyncio
-import os
+from collections.abc import AsyncGenerator
+
 import pytest
 from httpx import ASGITransport, AsyncClient
-from typing import AsyncGenerator
 
-from app.db.session import engine, init_db
-from app.models.db.models import Base
+from app.db.session import engine
 from app.main import app
+from app.models.db.models import Base
 
 
 @pytest.fixture(scope="session")
@@ -26,7 +26,6 @@ async def setup_test_db():
     yield
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-
 
 
 @pytest.fixture

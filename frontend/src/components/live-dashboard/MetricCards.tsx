@@ -162,8 +162,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
           badge="P95 tok/s"
           badgeVariant="emerald"
           value={prefillTps95 ? `${prefillTps95.toFixed(0)} tok/s` : "Computing..."}
-          subtext={`P50: ${prefillTps50 ? prefillTps50.toFixed(0) : "—"} tok/s prompt compute velocity`}
-          tooltip="KV cache prefill compute processing speed in prompt tokens per second"
+          subtext={`Slope: ${snapshot?.prefill_slope_ms_per_1k ? `${snapshot.prefill_slope_ms_per_1k.toFixed(1)} ms/1K` : "—"} • P50: ${prefillTps50 ? prefillTps50.toFixed(0) : "—"} tok/s`}
+          tooltip="KV cache prefill compute velocity and latency slope per 1,000 prompt tokens"
           icon={Layers}
           accentColor="emerald"
         />
@@ -203,11 +203,11 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
 
         <KpiCard
           title="Input Token Spend"
-          badge="Real-time"
+          badge={snapshot?.cache_speedup_factor ? `${snapshot.cache_speedup_factor.toFixed(1)}x Speedup` : "Real-time"}
           badgeVariant="default"
           value={formatUsd(snapshot?.current_spend_usd)}
-          subtext="Prompt context billing"
-          tooltip="Cost accumulated from processing heavy prompt tokens"
+          subtext={`Cost/1K Goodput: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`}
+          tooltip="Cost accumulated from processing heavy prompt tokens & true cost per 1K valid calls"
           icon={DollarSign}
           accentColor="mulberry"
         />
@@ -217,6 +217,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
 
   // 3. Streaming Decode & Generation Jitter / Code Generation Profile
   if (preset === "decode_throughput" || preset === "code_generation" || preset === "code") {
+    const itlCv = snapshot?.itl_jitter_cv;
+
     return (
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
         <KpiCard
@@ -232,11 +234,11 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
 
         <KpiCard
           title="Inter-token latency (ITL)"
-          badge="P95"
-          badgeVariant="violet"
+          badge={itlCv !== undefined && itlCv !== null ? `CV: ${itlCv.toFixed(2)}` : "P95"}
+          badgeVariant={itlCv !== undefined && itlCv !== null && itlCv < 0.30 ? "emerald" : "violet"}
           value={formatMs(snapshot?.itl_p95)}
-          subtext={`P50: ${formatMs(snapshot?.itl_p50)} • P99: ${formatMs(snapshot?.itl_p99)}`}
-          tooltip="Latency gap between consecutive streaming tokens (smoothness index)"
+          subtext={`Jitter: ${itlCv !== undefined && itlCv !== null && itlCv < 0.30 ? "Glass Smooth (<0.30)" : "Standard Stream"} • P50: ${formatMs(snapshot?.itl_p50)}`}
+          tooltip="Latency gap between consecutive streaming tokens (smoothness index with coefficient of variation CV)"
           icon={Activity}
           accentColor="deepplum"
         />
@@ -279,8 +281,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
           badge="Real-time"
           badgeVariant="default"
           value={formatUsd(snapshot?.current_spend_usd)}
-          subtext="Output token compute cost"
-          tooltip="Exact financial cost accumulated from long output token generation"
+          subtext={`True Cost: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)} / 1K calls`}
+          tooltip="Exact financial cost accumulated & true cost per 1K successful transactions"
           icon={DollarSign}
           accentColor="mulberry"
         />
@@ -294,15 +296,17 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
     const ttfaP50 = snapshot?.ttfa_p50 || snapshot?.ttft_p50;
     const thinkingTokens = snapshot?.thinking_tokens_avg;
     const cotRatio = snapshot?.thinking_token_ratio_pct;
+    const waitMult = snapshot?.thinking_wait_multiplier;
+    const costShare = snapshot?.thinking_cost_share_pct;
 
     return (
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
         <KpiCard
           title="Time to First Answer (TTFA)"
-          badge="User Wait Time"
+          badge={waitMult ? `${waitMult.toFixed(1)}x Wait Tax` : "User Wait Time"}
           badgeVariant="default"
           value={formatMs(ttfaP95)}
-          subtext={`P50: ${formatMs(ttfaP50)} • Elapsed thinking duration`}
+          subtext={`P50: ${formatMs(ttfaP50)} • Wait Multiplier: ${waitMult ? `${waitMult.toFixed(1)}x vs TTFT` : "Active"}`}
           tooltip="Total elapsed latency until the thinking trace finishes and the answer begins"
           icon={Sparkles}
           accentColor="mulberry"
@@ -310,11 +314,11 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
 
         <KpiCard
           title="Thinking Tokens per Query"
-          badge="CoT Budget"
+          badge={costShare ? `${costShare.toFixed(0)}% Spend Share` : "CoT Budget"}
           badgeVariant="violet"
           value={thinkingTokens ? `${thinkingTokens.toFixed(0)} tok` : "Measuring..."}
           subtext={cotRatio ? `${cotRatio.toFixed(1)}% of total output tokens` : "Reasoning token allocation"}
-          tooltip="Average number of reasoning/thinking tokens emitted before the final answer"
+          tooltip="Average number of reasoning/thinking tokens emitted before the final answer and budget share"
           icon={Activity}
           accentColor="deepplum"
         />
@@ -357,7 +361,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
           badge="Real-time"
           badgeVariant="default"
           value={formatUsd(snapshot?.current_spend_usd)}
-          subtext="Includes thinking + answer tokens"
+          subtext={`Cost/1K Goodput: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`}
           tooltip="Total financial cost accounting for reasoning token generation pricing"
           icon={DollarSign}
           accentColor="mulberry"
@@ -740,6 +744,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
   }
 
   // 10. Default / Interactive Conversational / RAG Synthesis / Custom Profile
+  const itlCv = snapshot?.itl_jitter_cv;
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3.5">
       {kneeBanner}
@@ -756,11 +762,11 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
 
       <KpiCard
         title="Inter-token latency (ITL)"
-        badge="P95"
-        badgeVariant="violet"
+        badge={itlCv !== undefined && itlCv !== null ? `CV: ${itlCv.toFixed(2)}` : "P95"}
+        badgeVariant={itlCv !== undefined && itlCv !== null && itlCv < 0.30 ? "emerald" : "violet"}
         value={formatMs(snapshot?.itl_p95)}
-        subtext={`P50: ${formatMs(snapshot?.itl_p50)} • P99: ${formatMs(snapshot?.itl_p99)}`}
-        tooltip="Gap between consecutive streaming tokens (smoothness index)"
+        subtext={`Jitter: ${itlCv !== undefined && itlCv !== null && itlCv < 0.30 ? "Glass Smooth (<0.30)" : "Standard Stream"} • P50: ${formatMs(snapshot?.itl_p50)}`}
+        tooltip="Gap between consecutive streaming tokens (smoothness index with coefficient of variation CV)"
         icon={Activity}
         accentColor="deepplum"
       />
@@ -792,7 +798,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
         badge="Strict SLO"
         badgeVariant={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "violet"}
         value={formatPct(snapshot?.goodput_pct)}
-        subtext={`${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`}
+        subtext={`${snapshot?.completed_requests || 0} passed • Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`}
         tooltip="Percentage of requests satisfying all strict SLO latency and error thresholds"
         icon={CheckCircle2}
         accentColor={(snapshot?.goodput_pct || 0) >= 95 ? "emerald" : "deepplum"}
@@ -803,8 +809,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
         badge="Real-time"
         badgeVariant="default"
         value={formatUsd(snapshot?.current_spend_usd)}
-        subtext="Accumulated token cost"
-        tooltip="Exact financial cost accumulated in real-time according to vendor model token pricing"
+        subtext={`Cost/1K Goodput: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`}
+        tooltip="Exact financial cost accumulated & true cost per 1K successful transactions"
         icon={DollarSign}
         accentColor="mulberry"
       />

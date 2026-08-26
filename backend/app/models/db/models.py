@@ -1,6 +1,7 @@
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
-from sqlalchemy import String, Float, Integer, DateTime, JSON
+from datetime import UTC, datetime
+from typing import Any
+
+from sqlalchemy import JSON, DateTime, Float, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -19,7 +20,9 @@ class BenchmarkRun(Base):
     load_curve: Mapped[str] = mapped_column(String(64), nullable=False)
     concurrency: Mapped[int] = mapped_column(Integer, nullable=False)
     duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
-    status: Mapped[str] = mapped_column(String(32), default="pending")  # completed, aborted, budget_exceeded, failed
+    status: Mapped[str] = mapped_column(
+        String(32), default="pending"
+    )  # completed, aborted, budget_exceeded, failed
 
     # Financial & Count Summaries
     total_requests: Mapped[int] = mapped_column(Integer, default=0)
@@ -35,8 +38,8 @@ class BenchmarkRun(Base):
     ttft_p95: Mapped[float] = mapped_column(Float, default=0.0)
     ttft_p99: Mapped[float] = mapped_column(Float, default=0.0)
 
-    ttfa_p50: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    ttfa_p95: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    ttfa_p50: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ttfa_p95: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     itl_p50: Mapped[float] = mapped_column(Float, default=0.0)
     itl_p75: Mapped[float] = mapped_column(Float, default=0.0)
@@ -55,8 +58,8 @@ class BenchmarkRun(Base):
     tls_p50: Mapped[float] = mapped_column(Float, default=0.0)
 
     # Raw Microsecond Arrays & Config (Stored as JSON)
-    raw_telemetry: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
-    config_snapshot: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    raw_telemetry: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    config_snapshot: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

@@ -1,5 +1,6 @@
-from contextlib import asynccontextmanager
 import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -7,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import benchmark, diff, export, history
 from app.core.config import settings
 from app.db.session import init_db
-from app.observability.logging import setup_logging, logger
+from app.observability.logging import logger, setup_logging
 
 
 @asynccontextmanager

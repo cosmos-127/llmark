@@ -1,4 +1,3 @@
-import pytest
 from app.core.statistics_engine import StatisticsEngine
 from app.models.schemas import SingleRequestMetric, SLOThresholds, WaterfallTiming
 
@@ -78,7 +77,14 @@ def test_calculate_snapshot():
             tpot_ms=20.0,
             e2e_ms=1200.0,
             itl_deltas_ms=[20.0, 22.0, 19.0],
-            waterfall=WaterfallTiming(dns_ms=10.0, tcp_ms=20.0, tls_ms=25.0, ttft_ms=200.0, decode_ms=1000.0, total_e2e_ms=1200.0),
+            waterfall=WaterfallTiming(
+                dns_ms=10.0,
+                tcp_ms=20.0,
+                tls_ms=25.0,
+                ttft_ms=200.0,
+                decode_ms=1000.0,
+                total_e2e_ms=1200.0,
+            ),
             cost_usd=0.0005,
         ),
         SingleRequestMetric(
@@ -90,7 +96,14 @@ def test_calculate_snapshot():
             tpot_ms=25.0,
             e2e_ms=1550.0,
             itl_deltas_ms=[25.0, 26.0, 24.0],
-            waterfall=WaterfallTiming(dns_ms=10.0, tcp_ms=20.0, tls_ms=25.0, ttft_ms=300.0, decode_ms=1250.0, total_e2e_ms=1550.0),
+            waterfall=WaterfallTiming(
+                dns_ms=10.0,
+                tcp_ms=20.0,
+                tls_ms=25.0,
+                ttft_ms=300.0,
+                decode_ms=1250.0,
+                total_e2e_ms=1550.0,
+            ),
             cost_usd=0.0005,
         ),
     ]
@@ -110,3 +123,64 @@ def test_calculate_snapshot():
     assert snapshot.goodput_pct == 100.0
     assert snapshot.current_spend_usd == 0.001
     assert snapshot.current_tps == 50.0  # 100 tokens / 2.0s
+    assert snapshot.itl_jitter_cv is not None
+    assert snapshot.prefill_slope_ms_per_1k is not None
+    assert snapshot.cost_per_1k_goodput_usd == 0.5  # ($0.001 / 2) * 1000 = $0.5
+
+
+def test_derived_metrics_workload_preset_variations():
+    """Verify preset-specific derived calculations (cache speedup, thinking multipliers, grammar penalty)."""
+    slo = SLOThresholds(max_ttft_ms=500.0, max_tpot_ms=50.0, max_e2e_ms=5000.0)
+    reqs = [
+        SingleRequestMetric(
+            request_id="r1",
+            status_code=200,
+            prompt_tokens=2000,
+            completion_tokens=100,
+            thinking_tokens=60,
+            ttft_ms=100.0,
+            ttfa_ms=300.0,
+            tpot_ms=30.0,
+            e2e_ms=3000.0,
+            itl_deltas_ms=[28.0, 30.0, 32.0],
+            cost_usd=0.002,
+        ),
+    ]
+
+    # Reasoning preset
+    reasoning_snapshot = StatisticsEngine.calculate_snapshot(
+        benchmark_id="bmk_cot",
+        status="completed",
+        elapsed_seconds=3.0,
+        total_requests=1,
+        metrics=reqs,
+        slo=slo,
+        workload_preset="reasoning_cot",
+    )
+    assert reasoning_snapshot.thinking_wait_multiplier == 3.0  # 300 / 100
+    assert reasoning_snapshot.thinking_cost_share_pct == 60.0  # 60 / 100 * 100
+
+    # Structured JSON preset
+    json_snapshot = StatisticsEngine.calculate_snapshot(
+        benchmark_id="bmk_json",
+        status="completed",
+        elapsed_seconds=3.0,
+        total_requests=1,
+        metrics=reqs,
+        slo=slo,
+        workload_preset="structured_json",
+    )
+    assert json_snapshot.grammar_penalty_pct == 50.0  # (30 - 20) / 20 * 100 = 50%
+
+    # KV cache reuse preset
+    kv_snapshot = StatisticsEngine.calculate_snapshot(
+        benchmark_id="bmk_kv",
+        status="completed",
+        elapsed_seconds=3.0,
+        total_requests=1,
+        metrics=reqs,
+        slo=slo,
+        workload_preset="kv_cache_reuse",
+    )
+    assert kv_snapshot.cache_speedup_factor is not None
+    assert kv_snapshot.cache_speedup_factor > 1.0

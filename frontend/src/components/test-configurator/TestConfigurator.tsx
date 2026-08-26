@@ -61,6 +61,7 @@ import { api } from "@/lib/api";
 import { formatMs, formatPct, formatUsd } from "@/lib/utils";
 import { calculateInstantCostEstimate, getModelPricing } from "@/lib/costCalculator";
 import { POPULAR_BASE_URLS } from "@/lib/providerRegistry";
+import { WORKLOAD_PROMPT_PREVIEWS } from "@/lib/promptPresets";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -400,65 +401,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
   });
   const [jsonSchemaError, setJsonSchemaError] = useState<string | null>(null);
 
-  // Custom JSONL Dataset Replay
-  const [rawJsonlInput, setRawJsonlInput] = useState<string>(() => {
-    return config.custom_dataset ? config.custom_dataset.map((p) => JSON.stringify({ prompt: p })).join("\n") : "";
-  });
-  const [jsonlParseStats, setJsonlParseStats] = useState<{ count: number; avgChars: number } | null>(() => {
-    if (config.custom_dataset && config.custom_dataset.length > 0) {
-      const avgLen = Math.round(
-        config.custom_dataset.reduce((acc, p) => acc + p.length, 0) / config.custom_dataset.length
-      );
-      return { count: config.custom_dataset.length, avgChars: avgLen };
-    }
-    return null;
-  });
-
   const scrollToSection = (sectionId: string) => {
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
-  const handleJsonlChange = (text: string) => {
-    setRawJsonlInput(text);
-    if (!text.trim()) {
-      setJsonlParseStats(null);
-      onChange({ ...config, custom_dataset: undefined, dataset_type: "synthetic" });
-      return;
-    }
-    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-    const parsedPrompts: string[] = [];
-    for (const line of lines) {
-      try {
-        const obj = JSON.parse(line);
-        if (typeof obj === "string") {
-          parsedPrompts.push(obj);
-        } else if (obj.prompt && typeof obj.prompt === "string") {
-          parsedPrompts.push(obj.prompt);
-        } else if (obj.text && typeof obj.text === "string") {
-          parsedPrompts.push(obj.text);
-        } else if (obj.input && typeof obj.input === "string") {
-          parsedPrompts.push(obj.input);
-        } else if (obj.messages && Array.isArray(obj.messages)) {
-          const userMsg = obj.messages.find((m: any) => m.role === "user");
-          if (userMsg && userMsg.content) parsedPrompts.push(String(userMsg.content));
-          else parsedPrompts.push(JSON.stringify(obj.messages));
-        } else {
-          parsedPrompts.push(line);
-        }
-      } catch {
-        parsedPrompts.push(line);
-      }
-    }
-    if (parsedPrompts.length > 0) {
-      const avgLen = Math.round(parsedPrompts.reduce((acc, p) => acc + p.length, 0) / parsedPrompts.length);
-      setJsonlParseStats({ count: parsedPrompts.length, avgChars: avgLen });
-      onChange({ ...config, custom_dataset: parsedPrompts, dataset_type: "jsonl" });
-    } else {
-      setJsonlParseStats(null);
-      onChange({ ...config, custom_dataset: undefined, dataset_type: "synthetic" });
     }
   };
 
@@ -467,6 +413,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
   const [customCompletionPrice, setCustomCompletionPrice] = useState<string>("");
 
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
+  const [showFullPrompt, setShowFullPrompt] = useState<boolean>(false);
+  const [copiedPrompt, setCopiedPrompt] = useState<boolean>(false);
+  const [isEditingCustomPrompt, setIsEditingCustomPrompt] = useState<boolean>(false);
 
   const filteredPresets = useMemo(() => {
     return PRESET_OPTIONS.filter((preset) => {
@@ -1724,7 +1673,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
                     >
                       <Layers className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                      <span className="font-semibold">2A. Workload Scenario</span>
+                      <span className="font-semibold">2A. Workload Preset Scenario</span>
                       <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1">
                         {selectedPreset.name}
                       </Badge>
@@ -1735,20 +1684,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       onClick={() => scrollToSection("section-2b")}
                       className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
                     >
-                      <FileCode className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                      <span className="font-semibold">2B. Dataset & Payload</span>
-                      <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 capitalize">
-                        {config.dataset_type === "jsonl" ? "JSONL Replay" : "Synthetic"}
-                      </Badge>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => scrollToSection("section-2c")}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#A74B6A] transition-all cursor-pointer"
-                    >
                       <Sliders className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                      <span className="font-semibold">2C. Generation & Sampling</span>
+                      <span className="font-semibold">2B. Generation & Sampling</span>
                       <Badge variant="outline" className="text-[10px] hidden sm:inline-flex ml-1 font-sans">
                         {config.max_tokens} tok @ T={config.temperature}
                       </Badge>
@@ -1768,89 +1705,77 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               Workload Scenario Profile
                             </CardTitle>
                             <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Select the prompt-to-completion token ratio to evaluate target use-case performance.
+                              Select the standardized prompt-to-completion token ratio to evaluate target use-case performance.
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2A of 2C</Badge>
+                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2A of 2B</Badge>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-5 pt-2 space-y-5">
-                      {/* Search Bar & Category Filter Strip */}
-                      <div className="space-y-3 p-3.5 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50" />
-                          <Input
-                            type="text"
-                            value={workloadSearchQuery}
-                            onChange={(e) => setWorkloadSearchQuery(e.target.value)}
-                            placeholder="Search profiles by name, tag, or metrics (e.g. '429', 'prefill', 'jitter', 'reasoning')..."
-                            className="pl-9 pr-8 h-9 text-xs font-sans bg-white dark:bg-[#252426]"
-                          />
-                          {workloadSearchQuery && (
-                            <button
-                              type="button"
-                              onClick={() => setWorkloadSearchQuery("")}
-                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] cursor-pointer"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                        </div>
+                    <CardContent className="p-5 pt-2 space-y-4">
+                      {/* Search Bar & Workload Preset Categories */}
+                      <div className="space-y-3">
+                        <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+                          <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40" />
+                            <Input
+                              type="text"
+                              placeholder="Search workload scenarios (e.g. prefill, reasoning, code, json, throughput)..."
+                              value={workloadSearchQuery}
+                              onChange={(e) => setWorkloadSearchQuery(e.target.value)}
+                              className="pl-8.5 pr-8 h-9 text-xs rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 focus:border-[#853953] dark:focus:border-[#A74B6A]"
+                            />
+                            {workloadSearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setWorkloadSearchQuery("")}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/40 dark:hover:text-[#F3F4F4] cursor-pointer"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
 
-                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                          {CATEGORY_TABS.map((cat) => {
-                            const isCatActive = selectedCategory === cat.id;
-                            return (
+                          {/* Quick Category Filter Pills */}
+                          <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                            {[
+                              { id: "all", label: "All (13)" },
+                              { id: "latency", label: "Latency" },
+                              { id: "throughput", label: "Throughput" },
+                              { id: "reasoning", label: "Reasoning" },
+                              { id: "heavy_context", label: "Long Context" },
+                              { id: "code_structured", label: "JSON/Code" },
+                              { id: "rate_limit", label: "Rate Limit" },
+                            ].map((cat) => (
                               <button
                                 key={cat.id}
                                 type="button"
-                                onClick={() => setSelectedCategory(cat.id)}
-                                className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border whitespace-nowrap transition-all cursor-pointer ${
-                                  isCatActive
-                                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white border-[#853953] dark:border-[#A74B6A] shadow-2xs font-semibold"
-                                    : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#e6e8e8] dark:hover:bg-[#353337] hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                                onClick={() => setSelectedCategory(cat.id as WorkloadCategory)}
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap cursor-pointer ${
+                                  selectedCategory === cat.id
+                                    ? "bg-[#853953] text-white shadow-2xs font-semibold"
+                                    : "bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#2C2C2C]/10 dark:hover:bg-[#F3F4F4]/10"
                                 }`}
                               >
                                 {cat.label}
                               </button>
-                            );
-                          })}
+                            ))}
+                          </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 pt-0.5">
-                          <span>
-                            Showing <strong>{filteredPresets.length}</strong> of {PRESET_OPTIONS.length} profiles
-                          </span>
-                          {(workloadSearchQuery || selectedCategory !== "all") && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setWorkloadSearchQuery("");
-                                setSelectedCategory("all");
-                              }}
-                              className="text-[#853953] dark:text-[#A74B6A] hover:underline cursor-pointer"
-                            >
-                              Reset filters
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Preset Cards Grid */}
-                      {filteredPresets.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        {/* Presets Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                           {filteredPresets.map((preset) => {
                             const Icon = preset.icon;
                             const isSelected = config.workload_preset === preset.id;
-                            const total = preset.promptTokens + preset.genTokens;
-                            const promptPct = (preset.promptTokens / total) * 100;
-                            const genPct = (preset.genTokens / total) * 100;
+                            const totalTok = preset.promptTokens + preset.genTokens;
+                            const promptRatio = Math.round((preset.promptTokens / totalTok) * 100);
 
                             return (
-                              <div
+                              <button
                                 key={preset.id}
+                                type="button"
                                 onClick={() => {
                                   onChange({
                                     ...config,
@@ -1858,96 +1783,79 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     max_tokens: preset.genTokens,
                                   });
                                 }}
-                                className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between relative overflow-hidden group font-sans active:scale-[0.99] ${
+                                className={`group p-3.5 rounded-xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
                                   isSelected
-                                    ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 shadow-xs ring-1 ring-[#853953]/30 text-[#853953] dark:text-[#A74B6A]"
-                                    : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/40 hover:bg-[#F3F4F4]/50 dark:hover:bg-[#353337]/50 text-[#2C2C2C] dark:text-[#F3F4F4]"
+                                    ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/30 shadow-xs"
+                                    : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
                                 }`}
                               >
-                                <div className="space-y-2.5">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
                                       <div
-                                        className={`p-2 rounded-lg border transition-colors shrink-0 ${
+                                        className={`p-1.5 rounded-lg ${
                                           isSelected
-                                            ? "bg-[#853953] dark:bg-[#A74B6A] text-white border-[#853953] dark:border-[#A74B6A]"
-                                            : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70"
+                                            ? "bg-[#853953] text-white"
+                                            : "bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A]"
                                         }`}
                                       >
                                         <Icon className="h-4 w-4" />
                                       </div>
-                                      <div className="min-w-0 flex-1">
-                                        <div className="text-xs font-semibold leading-snug text-[#2C2C2C] dark:text-[#F3F4F4]">
-                                          {preset.name}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                                          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums font-normal">
-                                            {(preset.promptTokens + preset.genTokens).toLocaleString()} tok
-                                          </span>
-                                          <span className="text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30 text-[10px]">•</span>
-                                          <Badge
-                                            variant={isSelected ? "default" : "secondary"}
-                                            className="text-[10px] px-1.5 py-0 h-4.5 font-normal max-w-full truncate"
-                                            title={preset.tag}
-                                          >
-                                            {preset.tag}
-                                          </Badge>
-                                        </div>
-                                      </div>
+                                      <span className="font-semibold text-xs font-sans tracking-tight">
+                                        {preset.name}
+                                      </span>
                                     </div>
-                                    {isSelected && (
-                                      <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5 font-sans tabular-nums font-medium shrink-0">
-                                        Active
-                                      </Badge>
-                                    )}
+                                    <Badge variant="outline" className="text-[10px] font-normal">
+                                      {preset.tag}
+                                    </Badge>
                                   </div>
-                                  <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed pt-1 font-normal line-clamp-2" title={preset.desc}>
+
+                                  <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-2 leading-relaxed">
                                     {preset.desc}
                                   </p>
-
-                                  <div className="pt-2">
-                                    <div className="text-[11px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 mb-1 font-medium uppercase tracking-wider">
-                                      Metrics Shown in UI:
-                                    </div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {preset.metrics.map((m) => (
-                                        <span
-                                          key={m}
-                                          className={`text-[11px] font-sans tabular-nums px-1.5 py-0.5 rounded-md border font-normal ${
-                                            isSelected
-                                              ? "bg-[#853953]/20 dark:bg-[#A74B6A]/25 border-[#853953]/40 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] font-medium"
-                                              : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/75"
-                                          }`}
-                                        >
-                                          {m}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
                                 </div>
 
-                                <div className="mt-4 pt-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-1.5">
-                                  <div className="flex justify-between text-[11px] font-sans tabular-nums font-normal">
-                                    <span className="text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                                      In: <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">{preset.promptTokens.toLocaleString()}</span>
-                                    </span>
-                                    <span className="text-[#853953] dark:text-[#A74B6A]">
-                                      Out: <span className="font-medium">{preset.genTokens.toLocaleString()}</span>
-                                    </span>
+                                <div className="mt-3 pt-2.5 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-1.5">
+                                  {/* Visual Prompt/Decode Balance Bar */}
+                                  <div className="space-y-1">
+                                    <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                      <span>In: {preset.promptTokens} tok</span>
+                                      <span>Out: {preset.genTokens} tok</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-[#2C2C2C]/10 dark:bg-[#F3F4F4]/10 rounded-full overflow-hidden flex">
+                                      <div
+                                        style={{ width: `${promptRatio}%` }}
+                                        className="h-full bg-[#853953] dark:bg-[#A74B6A]"
+                                      />
+                                      <div
+                                        style={{ width: `${100 - promptRatio}%` }}
+                                        className="h-full bg-emerald-500"
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="h-1.5 w-full rounded-full bg-[#F3F4F4] dark:bg-[#2C2C2C] flex overflow-hidden border border-[#2C2C2C]/10">
-                                    <div style={{ width: `${promptPct}%` }} className="bg-[#612D53] dark:bg-[#7E3B6C]" />
-                                    <div style={{ width: `${genPct}%` }} className="bg-[#853953] dark:bg-[#A74B6A]" />
+
+                                  {/* Metric Tags */}
+                                  <div className="flex items-center gap-1 flex-wrap pt-0.5">
+                                    {preset.metrics.slice(0, 3).map((m, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="text-[9px] px-1.5 py-0.5 rounded bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/5 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-sans tabular-nums"
+                                      >
+                                        {m}
+                                      </span>
+                                    ))}
                                   </div>
                                 </div>
-                              </div>
+                              </button>
                             );
                           })}
                         </div>
-                      ) : (
-                        <div className="p-8 text-center rounded-xl border border-dashed border-[#2C2C2C]/20 dark:border-[#F3F4F4]/15 space-y-2">
-                          <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
-                            No workload profiles found matching &ldquo;{workloadSearchQuery}&rdquo;
+                      </div>
+
+                      {filteredPresets.length === 0 && (
+                        <div className="text-center py-8 space-y-2">
+                          <p className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                            No workload presets match &quot;{workloadSearchQuery}&quot;
                           </p>
                           <Button
                             type="button"
@@ -1963,178 +1871,152 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </Button>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
 
-                  {/* SUB-STEP 2B: DATASET SOURCE & STRUCTURAL CONSTRAINTS */}
-                  <Card id="section-2b" className="scroll-mt-16">
-                    <CardHeader className="p-5 pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
-                            <FileCode className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Dataset Source & Payload Format
-                            </CardTitle>
-                            <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                              Choose synthetic generation, single custom prompt, multi-line JSONL dataset replay, or JSON Schema contracts.
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2B of 2C</Badge>
-                      </div>
-                    </CardHeader>
+                      {/* CALIBRATED PRODUCTION PROMPT & STRESS DIMENSION INSPECTOR */}
+                      {(() => {
+                        const promptDetails = WORKLOAD_PROMPT_PREVIEWS[config.workload_preset as WorkloadPreset] || WORKLOAD_PROMPT_PREVIEWS.custom;
+                        const isCustom = Boolean(config.custom_prompt && config.custom_prompt.trim());
+                        const activePromptText = isCustom ? config.custom_prompt! : promptDetails.prompt;
 
-                    <CardContent className="p-5 pt-2 space-y-4">
-                      {/* Dataset Type Selector */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => onChange({ ...config, dataset_type: "synthetic", custom_dataset: undefined })}
-                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                            config.dataset_type !== "jsonl"
-                              ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/30 shadow-xs"
-                              : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-1.5">
-                              <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                              <span className="text-xs font-medium">Standard Synthetic & Custom Prompt</span>
+                        return (
+                          <div className="mt-4 p-4 rounded-xl border border-[#853953]/25 dark:border-[#A74B6A]/30 bg-white dark:bg-[#201f22] space-y-3.5 shadow-2xs">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                              <div className="flex items-center gap-2">
+                                <div className="p-1.5 rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A]">
+                                  <FileCode className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                      Production Prompt Payload: {selectedPreset.name}
+                                    </span>
+                                    {isCustom ? (
+                                      <Badge variant="default" className="text-[10px] bg-amber-500 text-white">
+                                        Custom Override Active
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="emerald" className="text-[10px]">
+                                        Calibrated Benchmark Payload
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                    Target Stress Dimension: <strong className="text-[#853953] dark:text-[#A74B6A]">{promptDetails.targetStressDimension}</strong>
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 self-end sm:self-auto">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(activePromptText || "");
+                                    setCopiedPrompt(true);
+                                    setTimeout(() => setCopiedPrompt(false), 2000);
+                                  }}
+                                  className="text-[11px] h-7 px-2.5 gap-1.5 cursor-pointer"
+                                >
+                                  {copiedPrompt ? (
+                                    <>
+                                      <Check className="h-3 w-3 text-emerald-500" />
+                                      <span className="text-emerald-600 dark:text-emerald-400">Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="h-3 w-3" />
+                                      <span>Copy Payload</span>
+                                    </>
+                                  )}
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setShowFullPrompt(!showFullPrompt)}
+                                  className="text-[11px] h-7 px-2 cursor-pointer text-[#853953] dark:text-[#A74B6A]"
+                                >
+                                  {showFullPrompt ? "Collapse" : "Expand All"}
+                                </Button>
+                              </div>
                             </div>
-                            {config.dataset_type !== "jsonl" && <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
-                          </div>
-                          <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-2">
-                            Uses pre-calibrated workload token lengths or a single user custom prompt.
-                          </p>
-                        </button>
 
-                        <button
-                          type="button"
-                          onClick={() => onChange({ ...config, dataset_type: "jsonl" })}
-                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                            config.dataset_type === "jsonl"
-                              ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 text-[#853953] dark:text-[#A74B6A] ring-1 ring-[#853953]/30 shadow-xs"
-                              : "bg-white dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C] text-[#2C2C2C] dark:text-[#F3F4F4]"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-1.5">
-                              <Database className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                              <span className="text-xs font-medium">Custom JSONL Dataset Replay</span>
-                            </div>
-                            {config.dataset_type === "jsonl" && <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
-                          </div>
-                          <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-2">
-                            Replays real application prompt logs from a multi-line JSONL file in round-robin sequence.
-                          </p>
-                        </button>
-                      </div>
+                            <p className="text-xs text-[#2C2C2C]/75 dark:text-[#F3F4F4]/75 leading-relaxed">
+                              {promptDetails.purpose}
+                            </p>
 
-                      {config.dataset_type !== "jsonl" ? (
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-xs font-semibold">Custom Prompt Payload (Optional)</Label>
-                            <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">Leave blank to use profile preset prompt</span>
-                          </div>
-                          <textarea
-                            value={config.custom_prompt || ""}
-                            onChange={(e) => onChange({ ...config, custom_prompt: e.target.value })}
-                            placeholder="Override the preset benchmark prompt with your exact application payload..."
-                            rows={3}
-                            className="w-full text-xs font-sans tabular-nums p-3 rounded-xl border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426] focus:ring-1 focus:ring-[#853953]"
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                              <Label className="text-xs font-semibold flex items-center gap-1.5 text-[#853953] dark:text-[#A74B6A]">
-                                <Database className="h-3.5 w-3.5" />
-                                Paste or Upload JSONL Prompt Dataset
-                              </Label>
-                              <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                                Each line can be a JSON object like {`{"prompt": "..."}`} or raw prompt text.
-                              </p>
-                            </div>
-                            <label className="cursor-pointer">
-                              <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg border border-[#2C2C2C]/20 bg-white dark:bg-[#252426] hover:bg-[#F3F4F4]">
-                                Upload .jsonl
-                              </span>
-                              <input
-                                type="file"
-                                accept=".jsonl,.json,.txt"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    const reader = new FileReader();
-                                    reader.onload = (evt) => {
-                                      const text = evt.target?.result as string;
-                                      handleJsonlChange(text);
-                                    };
-                                    reader.readAsText(file);
-                                  }
-                                }}
-                              />
-                            </label>
-                          </div>
-
-                          <textarea
-                            value={rawJsonlInput}
-                            onChange={(e) => handleJsonlChange(e.target.value)}
-                            placeholder={`{"prompt": "Analyze query performance for user #991"}\n{"prompt": "Summarize customer feedback ticket #402"}\n{"prompt": "Generate unit test suite for payment gateway"}`}
-                            rows={5}
-                            className="w-full text-xs font-mono tabular-nums p-2.5 rounded-lg border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426]"
-                          />
-
-                          {jsonlParseStats && (
-                            <div className="flex items-center justify-between text-[11px] font-sans text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-1">
-                              <span>Dataset parsed: <strong>{jsonlParseStats.count}</strong> prompts</span>
-                              <span>Avg prompt length: <strong>~{jsonlParseStats.avgChars}</strong> chars (~{Math.round(jsonlParseStats.avgChars / 4)} tokens)</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Structured JSON Schema Editor */}
-                      {(config.workload_preset === "structured_json" ||
-                        config.workload_preset === "json_schema" ||
-                        config.workload_preset === "agentic_tool_calling" ||
-                        config.workload_preset === "tool_calling" ||
-                        Boolean(config.json_schema)) && (
-                        <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
-                          <div className="flex items-center justify-between">
-                            <Label className="text-xs font-semibold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
-                              <Braces className="h-3.5 w-3.5" />
-                              JSON Schema Validation Contract
-                            </Label>
-                            {jsonSchemaError ? (
-                              <Badge variant="destructive" className="text-[11px]">
-                                {jsonSchemaError}
-                              </Badge>
+                            {/* Prompt Codebox or Custom Textarea */}
+                            {isEditingCustomPrompt ? (
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between items-center text-[11px]">
+                                  <Label className="font-semibold text-xs text-[#853953] dark:text-[#A74B6A]">
+                                    Custom Prompt Override Editor
+                                  </Label>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      onChange({ ...config, custom_prompt: undefined });
+                                      setIsEditingCustomPrompt(false);
+                                    }}
+                                    className="text-[10px] text-[#853953] dark:text-[#A74B6A] hover:underline cursor-pointer"
+                                  >
+                                    Reset to Calibrated Preset Prompt
+                                  </button>
+                                </div>
+                                <textarea
+                                  value={config.custom_prompt || ""}
+                                  onChange={(e) => onChange({ ...config, custom_prompt: e.target.value })}
+                                  placeholder="Enter your exact custom prompt payload here..."
+                                  rows={6}
+                                  className="w-full text-xs font-mono p-3 rounded-lg border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#181719] text-[#2C2C2C] dark:text-[#F3F4F4] focus:outline-none focus:ring-1 focus:ring-[#853953]"
+                                />
+                              </div>
                             ) : (
-                              <Badge variant="emerald" className="text-[11px]">
-                                Valid JSON Schema
-                              </Badge>
+                              <div className="relative">
+                                <pre
+                                  className={`text-[11px] font-mono leading-relaxed p-3.5 rounded-lg bg-[#F3F4F4] dark:bg-[#181719] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C] dark:text-[#F3F4F4] overflow-x-auto whitespace-pre-wrap ${
+                                    showFullPrompt ? "max-h-96" : "max-h-28"
+                                  }`}
+                                >
+                                  {activePromptText}
+                                </pre>
+                                {!showFullPrompt && activePromptText.length > 200 && (
+                                  <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#F3F4F4] dark:from-[#181719] to-transparent rounded-b-lg flex items-end justify-center pb-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => setShowFullPrompt(true)}
+                                      className="text-[10px] font-semibold text-[#853953] dark:text-[#A74B6A] hover:underline cursor-pointer"
+                                    >
+                                      Show full payload ({activePromptText.length} chars)
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             )}
-                          </div>
 
-                          <textarea
-                            value={rawJsonSchema}
-                            onChange={(e) => handleJsonSchemaChange(e.target.value)}
-                            rows={6}
-                            className="w-full text-xs font-sans tabular-nums p-2.5 rounded-lg border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426]"
-                          />
-                        </div>
-                      )}
+                            <div className="flex items-center justify-between pt-1 text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                              <div className="flex items-center gap-3">
+                                <span>Calibrated Budget: <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">{selectedPreset.promptTokens.toLocaleString()} prompt tok</strong> + <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">{selectedPreset.genTokens.toLocaleString()} gen tok</strong></span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setIsEditingCustomPrompt(!isEditingCustomPrompt)}
+                                className="font-semibold text-[#853953] dark:text-[#A74B6A] hover:underline cursor-pointer flex items-center gap-1"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                                <span>{isEditingCustomPrompt ? "View Calibrated Payload" : "Customize / Override Payload"}</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
 
-                  {/* SUB-STEP 2C: MODEL SAMPLING & OUTPUT CEILINGS */}
-                  <Card id="section-2c" className="scroll-mt-16">
+                  {/* SUB-STEP 2B: MODEL SAMPLING & OUTPUT CEILINGS */}
+                  <Card id="section-2b" className="scroll-mt-16">
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
@@ -2150,7 +2032,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2C of 2C</Badge>
+                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2B of 2B</Badge>
                       </div>
                     </CardHeader>
 
@@ -2220,13 +2102,45 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           />
                         </div>
                       </div>
+
+                      {/* Structured JSON Schema Editor */}
+                      {(config.workload_preset === "structured_json" ||
+                        config.workload_preset === "json_schema" ||
+                        config.workload_preset === "agentic_tool_calling" ||
+                        config.workload_preset === "tool_calling" ||
+                        Boolean(config.json_schema)) && (
+                        <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
+                              <Braces className="h-3.5 w-3.5" />
+                              JSON Schema Validation Contract
+                            </Label>
+                            {jsonSchemaError ? (
+                              <Badge variant="destructive" className="text-[11px]">
+                                {jsonSchemaError}
+                              </Badge>
+                            ) : (
+                              <Badge variant="emerald" className="text-[11px]">
+                                Valid JSON Schema
+                              </Badge>
+                            )}
+                          </div>
+
+                          <textarea
+                            value={rawJsonSchema}
+                            onChange={(e) => handleJsonSchemaChange(e.target.value)}
+                            rows={6}
+                            className="w-full text-xs font-sans tabular-nums p-2.5 rounded-lg border border-[#2C2C2C]/20 dark:border-[#F3F4F4]/20 bg-white dark:bg-[#252426]"
+                          />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
                   {/* Step 2 Bottom Navigation Bar */}
                   <div className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
                     <span className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                      Configured: <strong className="text-[#853953] dark:text-[#A74B6A]">{selectedPreset.name}</strong> (~{totalPresetTokens} tok) • <strong className="capitalize">{config.dataset_type === "jsonl" ? "JSONL Replay" : "Synthetic"}</strong> • <strong className="text-[#853953] dark:text-[#A74B6A]">{config.max_tokens} max tok</strong>
+                      Configured: <strong className="text-[#853953] dark:text-[#A74B6A]">{selectedPreset.name}</strong> (~{totalPresetTokens} tok calibrated payload) • <strong className="text-[#853953] dark:text-[#A74B6A]">{config.max_tokens} max tok</strong>
                     </span>
                     <Button
                       type="button"

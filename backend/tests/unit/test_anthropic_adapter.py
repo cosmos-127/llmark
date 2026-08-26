@@ -1,5 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
+
 import pytest
+
 from app.adapters.anthropic_adapter import AnthropicAdapter
 from app.models.schemas import BenchmarkConfig, VendorCredential, VendorType
 

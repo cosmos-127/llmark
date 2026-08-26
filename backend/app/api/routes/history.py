@@ -1,4 +1,5 @@
-from typing import Any, Dict, List
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,19 +10,14 @@ from app.models.db.models import BenchmarkRun
 router = APIRouter(prefix="/history", tags=["history"])
 
 
-@router.get("", response_model=List[Dict[str, Any]])
+@router.get("", response_model=list[dict[str, Any]])
 async def list_benchmark_history(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Retrieve historical benchmark runs ordered by creation date."""
-    query = (
-        select(BenchmarkRun)
-        .order_by(desc(BenchmarkRun.created_at))
-        .offset(offset)
-        .limit(limit)
-    )
+    query = select(BenchmarkRun).order_by(desc(BenchmarkRun.created_at)).offset(offset).limit(limit)
     result = await db.execute(query)
     runs = result.scalars().all()
 
@@ -57,7 +53,7 @@ async def list_benchmark_history(
 async def get_benchmark_run_details(
     run_id: str,
     db: AsyncSession = Depends(get_db),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Retrieve full details, waterfall breakdown, and percentiles for a specific benchmark run."""
     query = select(BenchmarkRun).where(BenchmarkRun.id == run_id)
     result = await db.execute(query)

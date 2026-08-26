@@ -1,4 +1,5 @@
 import asyncio
+
 import pytest
 from httpx import AsyncClient
 
@@ -171,6 +172,3 @@ async def test_benchmark_run_request_mode(async_client: AsyncClient):
     data = status_resp.json()
     assert data["status"] == "completed"
     assert data["total_requests"] == 3
-
-
-

@@ -3,6 +3,7 @@ import socket
 import ssl
 import time
 from urllib.parse import urlparse
+
 import structlog
 
 from app.models.schemas import BenchmarkConfig, VendorType, WaterfallTiming
@@ -57,7 +58,9 @@ class WaterfallCollector:
         try:
             # 1. DNS Resolution
             t0 = time.perf_counter()
-            addrinfo = await loop.getaddrinfo(host, port, family=socket.AF_INET, type=socket.SOCK_STREAM)
+            addrinfo = await loop.getaddrinfo(
+                host, port, family=socket.AF_INET, type=socket.SOCK_STREAM
+            )
             t_dns = time.perf_counter()
             dns_ms = max(0.1, (t_dns - t0) * 1000.0)
 
@@ -107,7 +110,11 @@ class WaterfallCollector:
             )
 
         except Exception as e:
-            logger.debug("Network waterfall measurement encountered error, using fallback values", host=host, error=str(e))
+            logger.debug(
+                "Network waterfall measurement encountered error, using fallback values",
+                host=host,
+                error=str(e),
+            )
             # Graceful baseline fallback
             return WaterfallTiming(
                 dns_ms=12.5,

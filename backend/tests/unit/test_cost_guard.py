@@ -1,4 +1,3 @@
-import pytest
 from app.core.cost_guard import CostGuard
 from app.models.schemas import BenchmarkConfig, VendorType, WorkloadPreset
 
@@ -44,6 +43,7 @@ def test_estimate_benchmark_cost():
 def test_estimate_benchmark_cost_request_mode():
     """Verify pre-flight cost estimation in request-based mode."""
     from app.models.schemas import TestMode
+
     config = BenchmarkConfig(
         vendor=VendorType.MOCK,
         model="gpt-4o",
@@ -66,4 +66,3 @@ def test_spend_cap_trip():
     assert CostGuard.is_spend_cap_exceeded(1.50, 2.00) is False
     assert CostGuard.is_spend_cap_exceeded(2.01, 2.00) is True
     assert CostGuard.is_spend_cap_exceeded(5.00, None) is False
-

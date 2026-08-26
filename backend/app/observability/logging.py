@@ -1,7 +1,8 @@
 import logging
 import re
+from typing import Any
+
 import structlog
-from typing import Any, Dict
 
 SENSITIVE_PATTERNS = [
     re.compile(r"sk-[a-zA-Z0-9_\-]{20,}", re.IGNORECASE),
@@ -29,7 +30,8 @@ def _sanitize_recursive(data: Any) -> Any:
     else:
         return data
 
-def sanitize_sensitive_data(_: Any, __: str, event_dict: Dict[str, Any]) -> Dict[str, Any]:
+
+def sanitize_sensitive_data(_: Any, __: str, event_dict: dict[str, Any]) -> dict[str, Any]:
     """Scrub sensitive credentials and API keys from all structured log outputs."""
     return _sanitize_recursive(event_dict)
 

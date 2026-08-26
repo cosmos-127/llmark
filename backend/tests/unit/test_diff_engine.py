@@ -1,4 +1,3 @@
-import pytest
 from app.core.diff_engine import DiffEngine
 from app.models.db.models import BenchmarkRun
 
@@ -30,13 +29,13 @@ def test_compare_runs_improvement():
         ttft_p50=100.0,  # 50% faster
         ttft_p95=150.0,  # 50% faster
         ttft_p99=200.0,
-        itl_p50=10.0,   # 66% faster
+        itl_p50=10.0,  # 66% faster
         itl_p95=15.0,
         max_itl=40.0,
         tpot_mean=12.0,
-        tps_decode=150.0, # 200% higher
-        goodput_pct=98.0, # 8.89% higher
-        total_cost_usd=0.003, # 70% cheaper
+        tps_decode=150.0,  # 200% higher
+        goodput_pct=98.0,  # 8.89% higher
+        total_cost_usd=0.003,  # 70% cheaper
     )
 
     diff = DiffEngine.compare_runs(run_a, run_b)

@@ -1,4 +1,5 @@
 import pytest
+
 from app.adapters.mock_adapter import MockVendorAdapter
 from app.models.schemas import BenchmarkConfig, VendorType, WorkloadPreset
 

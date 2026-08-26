@@ -1,3 +1,5 @@
+import time
+
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import PlainTextResponse
 from sqlalchemy import select
@@ -8,7 +10,6 @@ from app.core.orchestrator import BenchmarkOrchestrator
 from app.core.report_exporter import ReportExporter
 from app.core.statistics_engine import StatisticsEngine
 from app.models.db.models import BenchmarkRun
-import time
 
 router = APIRouter(prefix="/export", tags=["export"])
 
@@ -39,8 +40,12 @@ async def _get_run_or_active(run_id: str, db: AsyncSession) -> BenchmarkRun:
             name=config.name,
             vendor=config.vendor.value if hasattr(config.vendor, "value") else str(config.vendor),
             model=config.model,
-            workload_preset=config.workload_preset.value if hasattr(config.workload_preset, "value") else str(config.workload_preset),
-            load_curve=config.load_curve.value if hasattr(config.load_curve, "value") else str(config.load_curve),
+            workload_preset=config.workload_preset.value
+            if hasattr(config.workload_preset, "value")
+            else str(config.workload_preset),
+            load_curve=config.load_curve.value
+            if hasattr(config.load_curve, "value")
+            else str(config.load_curve),
             concurrency=config.concurrency,
             duration_seconds=config.duration_seconds,
             status=execution.status,
@@ -65,11 +70,31 @@ async def _get_run_or_active(run_id: str, db: AsyncSession) -> BenchmarkRun:
             goodput_pct=snapshot.goodput_pct,
             error_rate_pct=snapshot.error_rate_pct,
             tps_decode=snapshot.current_tps,
-            dns_p50=snapshot.waterfall_avg.dns_ms if snapshot.waterfall_avg else (getattr(execution, "waterfall_baseline", None).dns_ms if getattr(execution, "waterfall_baseline", None) else 0.0),
-            tcp_p50=snapshot.waterfall_avg.tcp_ms if snapshot.waterfall_avg else (getattr(execution, "waterfall_baseline", None).tcp_ms if getattr(execution, "waterfall_baseline", None) else 0.0),
-            tls_p50=snapshot.waterfall_avg.tls_ms if snapshot.waterfall_avg else (getattr(execution, "waterfall_baseline", None).tls_ms if getattr(execution, "waterfall_baseline", None) else 0.0),
+            dns_p50=snapshot.waterfall_avg.dns_ms
+            if snapshot.waterfall_avg
+            else (
+                getattr(execution, "waterfall_baseline", None).dns_ms
+                if getattr(execution, "waterfall_baseline", None)
+                else 0.0
+            ),
+            tcp_p50=snapshot.waterfall_avg.tcp_ms
+            if snapshot.waterfall_avg
+            else (
+                getattr(execution, "waterfall_baseline", None).tcp_ms
+                if getattr(execution, "waterfall_baseline", None)
+                else 0.0
+            ),
+            tls_p50=snapshot.waterfall_avg.tls_ms
+            if snapshot.waterfall_avg
+            else (
+                getattr(execution, "waterfall_baseline", None).tls_ms
+                if getattr(execution, "waterfall_baseline", None)
+                else 0.0
+            ),
             config_snapshot=config.model_dump(mode="json") if hasattr(config, "model_dump") else {},
-            raw_telemetry={"metrics": [m.model_dump(mode="json") for m in execution.metrics]} if execution.metrics else {},
+            raw_telemetry={"metrics": [m.model_dump(mode="json") for m in execution.metrics]}
+            if execution.metrics
+            else {},
         )
 
     raise HTTPException(

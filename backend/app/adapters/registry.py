@@ -1,4 +1,3 @@
-from typing import Dict, Type
 from app.adapters.anthropic_adapter import AnthropicAdapter
 from app.adapters.azure_openai_adapter import AzureOpenAIAdapter
 from app.adapters.base import VendorAdapter
@@ -8,7 +7,7 @@ from app.models.schemas import VendorType
 
 
 class AdapterRegistry:
-    _adapters: Dict[VendorType, Type[VendorAdapter]] = {
+    _adapters: dict[VendorType, type[VendorAdapter]] = {
         VendorType.OPENAI: OpenAICompatAdapter,
         VendorType.OPENAI_COMPATIBLE: OpenAICompatAdapter,
         VendorType.AZURE_OPENAI: AzureOpenAIAdapter,
@@ -17,7 +16,7 @@ class AdapterRegistry:
     }
 
     @classmethod
-    def register(cls, vendor_type: VendorType, adapter_cls: Type[VendorAdapter]) -> None:
+    def register(cls, vendor_type: VendorType, adapter_cls: type[VendorAdapter]) -> None:
         cls._adapters[vendor_type] = adapter_cls
 
     @classmethod

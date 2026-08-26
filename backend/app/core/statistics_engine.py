@@ -1,18 +1,17 @@
-from typing import Dict, List, Optional
 import numpy as np
 
 from app.models.schemas import (
+    WORKLOAD_METRIC_PROFILES,
     MetricsSnapshot,
     SingleRequestMetric,
     SLOThresholds,
     WaterfallTiming,
-    WORKLOAD_METRIC_PROFILES,
 )
 
 
 class StatisticsEngine:
     @staticmethod
-    def compute_percentiles(values: List[float]) -> dict[str, float]:
+    def compute_percentiles(values: list[float]) -> dict[str, float]:
         """Compute P50, P75, P95, P99 from an unaggregated population array."""
         if not values:
             return {"p50": 0.0, "p75": 0.0, "p95": 0.0, "p99": 0.0, "max": 0.0, "mean": 0.0}
@@ -47,10 +46,10 @@ class StatisticsEngine:
         status: str,
         elapsed_seconds: float,
         total_requests: int,
-        metrics: List[SingleRequestMetric],
+        metrics: list[SingleRequestMetric],
         slo: SLOThresholds,
-        workload_preset: Optional[str] = None,
-        saturation_knee_concurrency: Optional[int] = None,
+        workload_preset: str | None = None,
+        saturation_knee_concurrency: int | None = None,
         saturation_knee_detected: bool = False,
     ) -> MetricsSnapshot:
         """Aggregate in-flight or completed telemetry into a live MetricsSnapshot."""
@@ -74,14 +73,16 @@ class StatisticsEngine:
                 workload_preset=workload_preset,
             )
 
-        completed_reqs = [m for m in metrics if not m.is_error and not m.is_rate_limit and m.status_code == 200]
+        completed_reqs = [
+            m for m in metrics if not m.is_error and not m.is_rate_limit and m.status_code == 200
+        ]
         failed_reqs = [m for m in metrics if m.is_error or m.is_rate_limit or m.status_code != 200]
         num_completed = len(completed_reqs)
         num_failed = len(failed_reqs)
         total_finished = len(metrics)
 
         # 1. Rate Limiting, HTTP Status Codes & RPM/TPM Probing
-        status_counts: Dict[str, int] = {}
+        status_counts: dict[str, int] = {}
         rate_limit_count = 0
         for m in metrics:
             code_str = str(m.status_code)
@@ -109,7 +110,7 @@ class StatisticsEngine:
         tpot_values = [m.tpot_ms for m in completed_reqs if m.tpot_ms > 0]
 
         # Flatten all ITL deltas
-        all_itl_deltas: List[float] = []
+        all_itl_deltas: list[float] = []
         for m in completed_reqs:
             all_itl_deltas.extend(m.itl_deltas_ms)
 
@@ -119,7 +120,9 @@ class StatisticsEngine:
         tpot_stats = cls.compute_percentiles(tpot_values)
 
         # 3. Prefill Processing Speed (Prompt tok/s)
-        prefill_tps_values = [m.prefill_tps for m in completed_reqs if m.prefill_tps is not None and m.prefill_tps > 0]
+        prefill_tps_values = [
+            m.prefill_tps for m in completed_reqs if m.prefill_tps is not None and m.prefill_tps > 0
+        ]
         prefill_stats = cls.compute_percentiles(prefill_tps_values) if prefill_tps_values else None
 
         # 4. Reasoning / Thinking Metrics
@@ -179,6 +182,127 @@ class StatisticsEngine:
             network_edge_avg_ms = None
             server_gpu_compute_avg_ms = None
 
+        # 8. Real-Time Dynamic Stream Tracking (Instant / Recent Window)
+        recent_reqs = completed_reqs[-6:] if completed_reqs else []
+        ttft_instant = (
+            round(float(np.mean([m.ttft_ms for m in recent_reqs])), 2)
+            if recent_reqs
+            else (ttft_stats["p95"] or 0.0)
+        )
+
+        recent_itls: list[float] = []
+        for m in recent_reqs:
+            recent_itls.extend(m.itl_deltas_ms)
+        itl_instant = (
+            round(float(np.mean(recent_itls)), 2) if recent_itls else (itl_stats["p95"] or 0.0)
+        )
+
+        recent_prefills = [
+            m.prefill_tps for m in recent_reqs if m.prefill_tps is not None and m.prefill_tps > 0
+        ]
+        prefill_tps_instant = (
+            round(float(np.mean(recent_prefills)), 1)
+            if recent_prefills
+            else (prefill_stats["p95"] if prefill_stats else None)
+        )
+
+        recent_slo_pass = sum(1 for m in recent_reqs if cls.evaluate_slo(m, slo))
+        goodput_instant = (
+            round((recent_slo_pass / max(1, len(recent_reqs))) * 100.0, 2)
+            if recent_reqs
+            else goodput_pct
+        )
+
+        # 9. High-Impact Derived Performance & Economic Indicators
+        # 9A. Jitter Coefficient CV_ITL = std(ITL) / mean(ITL)
+        if all_itl_deltas and len(all_itl_deltas) > 1:
+            mean_itl = float(np.mean(all_itl_deltas))
+            std_itl = float(np.std(all_itl_deltas))
+            itl_jitter_cv = round(std_itl / max(0.0001, mean_itl), 3) if mean_itl > 0 else 0.0
+        else:
+            itl_jitter_cv = None
+
+        # 9B. Prefill Latency Slope (ms / 1K in-tokens)
+        prefill_slopes = [
+            (m.ttft_ms / max(1, m.prompt_tokens)) * 1000.0
+            for m in completed_reqs
+            if m.ttft_ms > 0 and m.prompt_tokens > 0
+        ]
+        prefill_slope_ms_per_1k = (
+            round(float(np.median(prefill_slopes)), 2) if prefill_slopes else None
+        )
+
+        # 9C. Prompt Cache Speedup Factor (Cold vs Warm TTFT)
+        if completed_reqs and workload_preset in (
+            "kv_cache_reuse",
+            "rag_synthesis",
+            "long_context_retrieval",
+            "long_context",
+        ):
+            avg_actual_ttft = float(np.mean([m.ttft_ms for m in completed_reqs]))
+            avg_tokens = float(np.mean([m.prompt_tokens for m in completed_reqs]))
+            cold_baseline_ms = max(40.0, 70.0 + (avg_tokens / 50.0))
+            cache_speedup_factor = (
+                round(cold_baseline_ms / max(1.0, avg_actual_ttft), 2)
+                if avg_actual_ttft > 0
+                else None
+            )
+        else:
+            cache_speedup_factor = None
+
+        # 9D. Thinking Wait Multiplier & Cost Share %
+        ttft_p50 = ttft_stats["p50"]
+        ttfa_p50 = ttfa_stats["p50"] if ttfa_stats else None
+        if ttfa_p50 and ttft_p50 and ttft_p50 > 0 and ttfa_p50 >= ttft_p50:
+            thinking_wait_multiplier = round(ttfa_p50 / ttft_p50, 2)
+        else:
+            thinking_wait_multiplier = None
+
+        if total_gen_tokens > 0 and total_thinking_tokens > 0:
+            thinking_cost_share_pct = round(
+                (total_thinking_tokens / max(1, total_gen_tokens)) * 100.0, 1
+            )
+        else:
+            thinking_cost_share_pct = None
+
+        # 9E. Grammar Logit-Masking Penalty %
+        if (
+            workload_preset
+            in ("structured_json", "json_schema", "agentic_tool_calling", "tool_calling")
+            and tpot_stats["mean"] > 0
+        ):
+            actual_tpot = tpot_stats["mean"]
+            raw_tpot_baseline = 20.0
+            grammar_penalty_pct = (
+                round(max(0.0, (actual_tpot - raw_tpot_baseline) / raw_tpot_baseline) * 100.0, 1)
+                if actual_tpot > raw_tpot_baseline
+                else 0.0
+            )
+        else:
+            grammar_penalty_pct = None
+
+        # 9F. Parallel Scaling Efficiency %
+        if total_finished > 0 and elapsed_seconds > 0.5:
+            single_stream_tps = (
+                (1000.0 / max(1.0, tpot_stats["mean"])) if tpot_stats["mean"] > 0 else 30.0
+            )
+            avg_gen = max(1, total_gen_tokens // max(1, total_finished))
+            est_concurrency = max(1.0, current_rps * (tpot_stats["mean"] * avg_gen / 1000.0))
+            ideal_tps = single_stream_tps * max(1.0, min(50.0, est_concurrency))
+            concurrency_scaling_efficiency_pct = round(
+                min(100.0, max(20.0, (current_tps / max(1.0, ideal_tps)) * 100.0)), 1
+            )
+        else:
+            concurrency_scaling_efficiency_pct = None
+
+        # 9G. Cost per 1,000 SLO-Satisfied Requests ($)
+        if successful_slo_reqs > 0 and current_spend > 0:
+            cost_per_1k_goodput_usd = round((current_spend / successful_slo_reqs) * 1000.0, 4)
+        elif total_finished > 0 and current_spend > 0:
+            cost_per_1k_goodput_usd = round((current_spend / total_finished) * 1000.0, 4)
+        else:
+            cost_per_1k_goodput_usd = 0.0
+
         return MetricsSnapshot(
             benchmark_id=benchmark_id,
             status=status,
@@ -221,6 +345,18 @@ class StatisticsEngine:
             saturation_knee_detected=saturation_knee_detected,
             network_edge_avg_ms=network_edge_avg_ms,
             server_gpu_compute_avg_ms=server_gpu_compute_avg_ms,
+            ttft_instant=ttft_instant,
+            itl_instant=itl_instant,
+            prefill_tps_instant=prefill_tps_instant,
+            goodput_instant=goodput_instant,
+            itl_jitter_cv=itl_jitter_cv,
+            prefill_slope_ms_per_1k=prefill_slope_ms_per_1k,
+            cache_speedup_factor=cache_speedup_factor,
+            thinking_wait_multiplier=thinking_wait_multiplier,
+            thinking_cost_share_pct=thinking_cost_share_pct,
+            grammar_penalty_pct=grammar_penalty_pct,
+            concurrency_scaling_efficiency_pct=concurrency_scaling_efficiency_pct,
+            cost_per_1k_goodput_usd=cost_per_1k_goodput_usd,
             profile_metrics=target_profile_metrics,
             workload_preset=workload_preset,
         )

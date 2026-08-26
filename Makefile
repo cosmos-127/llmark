@@ -26,8 +26,8 @@ help:
 
 .PHONY: install
 install:
-	@echo "[*] Installing Python backend dependencies..."
-	cd backend && $(PYTHON) -m pip install -e .
+	@echo "[*] Installing Python backend dependencies (with dev tools)..."
+	cd backend && $(PYTHON) -m pip install -e ".[dev]"
 	@echo "[*] Installing Frontend NPM packages..."
 	cd frontend && $(NPM) install
 	@echo "[✓] All dependencies installed successfully."
@@ -45,6 +45,17 @@ backend:
 .PHONY: frontend
 frontend:
 	cd frontend && $(NPM) run dev
+
+.PHONY: lint
+lint:
+	@echo "[*] Running ruff linter & formatter check..."
+	cd backend && $(PYTHON) -m ruff check .
+	cd backend && $(PYTHON) -m ruff format --check .
+
+.PHONY: typecheck
+typecheck:
+	@echo "[*] Running mypy type checker..."
+	cd backend && $(PYTHON) -m mypy app
 
 .PHONY: test
 test:

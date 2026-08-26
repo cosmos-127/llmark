@@ -166,18 +166,28 @@ $$\text{Goodput} = \frac{\sum_{i=1}^{N} \mathbb{I}(\text{TTFT}_i \le \text{SLO}_
 
 ---
 
-## 📦 Workload Presets
+## 📦 Production Workload Presets
 
-LLMark comes equipped with 6 production workload presets:
+LLMark includes 16 production-grade workload presets meticulously calibrated to evaluate distinct hardware, network, and algorithmic performance dimensions:
 
-| Workload Preset | Prompt Tokens | Output Tokens | Target Stress Dimension |
+| Workload Preset | Prompt Tokens | Output Tokens | Purpose & Target Stress Dimension |
 |---|---|---|---|
-| **Interactive Chat** | ~200 | ~150 | UI conversational streaming & responsiveness |
-| **RAG Synthesis** | ~3,500 | ~400 | Heavy document prefill & KV cache loading |
-| **Code Generation** | ~1,200 | ~800 | Sustained long-sequence decode throughput |
-| **Long-Context** | ~16k–32k | ~500 | KV cache memory pressure & context degradation |
-| **Vision Multimodal** | 1080p Image | ~300 | Vision encoder prefill latency |
-| **Structured JSON** | ~800 | ~400 | Guided grammar constrained decoding penalty |
+| **Rate Limit & Quota Probing** (`rate_limit_probe`) | ~5 | 1–2 | Micro-token calls probing RPM/TPM ceilings, HTTP 429 backoff handling & gateway queues |
+| **Prefill Scaling & TTFT** (`prefill_ttft`) | ~4,000 | 1–2 | Isolates pure KV prefill computation speed, prompt processing throughput (tok/s) & tail TTFT (P95/P99) |
+| **Streaming Decode & Jitter** (`decode_throughput`) | ~40 | ~800 | Sustained autoregressive decode speed (tok/s), Inter-Token Latency (ITL) jitter & TPOT stability |
+| **Reasoning & CoT Deep-Dive** (`reasoning_cot`) | ~300 | ~800 | Multi-constraint fleet scheduling & optimization DAG triggering deep Chain-of-Thought thinking (TTFA & token multiplier) |
+| **Agentic Tool & Function Calling** (`agentic_tool_calling`) | ~1,200 | ~150 | Multi-tool JSON schemas evaluating function invocation latency, schema correctness & parameter precision under incident triage |
+| **Code Generation & Syntax Stream** (`code_generation`) | ~1,500 | ~800 | Code generation throughput, syntax tree indentation jitter, strict typing & token emission smoothness |
+| **Enterprise RAG Synthesis** (`rag_synthesis`) | ~3,500 | ~400 | Ingests 5 enterprise technical documents, evaluating multi-source cross-referencing, conflict resolution & grounded citation synthesis |
+| **Long-Context & Needle Retrieval** (`long_context_retrieval`) | ~16,000 | ~300 | Massive 16k context window with 3 cryptographic/operational needles at 15%, 50%, and 85% depth measuring attention scaling & memory pressure |
+| **Document Summarization & Distill** (`summarization_distill`) | ~4,500 | ~300 | Dense Annual Infrastructure & FinOps audit report evaluating information distillation speed into executive briefs |
+| **Structured JSON & Grammar** (`structured_json`) | ~600 | ~300 | Guided grammar decoding evaluating parser compliance, syntax validity & constrained decode latency penalty |
+| **Interactive Conversational** (`chat_interactive`) | ~200 | ~150 | Conversational responsiveness, end-user perceived latency (TTFT P50/P95) & human reading speed cadence |
+| **Few-Shot In-Context Classification** (`fewshot_classification`) | ~1,200 | ~10 | 12 production incident exemplars evaluating in-context classification latency & ultra-low decode routing |
+| **Multimodal Vision & OCR** (`multimodal_vision`) | ~1,800 | ~200 | 4K system topology diagram and telemetry heatmap evaluating vision encoder projection latency & OCR layout extraction |
+| **Multi-Turn Session Context** (`multiturn_agentic`) | ~2,500 | ~350 | Deep 5-turn collaborative DevOps incident response history evaluating KV cache memory expansion & turn latency drift |
+| **Prompt Prefix Cache Warm / Hit** (`kv_cache_reuse`) | ~3,200 | ~150 | Deterministic static architecture specification measuring KV cache hit speedup ratio, TTFT reduction & caching discount throughput |
+| **Custom Workload Studio** (`custom`) | User Defined | User Defined | Full flexibility with custom prompt payload, token bounds & multi-dimensional telemetry matrix |
 
 ---
 

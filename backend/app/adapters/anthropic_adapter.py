@@ -1,7 +1,8 @@
 import time
-from typing import AsyncIterator, Optional
-from anthropic import AsyncAnthropic
+from collections.abc import AsyncIterator
+
 import structlog
+from anthropic import AsyncAnthropic
 
 from app.adapters.base import VendorAdapter
 from app.core.fallback_tokenizer import FallbackTokenizer
@@ -15,7 +16,7 @@ class AnthropicAdapter(VendorAdapter):
 
     async def stream_completion(
         self,
-        credential: Optional[VendorCredential],
+        credential: VendorCredential | None,
         config: BenchmarkConfig,
         prompt: str,
     ) -> AsyncIterator[TokenEvent]:
@@ -55,7 +56,8 @@ class AnthropicAdapter(VendorAdapter):
                     usage = {
                         "prompt_tokens": final_msg.usage.input_tokens,
                         "completion_tokens": final_msg.usage.output_tokens,
-                        "total_tokens": final_msg.usage.input_tokens + final_msg.usage.output_tokens,
+                        "total_tokens": final_msg.usage.input_tokens
+                        + final_msg.usage.output_tokens,
                     }
                 else:
                     full_text = "".join(collected_text)
@@ -79,7 +81,7 @@ class AnthropicAdapter(VendorAdapter):
 
     async def list_models(
         self,
-        credential: Optional[VendorCredential],
+        credential: VendorCredential | None,
     ) -> list[str]:
         default_anthropic_models = [
             "claude-3-7-sonnet-20250219",
@@ -112,4 +114,3 @@ class AnthropicAdapter(VendorAdapter):
             await client.close()
 
         return default_anthropic_models
-

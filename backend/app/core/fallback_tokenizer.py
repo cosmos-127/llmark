@@ -1,4 +1,3 @@
-from typing import Optional
 import structlog
 import tiktoken
 
@@ -13,7 +12,11 @@ class FallbackTokenizer:
     @classmethod
     def get_encoder(cls, model_name: str = "gpt-4o") -> tiktoken.Encoding:
         """Get or initialize a cached tiktoken encoding."""
-        encoding_name = "o200k_base" if any(m in model_name.lower() for m in ["4o", "o1", "o3"]) else "cl100k_base"
+        encoding_name = (
+            "o200k_base"
+            if any(m in model_name.lower() for m in ["4o", "o1", "o3"])
+            else "cl100k_base"
+        )
         if encoding_name not in cls._encoders:
             try:
                 cls._encoders[encoding_name] = tiktoken.get_encoding(encoding_name)
@@ -35,7 +38,9 @@ class FallbackTokenizer:
             return max(1, int(len(text) / 3.8))
 
     @classmethod
-    def normalize_chunk_itl(cls, chunk_delta_ms: float, chunk_text: str, model_name: str = "gpt-4o") -> float:
+    def normalize_chunk_itl(
+        cls, chunk_delta_ms: float, chunk_text: str, model_name: str = "gpt-4o"
+    ) -> float:
         """Normalize Inter-Chunk Latency (ICL) to true Inter-Token Latency (ITL) based on token count in chunk."""
         if chunk_delta_ms <= 0:
             return 0.0

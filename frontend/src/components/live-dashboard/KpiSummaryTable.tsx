@@ -747,7 +747,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Total Incurred Financial Spend</span>
                   </div>
                   <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Accumulated dollar spend tracked in microsecond process RAM
+                    Accumulated dollar spend tracked in ephemeral process memory
                   </p>
                 </TableCell>
                 <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
@@ -765,6 +765,213 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   </Badge>
                 </TableCell>
               </TableRow>
+
+              {/* Cost / 1K Goodput */}
+              <TableRow>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Cost / 1K SLO-Satisfied Calls</span>
+                  </div>
+                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                    True unit production cost per 1,000 successful responses meeting all SLO targets
+                  </p>
+                </TableCell>
+                <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                  {formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}
+                </TableCell>
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  Per 1,000 valid calls
+                </TableCell>
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                  Unit Economics
+                </TableCell>
+                <TableCell className="text-right pr-4">
+                  <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">ROI Metric</Badge>
+                </TableCell>
+              </TableRow>
+
+              {/* ========================================================================= */}
+              {/* SECTION 5: WORKLOAD-SPECIFIC DERIVED PERFORMANCE INDICATORS               */}
+              {/* ========================================================================= */}
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>5. Workload-Specific Derived Indicators</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+
+              {/* ITL Jitter CV */}
+              {snapshot?.itl_jitter_cv !== undefined && snapshot?.itl_jitter_cv !== null && (
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">ITL Jitter Coefficient ($CV_{"{ITL}"}$)</span>
+                    </div>
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      Stream smoothness index: standard deviation / mean of inter-token deltas
+                    </p>
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    {snapshot.itl_jitter_cv.toFixed(3)}
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    {snapshot.itl_jitter_cv < 0.30 ? "Glass Smooth (<0.30)" : (snapshot.itl_jitter_cv > 0.70 ? "High Stutter (>0.70)" : "Standard Stream")}
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    &lt; 0.35
+                  </TableCell>
+                  <TableCell className="text-right pr-4">
+                    <Badge variant={snapshot.itl_jitter_cv < 0.35 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
+                      {snapshot.itl_jitter_cv < 0.35 ? "Smooth Stream" : "Jittery"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {/* Prefill Slope */}
+              {snapshot?.prefill_slope_ms_per_1k !== undefined && snapshot?.prefill_slope_ms_per_1k !== null && (
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-500" />
+                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Prefill Latency Slope</span>
+                    </div>
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      Compute latency scaling rate per 1,000 prompt tokens
+                    </p>
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    {snapshot.prefill_slope_ms_per_1k.toFixed(2)} ms / 1K
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    Per 1,000 input tokens
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    Linear Scaling
+                  </TableCell>
+                  <TableCell className="text-right pr-4">
+                    <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">Prefill Slope</Badge>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {/* Cache Speedup Factor */}
+              {snapshot?.cache_speedup_factor !== undefined && snapshot?.cache_speedup_factor !== null && (
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Prompt Cache Speedup Factor</span>
+                    </div>
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      TTFT acceleration ratio achieved via warm KV prefix cache hit vs cold prefill
+                    </p>
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
+                    {snapshot.cache_speedup_factor.toFixed(2)}x
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    {((1 - (1 / snapshot.cache_speedup_factor)) * 100).toFixed(0)}% TTFT reduction
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    ≥ 2.0x
+                  </TableCell>
+                  <TableCell className="text-right pr-4">
+                    <Badge variant={snapshot.cache_speedup_factor >= 2.0 ? "emerald" : "secondary"} className="text-[11px] font-sans font-semibold tabular-nums">
+                      {snapshot.cache_speedup_factor >= 2.0 ? "Cache Accelerated" : "Modest Hit"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {/* Thinking Wait Multiplier */}
+              {snapshot?.thinking_wait_multiplier !== undefined && snapshot?.thinking_wait_multiplier !== null && (
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Thinking Wait Multiplier (TTFA/TTFT)</span>
+                    </div>
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      User wait time multiplier before reasoning finishes and readable answer begins
+                    </p>
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    {snapshot.thinking_wait_multiplier.toFixed(2)}x
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    CoT reasoning wait tax
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    Reasoning Multiplier
+                  </TableCell>
+                  <TableCell className="text-right pr-4">
+                    <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">CoT Overhead</Badge>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {/* Grammar Penalty */}
+              {snapshot?.grammar_penalty_pct !== undefined && snapshot?.grammar_penalty_pct !== null && (
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Grammar Logit-Masking Penalty</span>
+                    </div>
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      TPOT decode throughput penalty under constrained JSON schema / regex masking
+                    </p>
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    +{snapshot.grammar_penalty_pct.toFixed(1)}%
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    Guided decoding overhead
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    &lt; 15.0%
+                  </TableCell>
+                  <TableCell className="text-right pr-4">
+                    <Badge variant={snapshot.grammar_penalty_pct < 15.0 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
+                      {snapshot.grammar_penalty_pct < 15.0 ? "Low Overhead" : "Masking Stall"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {/* Parallel Scaling Efficiency */}
+              {snapshot?.concurrency_scaling_efficiency_pct !== undefined && snapshot?.concurrency_scaling_efficiency_pct !== null && (
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Parallel Scaling Efficiency</span>
+                    </div>
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      Aggregate throughput achieved relative to linear single-stream theoretical ceiling
+                    </p>
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    {snapshot.concurrency_scaling_efficiency_pct.toFixed(1)}%
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    Parallel scaling efficiency
+                  </TableCell>
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    ≥ 75.0%
+                  </TableCell>
+                  <TableCell className="text-right pr-4">
+                    <Badge variant={snapshot.concurrency_scaling_efficiency_pct >= 75.0 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
+                      {snapshot.concurrency_scaling_efficiency_pct >= 75.0 ? "Linear Scaling" : "Saturating"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>

@@ -1,8 +1,9 @@
 import time
-from typing import AsyncIterator, Optional
+from collections.abc import AsyncIterator
+
 import httpx
-from openai import AsyncOpenAI
 import structlog
+from openai import AsyncOpenAI
 
 from app.adapters.base import VendorAdapter
 from app.core.fallback_tokenizer import FallbackTokenizer
@@ -16,7 +17,7 @@ class OpenAICompatAdapter(VendorAdapter):
 
     async def stream_completion(
         self,
-        credential: Optional[VendorCredential],
+        credential: VendorCredential | None,
         config: BenchmarkConfig,
         prompt: str,
     ) -> AsyncIterator[TokenEvent]:
@@ -105,13 +106,19 @@ class OpenAICompatAdapter(VendorAdapter):
 
     async def list_models(
         self,
-        credential: Optional[VendorCredential],
+        credential: VendorCredential | None,
     ) -> list[str]:
         api_key = credential.api_key if credential and credential.api_key else "EMPTY"
-        base_url = credential.base_url.strip() if credential and credential.base_url and credential.base_url.strip() else None
+        base_url = (
+            credential.base_url.strip()
+            if credential and credential.base_url and credential.base_url.strip()
+            else None
+        )
 
         # Fallback if no custom base_url and no API key provided
-        if not base_url and (not credential or not credential.api_key or not credential.api_key.strip()):
+        if not base_url and (
+            not credential or not credential.api_key or not credential.api_key.strip()
+        ):
             return [
                 "gpt-4o",
                 "gpt-4o-mini",
@@ -133,6 +140,7 @@ class OpenAICompatAdapter(VendorAdapter):
                         data = resp.json().get("data", [])
                         model_ids = []
                         from app.core.cost_guard import CostGuard
+
                         for item in data:
                             m_id = item.get("id")
                             if m_id:
@@ -149,7 +157,10 @@ class OpenAICompatAdapter(VendorAdapter):
                         if model_ids:
                             return sorted(model_ids, key=lambda x: x.lower())
             except Exception as e:
-                logger.warning("Failed to fetch OpenRouter schema via direct HTTP, falling back to client", error=str(e))
+                logger.warning(
+                    "Failed to fetch OpenRouter schema via direct HTTP, falling back to client",
+                    error=str(e),
+                )
 
         client = AsyncOpenAI(
             api_key=api_key,
@@ -173,6 +184,7 @@ class OpenAICompatAdapter(VendorAdapter):
                             p_out = float(getattr(pricing, "completion", 0.0)) * 1_000_000.0
                             if p_in > 0 or p_out > 0:
                                 from app.core.cost_guard import CostGuard
+
                                 CostGuard.register_dynamic_pricing(m_id, p_in, p_out)
                         except Exception:
                             pass

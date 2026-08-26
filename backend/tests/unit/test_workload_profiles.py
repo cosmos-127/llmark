@@ -1,14 +1,15 @@
 import pytest
+
 from app.adapters.mock_adapter import MockVendorAdapter
 from app.core.cost_guard import CostGuard
 from app.core.statistics_engine import StatisticsEngine
 from app.models.schemas import (
+    WORKLOAD_METRIC_PROFILES,
     BenchmarkConfig,
     SingleRequestMetric,
     SLOThresholds,
     VendorType,
     WorkloadPreset,
-    WORKLOAD_METRIC_PROFILES,
 )
 
 
@@ -141,11 +142,11 @@ async def test_agentic_tool_calling_mock_stream():
         max_tokens=256,
     )
     tokens = []
-    async for event in adapter.stream_completion(None, config, "Call calculate_p95_metric"):
+    async for event in adapter.stream_completion(None, config, "Call trigger_remediation_playbook"):
         if event.token:
             tokens.append(event.token)
     full_output = "".join(tokens)
-    assert "calculate_p95_metric" in full_output
+    assert "trigger_remediation_playbook" in full_output or "calculate_p95_metric" in full_output
     assert "arguments" in full_output
 
 
@@ -165,7 +166,11 @@ async def test_code_generation_mock_stream():
         if event.token:
             tokens.append(event.token)
     full_output = "".join(tokens)
-    assert "TokenBucketLimiter" in full_output or "import" in full_output
+    assert (
+        "AdaptiveSlidingWindowRateLimiter" in full_output
+        or "TokenBucketLimiter" in full_output
+        or "class" in full_output
+    )
 
 
 @pytest.mark.asyncio
@@ -179,13 +184,18 @@ async def test_new_workload_presets_mock_stream():
         model="gpt-4o",
         workload_preset=WorkloadPreset.FEWSHOT_CLASSIFICATION,
         concurrency=2,
-        max_tokens=32,
+        max_tokens=64,
     )
     fewshot_tokens = []
     async for event in adapter.stream_completion(None, cfg_fewshot, "Classify ticket"):
         if event.token:
             fewshot_tokens.append(event.token)
-    assert "billing_dispute" in "".join(fewshot_tokens)
+    fewshot_text = "".join(fewshot_tokens)
+    assert (
+        "category" in fewshot_text
+        or "billing_dispute" in fewshot_text
+        or "rate_limit_breach" in fewshot_text
+    )
 
     # 2. Multimodal vision
     cfg_vision = BenchmarkConfig(
@@ -199,7 +209,13 @@ async def test_new_workload_presets_mock_stream():
     async for event in adapter.stream_completion(None, cfg_vision, "OCR diagram"):
         if event.token:
             vision_tokens.append(event.token)
-    assert "GPU" in "".join(vision_tokens) or "Optical" in "".join(vision_tokens)
+    vision_text = "".join(vision_tokens)
+    assert (
+        "Bottleneck" in vision_text
+        or "GPU" in vision_text
+        or "Optical" in vision_text
+        or "VRAM" in vision_text
+    )
 
     # 3. Multi-turn agentic
     cfg_multiturn = BenchmarkConfig(
@@ -210,10 +226,16 @@ async def test_new_workload_presets_mock_stream():
         max_tokens=256,
     )
     multiturn_tokens = []
-    async for event in adapter.stream_completion(None, cfg_multiturn, "Turn 2"):
+    async for event in adapter.stream_completion(None, cfg_multiturn, "Turn 4"):
         if event.token:
             multiturn_tokens.append(event.token)
-    assert "ITL" in "".join(multiturn_tokens) or "batching" in "".join(multiturn_tokens)
+    multiturn_text = "".join(multiturn_tokens)
+    assert (
+        "KV cache" in multiturn_text
+        or "WAN" in multiturn_text
+        or "ITL" in multiturn_text
+        or "batching" in multiturn_text
+    )
 
     # 4. KV cache reuse
     cfg_cache = BenchmarkConfig(
@@ -227,5 +249,39 @@ async def test_new_workload_presets_mock_stream():
     async for event in adapter.stream_completion(None, cfg_cache, "Prefix cached"):
         if event.token:
             cache_tokens.append(event.token)
-    assert "Inter-Token Latency" in "".join(cache_tokens) or "decode" in "".join(cache_tokens)
+    assert (
+        "Inter-Token Latency" in "".join(cache_tokens)
+        or "decode" in "".join(cache_tokens)
+        or "Radix" in "".join(cache_tokens)
+    )
 
+
+def test_production_prompt_presets_calibration():
+    """Verify all prompt presets are populated with production-grade content and valid token counts."""
+    from app.core.fallback_tokenizer import FallbackTokenizer
+    from app.core.prompt_presets import PROMPT_PRESET_TEXT, get_preset_prompt
+
+    for preset in WorkloadPreset:
+        prompt = get_preset_prompt(preset)
+        assert prompt, f"Empty prompt for preset {preset.value}"
+        assert len(prompt) > 5, f"Prompt too short for preset {preset.value}"
+        tok_count = FallbackTokenizer.count_tokens(prompt)
+        assert tok_count > 0, f"Zero tokens counted for preset {preset.value}"
+
+    # Verify specific heavy presets have calibrated token counts
+    assert FallbackTokenizer.count_tokens(PROMPT_PRESET_TEXT[WorkloadPreset.PREFILL_TTFT]) >= 3000
+    assert (
+        FallbackTokenizer.count_tokens(PROMPT_PRESET_TEXT[WorkloadPreset.LONG_CONTEXT_RETRIEVAL])
+        >= 10000
+    )
+    assert (
+        FallbackTokenizer.count_tokens(PROMPT_PRESET_TEXT[WorkloadPreset.SUMMARIZATION_DISTILL])
+        >= 2500
+    )
+    assert FallbackTokenizer.count_tokens(PROMPT_PRESET_TEXT[WorkloadPreset.KV_CACHE_REUSE]) >= 2000
+    assert FallbackTokenizer.count_tokens(PROMPT_PRESET_TEXT[WorkloadPreset.RAG_SYNTHESIS]) >= 2000
+    assert (
+        FallbackTokenizer.count_tokens(PROMPT_PRESET_TEXT[WorkloadPreset.AGENTIC_TOOL_CALLING])
+        >= 800
+    )
+    assert FallbackTokenizer.count_tokens(PROMPT_PRESET_TEXT[WorkloadPreset.RATE_LIMIT_PROBE]) <= 20

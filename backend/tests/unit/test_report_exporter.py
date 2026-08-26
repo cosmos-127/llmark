@@ -1,6 +1,8 @@
 import gzip
 import json
+
 import pytest
+
 from app.core.report_exporter import ReportExporter
 from app.models.db.models import BenchmarkRun
 
@@ -119,4 +121,3 @@ def test_pdf_export_with_none_values():
     pdf_bytes = ReportExporter.generate_pdf(sparse_run)
     assert len(pdf_bytes) > 500
     assert pdf_bytes.startswith(b"%PDF")
-

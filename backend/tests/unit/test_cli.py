@@ -1,5 +1,5 @@
-import os
 import pytest
+
 from app.cli import load_config_from_file, run_headless_benchmark
 from app.models.schemas import BenchmarkConfig, VendorType, WorkloadPreset
 
@@ -95,8 +95,8 @@ def test_evaluate_assertions_unit():
         run_record,
         [
             "p95_ttft < 200",  # 350 < 200 is False
-            "goodput >= 99.5", # 99.2 >= 99.5 is False
+            "goodput >= 99.5",  # 99.2 >= 99.5 is False
         ],
     )
     assert failed is False
-    assert any("[FAIL]" in l for l in fail_logs)
+    assert any("[FAIL]" in log_line for log_line in fail_logs)

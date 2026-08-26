@@ -1,4 +1,5 @@
 import pytest
+
 from app.core.waterfall_collector import WaterfallCollector
 from app.models.schemas import BenchmarkConfig, VendorType
 

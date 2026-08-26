@@ -1,4 +1,3 @@
-from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,7 +8,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # CORS origins
-    BACKEND_CORS_ORIGINS: List[str] = [
+    BACKEND_CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
@@ -49,7 +48,6 @@ class Settings(BaseSettings):
         "gpt-4-turbo": (10.00, 30.00),
         "gpt-4": (30.00, 60.00),
         "gpt-3.5-turbo": (0.50, 1.50),
-
         # ==========================================
         # Anthropic Claude 2026 & Flagship Models
         # ==========================================
@@ -67,7 +65,6 @@ class Settings(BaseSettings):
         "claude-3-opus-20240229": (15.00, 75.00),
         "claude-3-opus": (15.00, 75.00),
         "claude-3-haiku-20240307": (0.25, 1.25),
-
         # ==========================================
         # Google Gemini 2026 & Flagship Models
         # ==========================================
@@ -82,7 +79,6 @@ class Settings(BaseSettings):
         "gemini-1.5-flash": (0.075, 0.30),
         "gemini-1.5-flash-latest": (0.075, 0.30),
         "gemini-1.5-flash-8b": (0.0375, 0.15),
-
         # ==========================================
         # DeepSeek Models
         # ==========================================
@@ -92,7 +88,6 @@ class Settings(BaseSettings):
         "deepseek-ai/deepseek-v3": (0.14, 0.28),
         "deepseek-v3": (0.14, 0.28),
         "deepseek-chat": (0.14, 0.28),
-
         # ==========================================
         # xAI Grok Models
         # ==========================================
@@ -101,7 +96,6 @@ class Settings(BaseSettings):
         "grok-2-vision-1212": (2.00, 10.00),
         "grok-2-mini": (0.20, 1.00),
         "grok-beta": (5.00, 15.00),
-
         # ==========================================
         # Meta Llama Models (via Groq / Together / Fireworks)
         # ==========================================
@@ -116,7 +110,6 @@ class Settings(BaseSettings):
         "meta-llama/llama-3.1-8b-instruct": (0.05, 0.08),
         "llama-3.1-8b-instant": (0.05, 0.08),
         "llama-3.1-8b": (0.05, 0.08),
-
         # ==========================================
         # Mistral AI Models
         # ==========================================
@@ -126,7 +119,6 @@ class Settings(BaseSettings):
         "mistral-small-latest": (0.20, 0.60),
         "codestral-latest": (0.30, 0.90),
         "codestral-2501": (0.30, 0.90),
-
         # ==========================================
         # Qwen Models
         # ==========================================
@@ -134,7 +126,6 @@ class Settings(BaseSettings):
         "qwen-2.5-72b": (0.35, 0.70),
         "qwen/qwen-2.5-coder-32b-instruct": (0.18, 0.36),
         "qwen-2.5-coder-32b": (0.18, 0.36),
-
         # ==========================================
         # AWS Bedrock Models
         # ==========================================
@@ -143,7 +134,6 @@ class Settings(BaseSettings):
         "amazon.nova-micro-v1:0": (0.035, 0.14),
         "anthropic.claude-3-5-sonnet-20241022-v2:0": (3.00, 15.00),
         "anthropic.claude-3-5-haiku-20241022-v1:0": (0.80, 4.00),
-
         # ==========================================
         # Testing & Local Fallbacks
         # ==========================================

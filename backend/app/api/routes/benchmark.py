@@ -1,9 +1,9 @@
 import asyncio
 import json
-from typing import AsyncGenerator, Optional
+from collections.abc import AsyncGenerator
+
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
-
 
 from app.adapters.registry import AdapterRegistry
 from app.core.cost_guard import CostGuard
@@ -13,12 +13,10 @@ from app.models.schemas import (
     CostEstimate,
     ListModelsRequest,
     ListModelsResponse,
-    MetricsSnapshot,
 )
 from app.observability.logging import logger
 
 router = APIRouter(prefix="/benchmark", tags=["benchmark"])
-
 
 
 @router.post("/run", status_code=status.HTTP_201_CREATED)
@@ -56,10 +54,10 @@ async def get_cost_estimate(
     duration_seconds: int = Query(30, ge=1, le=300),
     hard_spend_cap: float = Query(2.0, ge=0.0),
     test_mode: str = Query("duration", description="Testing mode: duration or requests"),
-    total_requests: Optional[int] = Query(None, ge=1, le=1000),
+    total_requests: int | None = Query(None, ge=1, le=1000),
     max_tokens: int = Query(512, ge=1, le=8192),
-    custom_prompt_price_per_1m: Optional[float] = Query(None, ge=0.0),
-    custom_completion_price_per_1m: Optional[float] = Query(None, ge=0.0),
+    custom_prompt_price_per_1m: float | None = Query(None, ge=0.0),
+    custom_completion_price_per_1m: float | None = Query(None, ge=0.0),
 ) -> CostEstimate:
     """Get pre-flight cost and token bounds calculation before launching a benchmark."""
     config = BenchmarkConfig(
@@ -78,9 +76,10 @@ async def get_cost_estimate(
     return CostGuard.estimate_benchmark_cost(config)
 
 
-
 @router.get("/stream")
-async def stream_benchmark_telemetry(benchmark_id: str = Query(..., description="Benchmark ID")) -> StreamingResponse:
+async def stream_benchmark_telemetry(
+    benchmark_id: str = Query(..., description="Benchmark ID"),
+) -> StreamingResponse:
     """Server-Sent Events (SSE) endpoint providing live microsecond telemetry snapshots."""
     execution = BenchmarkOrchestrator.get_run(benchmark_id)
     if not execution:
@@ -106,9 +105,9 @@ async def stream_benchmark_telemetry(benchmark_id: str = Query(..., description=
 
                     if event_type in ("run_complete", "run_aborted"):
                         break
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     # Keep-alive heartbeat
-                    yield f": keep-alive ping\n\n"
+                    yield ": keep-alive ping\n\n"
 
         except asyncio.CancelledError:
             pass
@@ -157,3 +156,51 @@ async def list_vendor_models(req: ListModelsRequest) -> ListModelsResponse:
             detail=f"Failed to fetch models: {str(exc)}",
         )
 
+
+@router.get("/presets")
+async def list_workload_presets() -> list[dict]:
+    """Return all production workload presets with calibrated token metadata and full prompt texts."""
+    from app.core.fallback_tokenizer import FallbackTokenizer
+    from app.core.prompt_presets import PROMPT_PRESET_TEXT
+    from app.models.schemas import WORKLOAD_METRIC_PROFILES, WorkloadPreset
+
+    canonical_presets = [
+        WorkloadPreset.RATE_LIMIT_PROBE,
+        WorkloadPreset.PREFILL_TTFT,
+        WorkloadPreset.DECODE_THROUGHPUT,
+        WorkloadPreset.REASONING_COT,
+        WorkloadPreset.AGENTIC_TOOL_CALLING,
+        WorkloadPreset.CODE_GENERATION,
+        WorkloadPreset.RAG_SYNTHESIS,
+        WorkloadPreset.LONG_CONTEXT_RETRIEVAL,
+        WorkloadPreset.SUMMARIZATION_DISTILL,
+        WorkloadPreset.STRUCTURED_JSON,
+        WorkloadPreset.CHAT_INTERACTIVE,
+        WorkloadPreset.FEWSHOT_CLASSIFICATION,
+        WorkloadPreset.MULTIMODAL_VISION,
+        WorkloadPreset.MULTITURN_AGENTIC,
+        WorkloadPreset.KV_CACHE_REUSE,
+        WorkloadPreset.CUSTOM,
+    ]
+
+    result = []
+    for p in canonical_presets:
+        prompt_text = PROMPT_PRESET_TEXT.get(p, "")
+        profile = WORKLOAD_METRIC_PROFILES.get(p.value, {})
+        tok_count = FallbackTokenizer.count_tokens(prompt_text)
+        result.append(
+            {
+                "id": p.value,
+                "name": profile.get("name", p.value),
+                "tagline": profile.get("tagline", ""),
+                "prompt": prompt_text,
+                "prompt_tokens_measured": tok_count,
+                "default_in_tokens": profile.get("default_in_tokens", tok_count),
+                "default_out_tokens": profile.get("default_out_tokens", 100),
+                "default_concurrency": profile.get("default_concurrency", 4),
+                "default_max_tokens": profile.get("default_max_tokens", 512),
+                "target_metrics": profile.get("target_metrics", []),
+            }
+        )
+
+    return result

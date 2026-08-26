@@ -1,5 +1,6 @@
 import pytest
 from httpx import AsyncClient
+
 from app.db.session import async_session_factory
 from app.models.db.models import BenchmarkRun
 

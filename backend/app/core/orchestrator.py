@@ -1,11 +1,15 @@
 import asyncio
+import json
+import re
 import time
 import uuid
-from typing import AsyncGenerator, Dict, List, Optional, Set
+
+import numpy as np
 import structlog
 
 from app.adapters.registry import AdapterRegistry
-from app.core.cost_guard import CostGuard, PRESET_TOKEN_PROFILES
+from app.core.cost_guard import CostGuard
+from app.core.prompt_presets import get_preset_prompt
 from app.core.statistics_engine import StatisticsEngine
 from app.core.waterfall_collector import WaterfallCollector
 from app.db.session import async_session_factory
@@ -19,115 +23,7 @@ from app.models.schemas import (
     WorkloadPreset,
 )
 
-
 logger = structlog.get_logger()
-
-import json
-import re
-
-# Pre-defined prompt templates for presets
-PROMPT_PRESET_TEXT = {
-    WorkloadPreset.RATE_LIMIT_PROBE: "ping",
-    WorkloadPreset.PREFILL_TTFT: (
-        "Context: The internal architecture of large language model serving engines requires optimizing memory bandwidth "
-        "and KV cache allocation across multi-GPU tensor parallel topologies. PagedAttention divides contiguous key-value "
-        "sequences into non-contiguous physical memory blocks to eliminate internal fragmentation.\n\n"
-        + "System Log History Record:\n"
-        + ("2026-08-26T10:00:00Z [INFO] Worker node nvme-gpu-04 cache block allocated with 99.4% saturation.\n" * 40)
-        + "\nTask: Acknowledge document ingestion by replying with 'OK'."
-    ),
-    WorkloadPreset.DECODE_THROUGHPUT: "Write a comprehensive, step-by-step master guide explaining the architecture, mechanics, and design patterns of distributed streaming telemetry systems in deep detail.",
-    WorkloadPreset.REASONING_COT: "A farmer has 17 sheep. All but 9 run away. How many sheep does the farmer have left? Think step by step and explain your full reasoning path before providing the final answer.",
-    WorkloadPreset.AGENTIC_TOOL_CALLING: (
-        "Available Tools:\n"
-        "1. query_database(query: str, timeout_ms: int = 500) -> dict\n"
-        "2. calculate_p95_metric(timeseries_id: str, window_seconds: int) -> float\n"
-        "3. trigger_pagerduty_alert(service: str, severity: str, summary: str) -> bool\n\n"
-        "User Request: Check the P95 TTFT metric for timeseries cluster-us-east-1 over the past 300 seconds. "
-        "If it exceeds 1500ms, trigger a high-severity alert for service 'inference-gateway'.\n\n"
-        "Output the exact JSON tool call invocation."
-    ),
-    WorkloadPreset.CODE_GENERATION: (
-        "Write a production-grade, highly resilient asynchronous token rate limiter in Python using asyncio, "
-        "token bucket algorithm with redis-compatible sliding window, jittered exponential backoff, "
-        "full typing annotations (mypy strict), and docstrings with algorithmic time complexity analysis."
-    ),
-    WorkloadPreset.RAG_SYNTHESIS: (
-        "Context: Kubernetes is an open-source container orchestration system for automating software deployment, "
-        "scaling, and management. Pods are the smallest deployable units of computing that you can create and manage. "
-        "A Pod encapsulates one or more applications containers, storage resources, a unique network IP, and options "
-        "that govern how the containers should run.\n\n"
-        "Question: Explain how Pod lifecycle management interacts with container restart policies and node affinity."
-    ),
-    WorkloadPreset.LONG_CONTEXT_RETRIEVAL: (
-        "Analyze the following high-density system trace and telemetry records from a 128-node distributed inference cluster.\n\n"
-        + ("2026-08-26T10:14:02Z [DEBUG] KV cache pool allocation block 0x7f8a9c00: latency=12.4ms, hits=98.2%, eviction=0\n" * 160)
-        + "\nSECRET_AUTHENTICATION_TOKEN = 'LLMARK_ALPHA_9942_PASSKEY'\n\n"
-        + ("2026-08-26T10:14:03Z [INFO] Tensor parallel group synchronization completed across 8x H100 SXM5 nodes.\n" * 160)
-        + "\nTask: Extract the exact value of SECRET_AUTHENTICATION_TOKEN and report the primary cache hit percentage."
-    ),
-    WorkloadPreset.SUMMARIZATION_DISTILL: (
-        "Document Context: Quarterly High-Scale Infrastructure Reliability Report.\n"
-        "Over Q2, our inference platform scaled to 4.2 billion monthly token generations across 4 global regions. "
-        "P95 Time to First Token (TTFT) improved by 34% following the migration to speculative decoding and dynamic chunked prefill. "
-        "Inter-token latency (ITL) jitter was reduced from 42ms to 18ms via continuous batching schedule optimization. "
-        "However, HTTP 429 rate limit events surged during peak marketing events due to fixed upstream TPM quota thresholds. "
-        "Cost per 1M generated tokens dropped 22% with tiered FP8 quantization deployment.\n\n"
-        "Task: Provide a high-impact, bulleted executive summary highlighting Key Metrics, Wins, and Bottlenecks."
-    ),
-    WorkloadPreset.STRUCTURED_JSON: "Return a valid JSON object matching this schema: {'service': str, 'status': str, 'latency_ms': float, 'metrics': {'cpu': float, 'memory_pct': float}}.",
-    WorkloadPreset.CHAT_INTERACTIVE: "Explain the architectural difference between REST and Server-Sent Events in 2 paragraphs.",
-    WorkloadPreset.FEWSHOT_CLASSIFICATION: (
-        "Classify the incoming customer support message into one of: ['billing_dispute', 'auth_failure', 'bug_report', 'feature_request', 'hardware_fault'].\n\n"
-        "Example 1: 'I was double-charged on my July invoice.' -> {'intent': 'billing_dispute', 'confidence': 0.99}\n"
-        "Example 2: 'My SAML SSO login throws 403 Forbidden.' -> {'intent': 'auth_failure', 'confidence': 0.98}\n"
-        "Example 3: 'The PDF export button crashes on mobile safari.' -> {'intent': 'bug_report', 'confidence': 0.95}\n"
-        "Example 4: 'Can you add dark mode theme support?' -> {'intent': 'feature_request', 'confidence': 0.97}\n"
-        "Example 5: 'Server rack 4B power supply unit LED turned amber.' -> {'intent': 'hardware_fault', 'confidence': 0.99}\n\n"
-        "Input Query: 'Invoice #8839 contains an unauthorized overage line item of $450. Please refund immediately.'\n"
-        "Output JSON classification:"
-    ),
-    WorkloadPreset.MULTIMODAL_VISION: (
-        "Attached: Multimodal Vision Image Token Stream (Base64 Visual Embeddings: 1800 patch tokens representing dashboard topology diagram).\n\n"
-        "Task: Perform high-fidelity optical character recognition (OCR) and layout analysis. Identify all connected cluster nodes, "
-        "their allocated GPU VRAM percentages, and highlight any saturated bottleneck links."
-    ),
-    WorkloadPreset.MULTITURN_AGENTIC: (
-        "System: You are an autonomous site reliability engineer troubleshooting a distributed KV cache performance degradation.\n\n"
-        "Turn 1 User: Cluster us-east-1 is reporting P95 TTFT spikes from 120ms to 1800ms.\n"
-        "Turn 1 Assistant: Based on initial telemetry, KV cache VRAM allocation is sitting at 99.2% with frequent block evictions. Recommend enabling chunked prefill.\n"
-        "Turn 2 User: Chunked prefill was enabled with block size 16. What further kernel-level optimizations should we apply to reduce ITL jitter?\n\n"
-        "Turn 2 Assistant:"
-    ),
-    WorkloadPreset.KV_CACHE_REUSE: (
-        "[STATIC REFERENCE DOCUMENTATION - PREFIX CACHED CONTEXT]\n"
-        "LLMark Architecture Standard: LLMark evaluates LLM inference endpoints across TTFT, TPOT, ITL, Goodput, and Network Waterfalls. "
-        "Streaming responses are consumed chunk-by-chunk with sub-millisecond precision. Time to First Token (TTFT) includes TCP/TLS handshakes, "
-        "server queue time, and KV cache prefill compute. Time Per Output Token (TPOT) measures sustained decode execution.\n"
-        + ("Static Architecture Specification Record: Distributed KV cache block virtualization across NUMA nodes.\n" * 40)
-        + "\n[USER QUERY]: What metric directly captures sustained streaming smoothness during the decode phase?"
-    ),
-    WorkloadPreset.TOOL_CALLING: (
-        "Available Tools:\n"
-        "1. query_database(query: str, timeout_ms: int = 500) -> dict\n"
-        "2. calculate_p95_metric(timeseries_id: str, window_seconds: int) -> float\n\n"
-        "User Request: Query the database for active worker nodes in region 'us-east-1'. Output the exact tool call."
-    ),
-    WorkloadPreset.CODE: "Write a high-performance, asynchronous Python connection pool manager using asyncio and httpx.",
-    WorkloadPreset.LONG_CONTEXT: "Analyze the full operational history of distributed KV caching mechanisms across modern GPU clusters. " * 30,
-    WorkloadPreset.SUMMARIZATION: "Summarize the technical advantages and trade-offs of PagedAttention vs standard linear KV allocation.",
-    WorkloadPreset.CHAT: "Explain the architectural difference between REST and Server-Sent Events in 2 paragraphs.",
-    WorkloadPreset.RAG: (
-        "Context: Kubernetes is an open-source container orchestration system for automating software deployment, "
-        "scaling, and management. Pods are the smallest deployable units of computing that you can create and manage. "
-        "A Pod encapsulates one or more applications containers, storage resources, a unique network IP, and options "
-        "that govern how the containers should run.\n\n"
-        "Question: Explain how Pod lifecycle management interacts with container restart policies and node affinity."
-    ),
-    WorkloadPreset.VISION: "Describe the primary latency bottlenecks shown in the attached benchmark histogram.",
-    WorkloadPreset.JSON_SCHEMA: "Return a structured JSON object containing user profiles, permissions, and session timeouts.",
-    WorkloadPreset.CUSTOM: "Benchmark standard evaluation prompt.",
-}
 
 
 class CancellationToken:
@@ -154,8 +50,8 @@ class BenchmarkExecution:
         self.config = config
         self.cancel_token = CancellationToken()
         self.start_time: float = 0.0
-        self.metrics: List[SingleRequestMetric] = []
-        self.subscribers: Set[asyncio.Queue] = set()
+        self.metrics: list[SingleRequestMetric] = []
+        self.subscribers: set[asyncio.Queue] = set()
         self.status: str = "initializing"
         self.waterfall_baseline: WaterfallTiming = WaterfallTiming()
         self.total_cost_usd: float = 0.0
@@ -166,7 +62,7 @@ class BenchmarkExecution:
     def remove_subscriber(self, queue: asyncio.Queue) -> None:
         self.subscribers.discard(queue)
 
-    async def broadcast(self, event_type: str, data: Dict) -> None:
+    async def broadcast(self, event_type: str, data: dict) -> None:
         payload = {"event": event_type, "data": data}
         for q in list(self.subscribers):
             try:
@@ -176,10 +72,10 @@ class BenchmarkExecution:
 
 
 class BenchmarkOrchestrator:
-    _active_runs: Dict[str, BenchmarkExecution] = {}
+    _active_runs: dict[str, BenchmarkExecution] = {}
 
     @classmethod
-    def get_run(cls, benchmark_id: str) -> Optional[BenchmarkExecution]:
+    def get_run(cls, benchmark_id: str) -> BenchmarkExecution | None:
         return cls._active_runs.get(benchmark_id)
 
     @classmethod
@@ -209,91 +105,125 @@ class BenchmarkOrchestrator:
         benchmark_id = execution.benchmark_id
         adapter = AdapterRegistry.get_adapter(config.vendor)
 
-        logger.info("Starting benchmark execution", benchmark_id=benchmark_id, vendor=config.vendor.value, model=config.model)
+        logger.info(
+            "Starting benchmark execution",
+            benchmark_id=benchmark_id,
+            vendor=config.vendor.value,
+            model=config.model,
+        )
 
         execution.status = "running"
         execution.start_time = time.perf_counter()
 
         try:
-            # Determine prompt content
-            base_prompt = config.custom_prompt or PROMPT_PRESET_TEXT.get(config.workload_preset, "Benchmark test prompt")
+            # Determine prompt content from custom prompt or calibrated Workload Preset
+            if config.custom_prompt and config.custom_prompt.strip():
+                base_prompt = config.custom_prompt.strip()
+            else:
+                base_prompt = get_preset_prompt(config.workload_preset)
 
             # 1. Measure Network Waterfall Baseline (DNS, TCP, TLS)
-            execution.waterfall_baseline = await WaterfallCollector.measure_connection_waterfall(config)
-            await execution.broadcast("waterfall_baseline", execution.waterfall_baseline.model_dump())
+            execution.waterfall_baseline = await WaterfallCollector.measure_connection_waterfall(
+                config
+            )
+            await execution.broadcast(
+                "waterfall_baseline", execution.waterfall_baseline.model_dump()
+            )
 
             # 2. Warmup Phase (Discarded from metrics)
-            for i in range(config.warmup_requests):
+            for _ in range(config.warmup_requests):
                 if execution.cancel_token.is_cancelled:
                     break
                 try:
-                    async for _ in adapter.stream_completion(config.credential, config, base_prompt):
+                    async for _ in adapter.stream_completion(
+                        config.credential, config, base_prompt
+                    ):
                         pass
                 except Exception as e:
                     logger.warning("Warmup request failed", error=str(e))
 
             # 3. Workload Concurrency & Load Curve Setup
-            custom_dataset = (
-                [p.strip() for p in config.custom_dataset if p and p.strip()]
-                if (config.custom_dataset and len(config.custom_dataset) > 0)
-                else None
-            )
-
-            is_knee_probe = (
-                config.load_curve == "saturation_knee"
-                or (hasattr(config.load_curve, "value") and config.load_curve.value == "saturation_knee")
+            is_knee_probe = config.load_curve == "saturation_knee" or (
+                hasattr(config.load_curve, "value") and config.load_curve.value == "saturation_knee"
             )
             target_max_concurrency = max(1, config.concurrency)
             raw_stages = [1, 3, 8, 16, 25, 40, target_max_concurrency]
-            stepped_stages = sorted(list(set([s for s in raw_stages if s <= target_max_concurrency])))
+            stepped_stages = sorted(
+                list(set([s for s in raw_stages if s <= target_max_concurrency]))
+            )
             if not stepped_stages:
                 stepped_stages = [target_max_concurrency]
 
             stage_duration = config.duration_seconds / max(1, len(stepped_stages))
             current_active_workers = stepped_stages[0] if is_knee_probe else target_max_concurrency
-            saturation_knee_concurrency: Optional[int] = None
+            saturation_knee_concurrency: int | None = None
             saturation_knee_detected: bool = False
-            baseline_stage_ttft: Optional[float] = None
+            baseline_stage_ttft: float | None = None
 
             workers_count = target_max_concurrency
             request_counter = 0
+            curve_val = getattr(config.load_curve, "value", str(config.load_curve))
             counter_lock = asyncio.Lock()
 
             async def worker_loop(worker_id: int):
                 nonlocal request_counter
                 while not execution.cancel_token.is_cancelled:
-                    # Gating for Knee-Point Probe staged active worker scaling
-                    if is_knee_probe and worker_id >= current_active_workers:
-                        await asyncio.sleep(0.05)
-                        continue
+                    elapsed = time.perf_counter() - execution.start_time
+
+                    # Load Curve Waveform Arrival Gating
+                    if curve_val == "ramp_up":
+                        progress = min(1.0, elapsed / max(0.1, config.duration_seconds))
+                        current_limit = max(1, int(1 + progress * (target_max_concurrency - 1)))
+                        if worker_id >= current_limit:
+                            await asyncio.sleep(0.05)
+                            continue
+                    elif curve_val == "spike":
+                        # Periodic surge waves: 4s baseline (25% workers), 2s burst (100% workers)
+                        cycle_time = elapsed % 6.0
+                        is_spike_active = cycle_time >= 4.0
+                        spike_workers = (
+                            target_max_concurrency
+                            if is_spike_active
+                            else max(1, int(target_max_concurrency * 0.25))
+                        )
+                        if worker_id >= spike_workers:
+                            await asyncio.sleep(0.05)
+                            continue
+                    elif is_knee_probe:
+                        if worker_id >= current_active_workers:
+                            await asyncio.sleep(0.05)
+                            continue
 
                     # Mode-based termination check
-                    if config.test_mode == TestMode.REQUESTS and config.total_requests and config.total_requests > 0:
+                    if (
+                        config.test_mode == TestMode.REQUESTS
+                        and config.total_requests
+                        and config.total_requests > 0
+                    ):
                         async with counter_lock:
                             if request_counter >= config.total_requests:
                                 break
                             request_counter += 1
                     else:
-                        elapsed = time.perf_counter() - execution.start_time
                         if elapsed >= config.duration_seconds:
                             break
 
-                    # Prepare prompt (Custom Dataset vs Preset text vs Nonce)
-                    if custom_dataset:
-                        prompt = custom_dataset[request_counter % len(custom_dataset)]
-                    else:
-                        prompt = base_prompt
-
+                    prompt = base_prompt
                     if config.cache_bust:
                         prompt = f"{prompt} [Nonce: {uuid.uuid4().hex[:8]}]"
 
                     # Check spend cap circuit breaker
-                    if CostGuard.is_spend_cap_exceeded(execution.total_cost_usd, config.hard_spend_cap):
+                    if CostGuard.is_spend_cap_exceeded(
+                        execution.total_cost_usd, config.hard_spend_cap
+                    ):
                         execution.cancel_token.cancel("Hard spend cap exceeded")
                         execution.status = "budget_exceeded"
                         await execution.broadcast(
                             "budget_warning",
-                            {"current_spend_usd": execution.total_cost_usd, "spend_cap_usd": config.hard_spend_cap},
+                            {
+                                "current_spend_usd": execution.total_cost_usd,
+                                "spend_cap_usd": config.hard_spend_cap,
+                            },
                         )
                         break
 
@@ -309,22 +239,41 @@ class BenchmarkOrchestrator:
 
             # Periodic SSE Snapshot Broadcaster Task
             async def broadcast_loop():
-                nonlocal current_active_workers, baseline_stage_ttft, saturation_knee_concurrency, saturation_knee_detected
+                nonlocal \
+                    current_active_workers, \
+                    baseline_stage_ttft, \
+                    saturation_knee_concurrency, \
+                    saturation_knee_detected
                 while execution.status == "running" and not execution.cancel_token.is_cancelled:
                     elapsed = time.perf_counter() - execution.start_time
 
                     if is_knee_probe:
-                        stage_idx = min(len(stepped_stages) - 1, int(elapsed / max(0.1, stage_duration)))
+                        stage_idx = min(
+                            len(stepped_stages) - 1, int(elapsed / max(0.1, stage_duration))
+                        )
                         current_active_workers = stepped_stages[stage_idx]
 
                         # Detect TTFT saturation knee inflection (>50% spike over 1-stream baseline)
                         if len(execution.metrics) >= 4:
-                            comp = [m for m in execution.metrics if not m.is_error and m.status_code == 200]
+                            comp = [
+                                m
+                                for m in execution.metrics
+                                if not m.is_error and m.status_code == 200
+                            ]
                             if comp:
                                 current_p95 = float(np.percentile([m.ttft_ms for m in comp], 95))
-                                if baseline_stage_ttft is None and stage_idx == 0 and len(comp) >= 3:
+                                if (
+                                    baseline_stage_ttft is None
+                                    and stage_idx == 0
+                                    and len(comp) >= 3
+                                ):
                                     baseline_stage_ttft = current_p95
-                                elif baseline_stage_ttft and current_p95 >= 1.5 * baseline_stage_ttft and not saturation_knee_detected and stage_idx > 0:
+                                elif (
+                                    baseline_stage_ttft
+                                    and current_p95 >= 1.5 * baseline_stage_ttft
+                                    and not saturation_knee_detected
+                                    and stage_idx > 0
+                                ):
                                     saturation_knee_concurrency = stepped_stages[stage_idx - 1]
                                     saturation_knee_detected = True
 
@@ -350,7 +299,9 @@ class BenchmarkOrchestrator:
                     for w in range(workers_count):
                         tg.create_task(worker_loop(w))
             except* Exception as eg:
-                logger.error("Error during workload execution", errors=[str(e) for e in eg.exceptions])
+                logger.error(
+                    "Error during workload execution", errors=[str(e) for e in eg.exceptions]
+                )
 
             # Finalize
             broadcast_task.cancel()
@@ -375,10 +326,19 @@ class BenchmarkOrchestrator:
 
             # Broadcast completion
             await execution.broadcast("run_complete", final_snapshot.model_dump())
-            logger.info("Benchmark finished", benchmark_id=benchmark_id, status=execution.status, completed=final_snapshot.completed_requests)
+            logger.info(
+                "Benchmark finished",
+                benchmark_id=benchmark_id,
+                status=execution.status,
+                completed=final_snapshot.completed_requests,
+            )
 
         except Exception as e:
-            logger.error("Unhandled exception in benchmark lifecycle", benchmark_id=benchmark_id, error=str(e))
+            logger.error(
+                "Unhandled exception in benchmark lifecycle",
+                benchmark_id=benchmark_id,
+                error=str(e),
+            )
             execution.cancel_token.cancel("Internal error")
             execution.status = "failed"
             total_elapsed = time.perf_counter() - execution.start_time
@@ -390,14 +350,15 @@ class BenchmarkOrchestrator:
                 metrics=execution.metrics,
                 slo=config.slo,
                 workload_preset=config.workload_preset.value,
-                saturation_knee_concurrency=saturation_knee_concurrency if "saturation_knee_concurrency" in locals() else None,
-                saturation_knee_detected=saturation_knee_detected if "saturation_knee_detected" in locals() else False,
+                saturation_knee_concurrency=saturation_knee_concurrency
+                if "saturation_knee_concurrency" in locals()
+                else None,
+                saturation_knee_detected=saturation_knee_detected
+                if "saturation_knee_detected" in locals()
+                else False,
             )
             await cls._persist_run_to_db(execution, error_snapshot)
             await execution.broadcast("run_complete", error_snapshot.model_dump())
-
-
-
 
     @classmethod
     async def _stream_single_request(
@@ -409,11 +370,11 @@ class BenchmarkOrchestrator:
     ) -> SingleRequestMetric:
         req_id = f"req_{uuid.uuid4().hex[:8]}"
         t_request_sent = time.perf_counter()
-        t_first_chunk: Optional[float] = None
-        t_first_answer: Optional[float] = None
-        t_prev_chunk: Optional[float] = None
-        itl_deltas_ms: List[float] = []
-        collected_tokens: List[str] = []
+        t_first_chunk: float | None = None
+        t_first_answer: float | None = None
+        t_prev_chunk: float | None = None
+        itl_deltas_ms: list[float] = []
+        collected_tokens: list[str] = []
         thinking_token_count = 0
 
         prompt_tokens = 0
@@ -451,7 +412,9 @@ class BenchmarkOrchestrator:
 
             t_last = time.perf_counter()
             ttft_ms = round((t_first_chunk - t_request_sent) * 1000.0, 2) if t_first_chunk else 0.0
-            ttfa_ms = round((t_first_answer - t_request_sent) * 1000.0, 2) if t_first_answer else None
+            ttfa_ms = (
+                round((t_first_answer - t_request_sent) * 1000.0, 2) if t_first_answer else None
+            )
             e2e_ms = round((t_last - t_request_sent) * 1000.0, 2)
 
             if completion_tokens == 0:
@@ -466,12 +429,20 @@ class BenchmarkOrchestrator:
                 tpot_ms = round(decode_duration_ms / max(1, completion_tokens), 3)
 
             # Prefill Token Velocity (Prompt tok/s)
-            prefill_tps = round(prompt_tokens / max(0.0001, (ttft_ms / 1000.0)), 1) if ttft_ms > 0 else None
+            prefill_tps = (
+                round(prompt_tokens / max(0.0001, (ttft_ms / 1000.0)), 1) if ttft_ms > 0 else None
+            )
 
             # Structured JSON validation check if requested
             schema_valid = None
             is_json_workload = (
-                config.workload_preset in ("structured_json", "json_schema", WorkloadPreset.STRUCTURED_JSON, WorkloadPreset.JSON_SCHEMA)
+                config.workload_preset
+                in (
+                    "structured_json",
+                    "json_schema",
+                    WorkloadPreset.STRUCTURED_JSON,
+                    WorkloadPreset.JSON_SCHEMA,
+                )
                 or config.json_schema is not None
             )
             if is_json_workload:
@@ -490,7 +461,9 @@ class BenchmarkOrchestrator:
                 config.custom_completion_price_per_1m,
             )
 
-            edge_network_ms = round(baseline_waterfall.dns_ms + baseline_waterfall.tcp_ms + baseline_waterfall.tls_ms, 2)
+            edge_network_ms = round(
+                baseline_waterfall.dns_ms + baseline_waterfall.tcp_ms + baseline_waterfall.tls_ms, 2
+            )
             server_gpu_compute_ms = max(0.0, round(ttft_ms - edge_network_ms, 2))
 
             waterfall = WaterfallTiming(
@@ -528,9 +501,14 @@ class BenchmarkOrchestrator:
         except Exception as e:
             t_last = time.perf_counter()
             err_str = str(e)
-            is_429 = "429" in err_str or "rate limit" in err_str.lower() or "too many requests" in err_str.lower() or "quota" in err_str.lower()
+            is_429 = (
+                "429" in err_str
+                or "rate limit" in err_str.lower()
+                or "too many requests" in err_str.lower()
+                or "quota" in err_str.lower()
+            )
             status_code = 429 if is_429 else getattr(e, "status_code", 500)
-            
+
             # Extract Retry-After if present in message
             retry_ms = None
             retry_match = re.search(r"Retry-After[:\s]+([\d\.]+)", err_str, re.IGNORECASE)
@@ -552,7 +530,9 @@ class BenchmarkOrchestrator:
             )
 
     @classmethod
-    async def _persist_run_to_db(cls, execution: BenchmarkExecution, snapshot: MetricsSnapshot) -> None:
+    async def _persist_run_to_db(
+        cls, execution: BenchmarkExecution, snapshot: MetricsSnapshot
+    ) -> None:
         """Persist aggregated benchmark metadata and metrics to SQLite."""
         config = execution.config
         try:
@@ -591,6 +571,7 @@ class BenchmarkOrchestrator:
                     dns_p50=execution.waterfall_baseline.dns_ms,
                     tcp_p50=execution.waterfall_baseline.tcp_ms,
                     tls_p50=execution.waterfall_baseline.tls_ms,
+                    raw_telemetry=snapshot.model_dump(),
                     config_snapshot=config.model_dump(exclude={"credential"}),
                 )
                 session.add(run_db)
