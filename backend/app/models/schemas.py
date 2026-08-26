@@ -445,6 +445,7 @@ class SingleRequestMetric(BaseModel):
     itl_deltas_ms: list[float] = Field(default_factory=list)
     meets_slo: bool = True
     cost_usd: float = 0.0
+    completed_at_elapsed: float = 0.0
 
 
 class MetricsSnapshot(BaseModel):

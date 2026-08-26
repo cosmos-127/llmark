@@ -10,8 +10,11 @@ import {
   Sparkles,
   Radio,
   ArrowRight,
+  BookOpen,
+  ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MathFormula } from "@/components/ui/math-formula";
 
 interface LatencyWaterfallInspectorProps {
   promptTokens: number;
@@ -41,6 +44,7 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
   cacheBust,
 }) => {
   const [hoveredPhase, setHoveredPhase] = useState<WaterfallPhase | null>(null);
+  const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
 
   // Compute realistic latency stages based on prompt length, model, and caching
   const { phases, totalTurnaroundMs, ttftMs, tpotMs } = useMemo(() => {
@@ -51,13 +55,10 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
     const gatewayQueueMs = 18.0;
 
     // 3. GPU Prefill (TTFT)
-    // Cold prefill: ~0.08ms per prompt token on modern GPU cluster
-    // Warm prefix cached: ~0.015ms per token
     const prefillPerTokenMs = cacheBust ? 0.08 : 0.02;
     const gpuPrefillMs = Number((Math.max(40, promptTokens * prefillPerTokenMs)).toFixed(1));
 
     // 4. Autoregressive Streaming Decode (TPOT)
-    // ~22ms per token (≈ 45 tokens/sec decode throughput)
     const tokenGenPerTokenMs = 22.0;
     const streamingDecodeMs = Number((maxTokens * tokenGenPerTokenMs).toFixed(1));
 
@@ -129,16 +130,19 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
             <Clock className="h-4 w-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
                 End-to-End Latency Waterfall & Turnaround Physics
               </span>
+              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
+                Reference & Simulation Only
+              </Badge>
               <Badge variant="outline" className="text-[10px] font-sans py-0 px-1.5 text-[#853953] dark:text-[#A74B6A]">
                 Estimated Turnaround: {(totalTurnaroundMs / 1000).toFixed(2)}s
               </Badge>
             </div>
             <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-              Deconstructs request timeline: Edge Handshake $\to$ Queue $\to$ TTFT Prefill $\to$ Streaming Decode.
+              Deconstructs request timeline: Edge Handshake → Queue → TTFT Prefill → Streaming Decode.
             </p>
           </div>
         </div>
@@ -155,23 +159,23 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
 
       {/* Visual Multi-Phase Waterfall Bar */}
       <div className="space-y-1.5 select-none">
-        <div className="h-6 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-0.5 flex items-center overflow-hidden gap-0.5">
+        <div className="h-5 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-0.5 flex items-center overflow-hidden gap-0.5">
           {phases.map((phase) => (
             <motion.div
               key={phase.id}
-              initial={false}
-              animate={{ width: `${Math.max(4, phase.pct)}%` }}
+              initial={{ width: 0 }}
+              animate={{ width: `${phase.pct}%` }}
               transition={{ duration: 0.25, ease: "easeOut" }}
               onMouseEnter={() => setHoveredPhase(phase)}
               onMouseLeave={() => setHoveredPhase(null)}
               className={`h-full rounded-lg ${phase.color} cursor-pointer transition-all flex items-center justify-center text-[10px] font-sans font-semibold text-white truncate px-1 shadow-2xs hover:brightness-110`}
             >
-              {phase.pct >= 10 && <span>{phase.durationMs} ms</span>}
+              {phase.pct >= 10 && <span>{phase.durationMs}ms</span>}
             </motion.div>
           ))}
         </div>
 
-        {/* Hovered Phase Inspector Tooltip */}
+        {/* Hovered Phase Details Overlay */}
         <AnimatePresence>
           {hoveredPhase ? (
             <motion.div
@@ -182,14 +186,12 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
             >
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-white">{hoveredPhase.name}</span>
-                <span className="text-[#A74B6A] font-sans font-bold">
-                  {hoveredPhase.durationMs} ms ({Math.round(hoveredPhase.pct)}% of turn)
-                </span>
+                <span className="text-[#A74B6A] font-sans font-bold">{hoveredPhase.durationMs} ms ({Math.round(hoveredPhase.pct)}%)</span>
               </div>
               <span className="text-[10px] text-white/70 font-sans">{hoveredPhase.desc}</span>
             </motion.div>
           ) : (
-            /* Default Legend Strip */
+            /* Default Phase Legend */
             <div className="flex items-center justify-between text-[11px] font-sans text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-0.5">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
@@ -244,6 +246,77 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
             {(totalTurnaroundMs / 1000).toFixed(2)}s per call
           </div>
         </div>
+      </div>
+
+      {/* Expandable Deep-Dive Knowledge Dropdown */}
+      <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 bg-[#F3F4F4]/40 dark:bg-[#1E1D1F]/60 overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => setIsKnowledgeOpen(!isKnowledgeOpen)}
+          className="w-full flex items-center justify-between p-3 px-3.5 text-left hover:bg-[#F3F4F4]/80 dark:hover:bg-[#2C2C2C]/50 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <div>
+              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                Understanding the LLM Latency Waterfall
+              </span>
+              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                Click to explore how network handshake, gateway scheduling, prefill compute, and streaming decode compose end-to-end latency.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px] font-sans py-0 px-1.5 text-[#853953] dark:text-[#A74B6A] border-[#853953]/30">
+              {isKnowledgeOpen ? "Hide Guide" : "Expand Guide"}
+            </Badge>
+            <motion.div
+              animate={{ rotate: isKnowledgeOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="h-4 w-4 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60" />
+            </motion.div>
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {isKnowledgeOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5 space-y-3 text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[#853953] dark:text-[#A74B6A] font-semibold text-xs">
+                    <Radio className="h-3.5 w-3.5" />
+                    <span>TTFT (Time to First Token)</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    The time until receiving the first token:
+                  </p>
+                  <MathFormula math="\text{TTFT} = t_{\text{net}} + t_{\text{queue}} + t_{\text{prefill}}" block className="text-[11px] text-[#853953] dark:text-[#A74B6A]" />
+                  <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                    Network TLS Handshake + Server Queue Delay + GPU Matrix Ingestion.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[#612D53] dark:text-[#C57BB2] font-semibold text-xs">
+                    <Zap className="h-3.5 w-3.5" />
+                    <span>Total Turnaround Duration</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    End-to-end request completion latency:
+                  </p>
+                  <MathFormula math="T_{\text{E2E}} = \text{TTFT} + \sum_{k=1}^{N_{\text{out}}} \text{ITL}_k \approx \text{TTFT} + (N_{\text{out}} \times \text{TPOT})" block className="text-[10px] text-[#612D53] dark:text-[#C57BB2]" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -215,10 +215,13 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
             <StrictnessIcon className="h-4 w-4" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
                 Latency Distribution & Goodput Yield Simulation
               </span>
+              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
+                Reference & Simulation Only
+              </Badge>
               <Badge variant="outline" className={`text-[10px] font-sans ${strictnessInfo.color} py-0 px-1.5`}>
                 {strictnessInfo.label}
               </Badge>

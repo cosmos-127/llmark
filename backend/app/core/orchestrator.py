@@ -142,6 +142,9 @@ class BenchmarkOrchestrator:
                 except Exception as e:
                     logger.warning("Warmup request failed", error=str(e))
 
+            # Reset start timestamp to accurately benchmark from t=0.0s after warmup finishes
+            execution.start_time = time.perf_counter()
+
             # 3. Workload Concurrency & Load Curve Setup
             is_knee_probe = config.load_curve == "saturation_knee" or (
                 hasattr(config.load_curve, "value") and config.load_curve.value == "saturation_knee"
@@ -193,6 +196,10 @@ class BenchmarkOrchestrator:
                         if worker_id >= current_active_workers:
                             await asyncio.sleep(0.05)
                             continue
+                    elif curve_val == "poisson":
+                        # Stochastic Poisson inter-arrival jitter
+                        if np.random.random() < 0.20:
+                            await asyncio.sleep(float(np.random.exponential(0.08)))
 
                     # Mode-based termination check
                     if (
@@ -229,7 +236,7 @@ class BenchmarkOrchestrator:
 
                     # Stream single request
                     req_metric = await cls._stream_single_request(
-                        adapter, config, prompt, execution.waterfall_baseline
+                        adapter, config, prompt, execution.waterfall_baseline, execution.start_time
                     )
                     execution.metrics.append(req_metric)
                     execution.total_cost_usd += req_metric.cost_usd
@@ -367,6 +374,7 @@ class BenchmarkOrchestrator:
         config: BenchmarkConfig,
         prompt: str,
         baseline_waterfall: WaterfallTiming,
+        start_time: float = 0.0,
     ) -> SingleRequestMetric:
         req_id = f"req_{uuid.uuid4().hex[:8]}"
         t_request_sent = time.perf_counter()
@@ -411,6 +419,7 @@ class BenchmarkOrchestrator:
                     completion_tokens = event.usage.get("completion_tokens", 0)
 
             t_last = time.perf_counter()
+            completed_elapsed = round(t_last - start_time, 3) if start_time > 0 else 0.0
             ttft_ms = round((t_first_chunk - t_request_sent) * 1000.0, 2) if t_first_chunk else 0.0
             ttfa_ms = (
                 round((t_first_answer - t_request_sent) * 1000.0, 2) if t_first_answer else None
@@ -494,12 +503,14 @@ class BenchmarkOrchestrator:
                 e2e_ms=e2e_ms,
                 itl_deltas_ms=itl_deltas_ms,
                 cost_usd=cost_usd,
+                completed_at_elapsed=completed_elapsed,
             )
             metric.meets_slo = StatisticsEngine.evaluate_slo(metric, config.slo)
             return metric
 
         except Exception as e:
             t_last = time.perf_counter()
+            completed_elapsed = round(t_last - start_time, 3) if start_time > 0 else 0.0
             err_str = str(e)
             is_429 = (
                 "429" in err_str
@@ -526,6 +537,7 @@ class BenchmarkOrchestrator:
                 retry_after_ms=retry_ms,
                 error_message=err_str,
                 e2e_ms=round((t_last - t_request_sent) * 1000.0, 2),
+                completed_at_elapsed=completed_elapsed,
                 meets_slo=False,
             )
 

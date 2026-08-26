@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminHeader } from "./components/admin-layout/AdminHeader";
@@ -23,6 +23,11 @@ export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>("landing");
   const [historyInitialView, setHistoryInitialView] = useState<"history" | "roi">("history");
   const [historySelectedRunId, setHistorySelectedRunId] = useState<string | null>(null);
+
+  // Automatically scroll to top whenever navigating between pages / views
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [activeTab]);
 
   const handleNavigateToHistory = (view?: "history" | "roi", runId?: string) => {
     if (view) setHistoryInitialView(view);

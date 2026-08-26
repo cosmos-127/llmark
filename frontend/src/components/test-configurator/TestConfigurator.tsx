@@ -385,6 +385,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
   const [costEstimate, setCostEstimate] = useState<CostEstimate | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  // Automatically scroll to the top of the viewport whenever advancing or changing steps
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, [currentStep]);
+
   // Model discovery state
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState<boolean>(false);
@@ -799,151 +804,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           </motion.div>
         )}
 
-        {/* Responsive Grid: Left Sidebar (Diagnostics for Step 4) + Main Flow */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* ========================================================================= */}
-          {/* 1. LEFT SIDEBAR PANEL (PRE-FLIGHT AUDIT & EXPORT FOR STEP 4)              */}
-          {/* ========================================================================= */}
-          {currentStep === 4 && (
-            <div className="lg:col-span-4 xl:col-span-4 space-y-4 lg:sticky lg:top-4">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key="sidebar-step-4"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.18 }}
-                  className="space-y-4"
-                >
-                  <Card className="overflow-hidden border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
-                    <CardHeader className="p-4 pb-2.5 bg-[#F3F4F4]/60 dark:bg-[#2C2C2C]/40 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                              Pre-Flight Health Audit
-                            </CardTitle>
-                            <CardDescription className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-                              100% Validated & Safe to Launch
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Badge variant="emerald" className="text-[11px] font-sans tabular-nums px-2 py-0.5 font-medium">
-                          Passed
-                        </Badge>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="p-4 space-y-3.5">
-                      <div className="space-y-2 text-xs">
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
-                          <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            Target Endpoint & Model
-                          </span>
-                          <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 truncate max-w-[120px] font-medium">
-                            {config.model}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
-                          <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            Workload Profile Matrix
-                          </span>
-                          <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
-                            {config.workload_preset}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
-                          <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            Financial Spend Cap Armed
-                          </span>
-                          <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
-                            {formatUsd(capVal)}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
-                          <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                            Live SSE Telemetry Stream
-                          </span>
-                          <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
-                            100ms sync
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Telemetry Architecture Visual Flow */}
-                      <div className="p-3 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 space-y-1.5">
-                        <div className="text-[11px] font-sans tabular-nums uppercase tracking-wider text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-medium flex items-center gap-1">
-                          <Workflow className="h-3 w-3" />
-                          Active Telemetry Pipeline:
-                        </div>
-                        <div className="text-[11px] font-sans tabular-nums text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 space-y-1 font-normal">
-                          <div className="flex items-center gap-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            <span>1. Socket timer (DNS/TCP/TLS)</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                            <span>2. SSE chunk tracker (TTFT & ITL)</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
-                            <span>3. Percentile engine (P50/P95/P99)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="overflow-hidden border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
-                    <CardHeader className="p-3 pb-2">
-                      <CardTitle className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-1.5">
-                        <Terminal className="h-3.5 w-3.5" />
-                        Developer Quick Export
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0 space-y-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCopyCli}
-                        className="w-full text-xs justify-between font-sans tabular-nums cursor-pointer"
-                      >
-                        <span>Copy CLI Command</span>
-                        {copiedSnippet === "cli" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCopyJson}
-                        className="w-full text-xs justify-between font-sans tabular-nums cursor-pointer"
-                      >
-                        <span>Copy Config JSON</span>
-                        {copiedSnippet === "json" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* 2. MAIN FLOW (STEPS 1 - 4 WITH CLEAN CONCERN SEGREGATION)                 */}
-          {/* ========================================================================= */}
-          <div className={`${currentStep === 4 ? "lg:col-span-8 xl:col-span-8" : "lg:col-span-12"} space-y-6`}>
-            <AnimatePresence mode="wait">
+        {/* Main Wizard Flow (Steps 1 - 4 with unified single-column layout) */}
+        <div className="space-y-6">
+          <AnimatePresence mode="wait">
               {/* ===================================================================== */}
               {/* STEP 1: ENDPOINT & IDENTITY (BASIC CONNECTION & MODEL DISCOVERY)      */}
               {/* ===================================================================== */}
@@ -973,7 +836,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Step 1 of 4</Badge>
+                        <Badge variant="default" className="text-xs font-medium gap-1">
+                          <Sliders className="h-3 w-3" /> Step 1 of 4 • Configurable
+                        </Badge>
                       </div>
                     </CardHeader>
 
@@ -1538,6 +1403,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
+                          <Badge variant="default" className="text-xs font-medium gap-1">
+                            <Sliders className="h-3 w-3" /> Configurable
+                          </Badge>
                           {availableModels.length > 0 && !isLoadingModels && (
                             <Badge variant="emerald" className="gap-1 font-sans tabular-nums text-[11px] px-2 py-0.5">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -1709,7 +1577,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2A of 2B</Badge>
+                        <Badge variant="default" className="text-xs font-medium gap-1">
+                          <Sliders className="h-3 w-3" /> Sub-Step 2A • Configurable
+                        </Badge>
                       </div>
                     </CardHeader>
 
@@ -2032,7 +1902,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 2B of 2B</Badge>
+                        <Badge variant="default" className="text-xs font-medium gap-1">
+                          <Sliders className="h-3 w-3" /> Sub-Step 2B • Configurable
+                        </Badge>
                       </div>
                     </CardHeader>
 
@@ -2042,22 +1914,22 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           {/* Max Tokens Slider */}
                           <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
                             <div className="flex justify-between items-center text-xs">
-                              <Label className="font-semibold">Max Output Tokens (max_tokens)</Label>
-                              <Badge variant="default" className="font-sans tabular-nums text-xs font-semibold">
+                              <Label className="font-semibold">Max Tokens Limit (Generation Ceiling)</Label>
+                              <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
                                 {config.max_tokens} tokens
                               </Badge>
                             </div>
                             <Slider
-                              min={1}
+                              min={16}
                               max={4096}
-                              step={1}
+                              step={16}
                               value={[config.max_tokens]}
                               onValueChange={(val) => onChange({ ...config, max_tokens: val[0] })}
                             />
                             <div className="flex justify-between text-[11px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pt-0.5">
-                              <span>1 (Micro-probe)</span>
-                              <span>512 (Standard)</span>
-                              <span>4096 (Deep code/RAG)</span>
+                              <span>16</span>
+                              <span>256 (Default)</span>
+                              <span>4096</span>
                             </div>
                           </div>
 
@@ -2065,7 +1937,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           <div className="space-y-2 p-3.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#2C2C2C]/40 border border-[#2C2C2C]/10">
                             <div className="flex justify-between items-center text-xs">
                               <Label className="font-semibold">Sampling Temperature</Label>
-                              <Badge variant="default" className="font-sans tabular-nums text-xs font-semibold">
+                              <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
                                 {getTemperatureLabel(config.temperature)}
                               </Badge>
                             </div>
@@ -2084,9 +1956,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
 
                           <div className="p-3.5 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-1.5 text-xs">
-                            <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
-                              <Lightbulb className="h-3.5 w-3.5 shrink-0" />
-                              <span>Temperature & Determinism</span>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                                <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+                                <span>Temperature & Determinism</span>
+                              </div>
+                              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
+                                Reference Only
+                              </Badge>
                             </div>
                             <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
                               Setting temperature to <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">0.0</strong> enables greedy decoding, ensuring 100% reproducible token generation paths across repeated runs.
@@ -2222,7 +2099,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 3A of 3C</Badge>
+                        <Badge variant="default" className="text-xs font-medium gap-1">
+                          <Sliders className="h-3 w-3" /> Sub-Step 3A • Configurable
+                        </Badge>
                       </div>
                     </CardHeader>
 
@@ -2371,7 +2250,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 3B of 3C</Badge>
+                        <Badge variant="default" className="text-xs font-medium gap-1">
+                          <Sliders className="h-3 w-3" /> Sub-Step 3B • Configurable
+                        </Badge>
                       </div>
                     </CardHeader>
 
@@ -2415,9 +2296,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
 
                         <div className="lg:col-span-4 p-4 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-2.5 text-xs">
-                          <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
-                            <Lightbulb className="h-4 w-4 shrink-0" />
-                            <span>Queuing Theory & Load Curves</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                              <Lightbulb className="h-4 w-4 shrink-0" />
+                              <span>Queuing Theory & Load Curves</span>
+                            </div>
+                            <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
+                              Reference Only
+                            </Badge>
                           </div>
                           <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
                             Under high concurrency, LLM clusters exhaust KV cache VRAM slots and begin buffering streams. Testing arrival curves isolates the concurrency threshold where queue backpressure begins degrading TTFT.
@@ -2466,7 +2352,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="default" className="text-xs font-medium">Sub-Step 3C of 3C</Badge>
+                        <Badge variant="default" className="text-xs font-medium gap-1">
+                          <Sliders className="h-3 w-3" /> Sub-Step 3C • Configurable
+                        </Badge>
                       </div>
                     </CardHeader>
 
@@ -2487,9 +2375,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
 
                         <div className="md:col-span-5 p-3 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-1 text-xs">
-                          <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
-                            <Lightbulb className="h-3.5 w-3.5 shrink-0" />
-                            <span>Raw Prefill Verification</span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                              <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+                              <span>Raw Prefill Verification</span>
+                            </div>
+                            <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
+                              Reference Only
+                            </Badge>
                           </div>
                           <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
                             Modern LLM providers cache shared prefixes. Nonce injection forces true cold GPU execution per stream.
@@ -2580,35 +2473,41 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
                         </div>
 
-                        {/* Quick Presets */}
-                        <div className="flex items-center gap-1">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApplySloPreset("strict")}
-                            className="h-6 text-[11px] px-2 font-sans tabular-nums"
-                          >
-                            Strict
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApplySloPreset("interactive")}
-                            className="h-6 text-[11px] px-2 font-sans tabular-nums"
-                          >
-                            Standard
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApplySloPreset("batch")}
-                            className="h-6 text-[11px] px-2 font-sans tabular-nums"
-                          >
-                            Batch
-                          </Button>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="default" className="text-xs font-medium gap-1">
+                            <Sliders className="h-3 w-3" /> Sub-Step 4A • Configurable
+                          </Badge>
+
+                          {/* Quick Presets */}
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApplySloPreset("strict")}
+                              className="h-6 text-[11px] px-2 font-sans tabular-nums"
+                            >
+                              Strict
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApplySloPreset("interactive")}
+                              className="h-6 text-[11px] px-2 font-sans tabular-nums"
+                            >
+                              Standard
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApplySloPreset("batch")}
+                              className="h-6 text-[11px] px-2 font-sans tabular-nums"
+                            >
+                              Batch
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardHeader>
@@ -2731,9 +2630,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge variant="emerald" className="font-sans tabular-nums text-xs font-semibold">
-                          {formatUsd(config.hard_spend_cap || 2.0)} cap
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="default" className="text-xs font-medium gap-1">
+                            <Sliders className="h-3 w-3" /> Sub-Step 4B • Configurable
+                          </Badge>
+                          <Badge variant="emerald" className="font-sans tabular-nums text-xs font-semibold">
+                            {formatUsd(config.hard_spend_cap || 2.0)} cap
+                          </Badge>
+                        </div>
                       </div>
                     </CardHeader>
 
@@ -2820,9 +2724,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
 
                           <div className="p-3.5 rounded-xl border border-[#853953]/20 dark:border-[#A74B6A]/20 bg-[#853953]/5 dark:bg-[#A74B6A]/5 space-y-1.5 text-xs">
-                            <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
-                              <Lightbulb className="h-3.5 w-3.5 shrink-0" />
-                              <span>Zero Bill-Shock Circuit Breaker</span>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5 font-semibold text-[#853953] dark:text-[#A74B6A]">
+                                <Lightbulb className="h-3.5 w-3.5 shrink-0" />
+                                <span>Zero Bill-Shock Circuit Breaker</span>
+                              </div>
+                              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
+                                Reference Only
+                              </Badge>
                             </div>
                             <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
                               If live benchmark spend reaches the hard spend cap at any millisecond during execution, the runner immediately terminates all worker streams and finalizes the report cleanly.
@@ -2863,7 +2772,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
                         <Badge variant="emerald" className="font-medium text-xs gap-1">
                           <CheckCircle className="h-3 w-3" />
-                          Ready to Launch
+                          Sub-Step 4C • Launch Cockpit
                         </Badge>
                       </div>
                     </CardHeader>
@@ -3019,6 +2928,108 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
                         </div>
                       </div>
+
+                      {/* Pre-Flight Health Audit & Developer Quick Export */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 pt-1">
+                        {/* Pre-Flight Health Audit (Reference) */}
+                        <div className="lg:col-span-8 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-3 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                              </div>
+                              <div>
+                                <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                                  Pre-Flight Health Audit
+                                </span>
+                                <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                                  100% Validated & Safe to Launch
+                                </p>
+                              </div>
+                            </div>
+                            <Badge variant="purple" className="text-[10px] font-sans font-medium px-2 py-0.5">
+                              Pre-Flight Audit • Reference
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div className="flex items-center justify-between p-2 rounded-lg bg-white/90 dark:bg-[#1e1d20] border border-emerald-200/60 dark:border-emerald-800/40">
+                              <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
+                                <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Target Endpoint & Model
+                              </span>
+                              <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 truncate max-w-[140px] font-medium">
+                                {config.model}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between p-2 rounded-lg bg-white/90 dark:bg-[#1e1d20] border border-emerald-200/60 dark:border-emerald-800/40">
+                              <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
+                                <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Workload Profile Matrix
+                              </span>
+                              <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
+                                {config.workload_preset}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between p-2 rounded-lg bg-white/90 dark:bg-[#1e1d20] border border-emerald-200/60 dark:border-emerald-800/40">
+                              <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
+                                <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Financial Spend Cap Armed
+                              </span>
+                              <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
+                                {formatUsd(capVal)}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between p-2 rounded-lg bg-white/90 dark:bg-[#1e1d20] border border-emerald-200/60 dark:border-emerald-800/40">
+                              <span className="text-[11px] flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-normal">
+                                <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Live SSE Telemetry Stream
+                              </span>
+                              <span className="font-sans tabular-nums text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
+                                100ms sync
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Developer Quick Export */}
+                        <div className="lg:col-span-4 p-4 rounded-xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-[#F3F4F4]/50 dark:bg-[#252426] flex flex-col justify-between space-y-3">
+                          <div>
+                            <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-1.5">
+                              <Terminal className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                              Developer Quick Export
+                            </span>
+                            <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 mt-0.5">
+                              Export run spec for CLI or automation
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCopyCli}
+                              className="w-full text-xs justify-between font-sans tabular-nums cursor-pointer bg-white dark:bg-[#1f1e21]"
+                            >
+                              <span>Copy CLI Command</span>
+                              {copiedSnippet === "cli" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCopyJson}
+                              className="w-full text-xs justify-between font-sans tabular-nums cursor-pointer bg-white dark:bg-[#1f1e21]"
+                            >
+                              <span>Copy Config JSON</span>
+                              {copiedSnippet === "json" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -3065,7 +3076,6 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
             </div>
           </div>
         </div>
-      </div>
     </TooltipProvider>
   );
 };

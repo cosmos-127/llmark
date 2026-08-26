@@ -12,6 +12,7 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models.db.models import BenchmarkRun
+from app.models.schemas import WORKLOAD_METRIC_PROFILES
 
 
 class NumberedCanvas(canvas.Canvas):
@@ -88,7 +89,6 @@ class ReportExporter:
         req_rate = completed / max(1, duration)
 
         total_prompt = run.total_prompt_tokens if run.total_prompt_tokens is not None else 0
-        total_prompt = run.total_prompt_tokens if run.total_prompt_tokens is not None else 0
         total_gen = run.total_gen_tokens if run.total_gen_tokens is not None else 0
         total_tokens = total_prompt + total_gen
         cost_per_1m_gen = (cost / max(1, total_gen)) * 1_000_000 if total_gen > 0 else 0.0
@@ -133,6 +133,68 @@ class ReportExporter:
         target_ttft = slo_cfg.get("max_ttft_ms")
         target_tpot = slo_cfg.get("max_tpot_ms")
 
+        # Dynamically build only relevant derived indicators
+        derived_rows = []
+        if cost_1k_goodput > 0:
+            derived_rows.append(
+                f"| **Cost / 1K SLO-Satisfied Calls** | **${cost_1k_goodput:.4f}** | True unit economic cost per valid response meeting all latency and status SLOs |"
+            )
+        if itl_jitter_cv is not None:
+            smooth_eval = (
+                "< 0.30 (Glass Smooth)"
+                if itl_jitter_cv < 0.3
+                else ("> 0.70 (High Stutter)" if itl_jitter_cv > 0.7 else "Standard Stream")
+            )
+            derived_rows.append(
+                f"| **ITL Jitter Coefficient ($CV_{{ITL}}$)** | **{itl_jitter_cv:.3f}** | {smooth_eval} |"
+            )
+        if prefill_slope is not None:
+            derived_rows.append(
+                f"| **Prefill Latency Slope** | **{prefill_slope:.2f} ms / 1K tok** | First-token compute overhead per 1,000 prompt tokens |"
+            )
+        if cache_speedup is not None:
+            derived_rows.append(
+                f"| **Prompt Cache Speedup** | **{cache_speedup:.2f}x** | KV prefix cache acceleration ratio vs cold prefill |"
+            )
+        if wait_mult is not None:
+            derived_rows.append(
+                f"| **Thinking Wait Multiplier** | **{wait_mult:.2f}x** | User wait multiplier before answer text streams (TTFA / TTFT) |"
+            )
+        if thinking_cost_share is not None:
+            derived_rows.append(
+                f"| **Reasoning Budget Share** | **{thinking_cost_share:.1f}%** | Portion of bill spent on internal chain-of-thought tokens |"
+            )
+        if grammar_penalty is not None:
+            derived_rows.append(
+                f"| **Grammar Masking Penalty** | **+{grammar_penalty:.1f}%** | TPOT decode throughput penalty under constrained JSON/FSM |"
+            )
+        if scaling_eff is not None:
+            derived_rows.append(
+                f"| **Parallel Scaling Efficiency** | **{scaling_eff:.1f}%** | Aggregate throughput scaling vs linear theoretical ceiling |"
+            )
+        if raw.get("estimated_rpm_limit") is not None:
+            derived_rows.append(
+                f"| **Estimated RPM Saturation Limit** | **{raw['estimated_rpm_limit']:.0f} RPM** | Probed concurrency saturation boundary where provider triggers 429 rate limits |"
+            )
+        if raw.get("estimated_tpm_limit") is not None:
+            derived_rows.append(
+                f"| **Estimated TPM Token Ceiling** | **{raw['estimated_tpm_limit']:,.0f} TPM** | Probed token consumption ceiling before throttling |"
+            )
+        if raw.get("schema_validity_pct") is not None:
+            derived_rows.append(
+                f"| **Schema / Grammar Validity** | **{raw['schema_validity_pct']:.1f}%** | Strict JSON schema / tool call validity rate |"
+            )
+
+        derived_section = ""
+        if derived_rows:
+            derived_section = (
+                "## 🎯 Workload-Specific Derived Indicators\n\n"
+                "| Indicator | Value | Production Significance |\n"
+                "|---|---|---|\n"
+                + "\n".join(derived_rows)
+                + "\n\n---\n\n"
+            )
+
         md = f"""# ⚡ LLMark Benchmark Report: {run.name or "Benchmark Run"}
 
 **Model:** `{run.model}` | **Vendor:** `{run.vendor}` | **Run ID:** `{run.id}`  
@@ -157,21 +219,7 @@ class ReportExporter:
 
 ---
 
-## 🎯 Workload-Specific Derived Indicators
-
-| Indicator | Value | Production Significance |
-|---|---|---|
-| **ITL Jitter Coefficient ($CV_{{ITL}}$)** | **{f"{itl_jitter_cv:.3f}" if itl_jitter_cv is not None else "N/A"}** | {"< 0.30 (Glass Smooth)" if itl_jitter_cv and itl_jitter_cv < 0.3 else ("> 0.70 (High Stutter)" if itl_jitter_cv and itl_jitter_cv > 0.7 else "Standard Stream")} |
-| **Prefill Latency Slope** | **{f"{prefill_slope:.2f} ms / 1K tok" if prefill_slope is not None else "N/A"}** | First-token compute overhead per 1,000 prompt tokens |
-| **Prompt Cache Speedup** | **{f"{cache_speedup:.2f}x" if cache_speedup is not None else "N/A"}** | KV prefix cache acceleration ratio vs cold prefill |
-| **Thinking Wait Multiplier** | **{f"{wait_mult:.2f}x" if wait_mult is not None else "N/A"}** | User wait multiplier before answer text streams (TTFA / TTFT) |
-| **Reasoning Budget Share** | **{f"{thinking_cost_share:.1f}%" if thinking_cost_share is not None else "N/A"}** | Portion of bill spent on internal chain-of-thought tokens |
-| **Grammar Masking Penalty** | **{f"{grammar_penalty:.1f}%" if grammar_penalty is not None else "N/A"}** | TPOT decode throughput penalty under constrained JSON/FSM |
-| **Parallel Scaling Efficiency** | **{f"{scaling_eff:.1f}%" if scaling_eff is not None else "N/A"}** | Aggregate throughput scaling vs linear theoretical ceiling |
-
----
-
-## ⏱️ Microsecond Tail Latency Percentiles
+{derived_section}## ⏱️ Microsecond Tail Latency Percentiles
 
 | Percentile | Time to First Token (TTFT) | Inter-Token Latency (ITL) | Time Per Output Token (TPOT) |
 |---|---|---|---|
@@ -292,6 +340,12 @@ class ReportExporter:
             writer.writerow(
                 ["Derived", "Scaling Efficiency", raw["concurrency_scaling_efficiency_pct"], "%"]
             )
+        if raw.get("estimated_rpm_limit") is not None:
+            writer.writerow(["Derived", "Estimated RPM Limit", raw["estimated_rpm_limit"], "RPM"])
+        if raw.get("estimated_tpm_limit") is not None:
+            writer.writerow(["Derived", "Estimated TPM Limit", raw["estimated_tpm_limit"], "TPM"])
+        if raw.get("schema_validity_pct") is not None:
+            writer.writerow(["Derived", "Schema Validity", raw["schema_validity_pct"], "%"])
 
         writer.writerow(["Latency", "TTFT P50", run.ttft_p50 or 0.0, "ms"])
         writer.writerow(["Latency", "TTFT P75", run.ttft_p75 or 0.0, "ms"])
@@ -375,6 +429,405 @@ class ReportExporter:
         return gzip.compress(json_bytes)
 
     @classmethod
+    def _build_kpi_matrix_data(
+        cls,
+        run: BenchmarkRun,
+        c_kpi_label: ParagraphStyle,
+        c_kpi_val: ParagraphStyle,
+        c_kpi_sub: ParagraphStyle,
+    ) -> list[list[list[Paragraph]]]:
+        """Dynamically generate the 2x4 Executive KPI Matrix tailored to the benchmark preset."""
+        preset = (run.workload_preset or "chat").lower()
+        goodput = run.goodput_pct if run.goodput_pct is not None else 0.0
+        goodput_color = (
+            "#059669" if goodput >= 90.0 else ("#D97706" if goodput >= 75.0 else "#DC2626")
+        )
+        tps_decode = run.tps_decode if run.tps_decode is not None else 0.0
+        completed = run.completed_requests if run.completed_requests is not None else 0
+        failed = run.failed_requests if run.failed_requests is not None else 0
+        total_reqs = run.total_requests if run.total_requests else (completed + failed)
+        cost = run.total_cost_usd if run.total_cost_usd is not None else 0.0
+        duration = run.duration_seconds if run.duration_seconds is not None else 1
+        req_rate = completed / max(1, duration)
+
+        total_prompt = run.total_prompt_tokens if run.total_prompt_tokens is not None else 0
+        total_gen = run.total_gen_tokens if run.total_gen_tokens is not None else 0
+        total_tokens = total_prompt + total_gen
+        cost_per_1m_gen = (cost / max(1, total_gen)) * 1_000_000 if total_gen > 0 else 0.0
+        error_rate = (
+            run.error_rate_pct
+            if run.error_rate_pct is not None
+            else ((failed / max(1, total_reqs)) * 100.0 if total_reqs > 0 else 0.0)
+        )
+
+        ttft_p50 = run.ttft_p50 if run.ttft_p50 is not None else 0.0
+        ttft_p75 = run.ttft_p75 if run.ttft_p75 is not None else 0.0
+        ttft_p95 = run.ttft_p95 if run.ttft_p95 is not None else 0.0
+        ttft_p99 = run.ttft_p99 if run.ttft_p99 is not None else 0.0
+
+        itl_p50 = run.itl_p50 if run.itl_p50 is not None else 0.0
+        itl_p75 = run.itl_p75 if run.itl_p75 is not None else 0.0
+        itl_p95 = run.itl_p95 if run.itl_p95 is not None else 0.0
+        max_itl = run.max_itl if run.max_itl is not None else 0.0
+        tpot = run.tpot_mean if run.tpot_mean is not None else 0.0
+
+        dns_p50 = run.dns_p50 if run.dns_p50 is not None else 0.0
+        tcp_p50 = run.tcp_p50 if run.tcp_p50 is not None else 0.0
+        tls_p50 = run.tls_p50 if run.tls_p50 is not None else 0.0
+        total_net = dns_p50 + tcp_p50 + tls_p50
+
+        raw = run.raw_telemetry or {}
+        rate_limit_pct = raw.get("rate_limit_pct", 0.0)
+        rate_limit_count = raw.get("rate_limit_count", 0)
+        rpm = raw.get("current_rpm") or (req_rate * 60.0)
+        tpm = raw.get("current_tpm") or ((total_tokens / max(0.001, duration)) * 60.0)
+        est_rpm_lim = raw.get("estimated_rpm_limit")
+        est_tpm_lim = raw.get("estimated_tpm_limit")
+        prefill_tps = raw.get("prefill_tps_p95") or raw.get("prefill_tps")
+        prefill_slope = raw.get("prefill_slope_ms_per_1k")
+        cache_speedup = raw.get("cache_speedup_factor")
+        wait_mult = raw.get("thinking_wait_multiplier")
+        thinking_cost_share = raw.get("thinking_cost_share_pct")
+        thinking_tokens_avg = raw.get("thinking_tokens_avg")
+        grammar_penalty = raw.get("grammar_penalty_pct")
+        schema_validity = raw.get("schema_validity_pct", 100.0 if failed == 0 else 0.0)
+        cost_1k = raw.get("cost_per_1k_goodput_usd") or (
+            (cost / max(1, completed)) * 1000.0 if completed > 0 else 0.0
+        )
+
+        def card(label: str, val: str, sub: str) -> list[Paragraph]:
+            return [
+                Paragraph(label, c_kpi_label),
+                Paragraph(val, c_kpi_val),
+                Paragraph(sub, c_kpi_sub),
+            ]
+
+        # 1. Rate Limit & Capacity Probing
+        if preset == "rate_limit_probe":
+            rl_color = "#DC2626" if rate_limit_pct > 0 else "#059669"
+            rpm_sub = (
+                f"Ceiling: ~{est_rpm_lim:.0f} RPM"
+                if est_rpm_lim
+                else f"{req_rate:.1f} req/s active"
+            )
+            tpm_sub = (
+                f"Ceiling: ~{est_tpm_lim:.0f} TPM" if est_tpm_lim else "Active token rate"
+            )
+            row1 = [
+                card(
+                    "GOODPUT (NON-THROTTLED)",
+                    f"<font color='{goodput_color}'>{goodput:.1f}%</font>",
+                    "Target SLO Satisfied",
+                ),
+                card(
+                    "HTTP 429 RATE LIMIT %",
+                    f"<font color='{rl_color}'>{rate_limit_pct:.1f}%</font>",
+                    f"{rate_limit_count} throttled calls",
+                ),
+                card("SATURATED RPM", f"{rpm:.0f} <font size=8>RPM</font>", rpm_sub),
+                card("TOTAL SPEND (USD)", f"${cost:.4f}", "Micro-probe spend"),
+            ]
+            row2 = [
+                card(
+                    "MEDIAN PROBE TTFT",
+                    f"{ttft_p50:.1f} <font size=8>ms</font>",
+                    f"P95: {ttft_p95:.1f} ms",
+                ),
+                card("SATURATED TPM", f"{tpm:,.0f} <font size=8>TPM</font>", tpm_sub),
+                card(
+                    "PROBING VOLUME",
+                    f"{completed} <font size=8>ok</font> / {failed} <font size=8>err</font>",
+                    f"Total: {total_reqs} requests",
+                ),
+                card(
+                    "ERROR & STATUS RATE",
+                    f"{error_rate:.1f}%",
+                    "Zero dropped packets" if failed == 0 else f"{failed} errors / 429s",
+                ),
+            ]
+            return [row1, row2]
+
+        # 2. Prefill Scaling & TTFT / Long Context
+        if preset in ("prefill_ttft", "long_context_retrieval", "long_context"):
+            prefill_val = (
+                f"{prefill_tps:.0f} <font size=8>tok/s</font>"
+                if prefill_tps
+                else f"{req_rate:.2f} req/s"
+            )
+            prefill_sub = (
+                f"Slope: {prefill_slope:.2f} ms/1K" if prefill_slope else "Prefill Velocity"
+            )
+            row1 = [
+                card(
+                    "GOODPUT (SLO YIELD)",
+                    f"<font color='{goodput_color}'>{goodput:.1f}%</font>",
+                    "Target SLO Satisfied",
+                ),
+                card("PREFILL THROUGHPUT", prefill_val, prefill_sub),
+                card(
+                    "MEDIAN TTFT (P50)",
+                    f"{ttft_p50:.1f} <font size=8>ms</font>",
+                    f"P95: {ttft_p95:.1f} ms",
+                ),
+                card("TOTAL SPEND (USD)", f"${cost:.4f}", f"${cost_1k:.4f} / 1K goodput"),
+            ]
+            row2 = [
+                card(
+                    "TTFT P99 (EXTREME TAIL)",
+                    f"{ttft_p99:.1f} <font size=8>ms</font>",
+                    "P99 Tail SLA Boundary",
+                ),
+                card(
+                    "PRE-FLIGHT NETWORK",
+                    f"{total_net:.1f} <font size=8>ms</font>",
+                    f"{(total_net / max(1, ttft_p50) * 100):.1f}% of TTFT",
+                ),
+                card("PROMPT TOKEN VOLUME", f"{total_prompt:,}", f"{total_tokens:,} total tokens"),
+                card(
+                    "ERROR & FAILURE RATE",
+                    f"{error_rate:.1f}%",
+                    "Zero dropped packets" if failed == 0 else f"{failed} failed requests",
+                ),
+            ]
+            return [row1, row2]
+
+        # 3. Streaming Decode Throughput & Code Generation
+        if preset in ("decode_throughput", "code_generation", "code"):
+            jitter_sub = (
+                f"CV: {raw['itl_jitter_cv']:.3f}"
+                if raw.get("itl_jitter_cv") is not None
+                else "Peak single stall"
+            )
+            row1 = [
+                card(
+                    "GOODPUT (SLO YIELD)",
+                    f"<font color='{goodput_color}'>{goodput:.1f}%</font>",
+                    "Target SLO Satisfied",
+                ),
+                card(
+                    "DECODE THROUGHPUT",
+                    f"{tps_decode:.1f} <font size=8>tok/s</font>",
+                    f"Req Rate: {req_rate:.2f} req/s",
+                ),
+                card(
+                    "MEDIAN ITL (P50)",
+                    f"{itl_p50:.1f} <font size=8>ms</font>",
+                    f"P95: {itl_p95:.1f} ms",
+                ),
+                card(
+                    "TOTAL SPEND (USD)",
+                    f"${cost:.4f}",
+                    f"${cost_per_1m_gen:.4f} / 1M gen tok",
+                ),
+            ]
+            row2 = [
+                card(
+                    "MAX ITL (WORST FREEZE)",
+                    f"{max_itl:.1f} <font size=8>ms</font>",
+                    jitter_sub,
+                ),
+                card(
+                    "TIME PER TOKEN (TPOT)",
+                    f"{tpot:.1f} <font size=8>ms/tok</font>",
+                    "Mean generation cycle",
+                ),
+                card(
+                    "GENERATED TOKENS",
+                    f"{total_gen:,}",
+                    f"{total_tokens:,} total tokens",
+                ),
+                card(
+                    "ERROR & FAILURE RATE",
+                    f"{error_rate:.1f}%",
+                    "Zero dropped packets" if failed == 0 else f"{failed} failed requests",
+                ),
+            ]
+            return [row1, row2]
+
+        # 4. Reasoning & CoT Deep-Dive
+        if preset == "reasoning_cot":
+            ttfa_p50 = run.ttfa_p50 if run.ttfa_p50 is not None else ttft_p50
+            ttfa_p95 = run.ttfa_p95 if run.ttfa_p95 is not None else ttft_p95
+            mult_val = (
+                f"{wait_mult:.2f}x"
+                if wait_mult
+                else f"{(ttfa_p50 / max(1, ttft_p50)):.2f}x"
+            )
+            share_val = (
+                f"{thinking_cost_share:.1f}%"
+                if thinking_cost_share is not None
+                else (f"{thinking_tokens_avg:.0f} tok" if thinking_tokens_avg else "—")
+            )
+            row1 = [
+                card(
+                    "GOODPUT (SLO YIELD)",
+                    f"<font color='{goodput_color}'>{goodput:.1f}%</font>",
+                    "Target SLO Satisfied",
+                ),
+                card(
+                    "TIME TO FIRST ANSWER (TTFA)",
+                    f"{ttfa_p50:.1f} <font size=8>ms</font>",
+                    f"P95: {ttfa_p95:.1f} ms",
+                ),
+                card("THINKING WAIT TAX", mult_val, "TTFA / TTFT Multiplier"),
+                card("TOTAL SPEND (USD)", f"${cost:.4f}", f"${cost_1k:.4f} / 1K goodput"),
+            ]
+            row2 = [
+                card("REASONING BUDGET SHARE", share_val, "Portion of thinking tokens"),
+                card(
+                    "DECODE THROUGHPUT",
+                    f"{tps_decode:.1f} <font size=8>tok/s</font>",
+                    f"TPOT: {tpot:.1f} ms/tok",
+                ),
+                card(
+                    "TOTAL TOKEN VOLUME",
+                    f"{total_tokens:,}",
+                    f"{total_prompt:,} in • {total_gen:,} out",
+                ),
+                card(
+                    "ERROR & FAILURE RATE",
+                    f"{error_rate:.1f}%",
+                    "Zero dropped packets" if failed == 0 else f"{failed} failed requests",
+                ),
+            ]
+            return [row1, row2]
+
+        # 5. Structured JSON & Agentic Tool Calling
+        if preset in ("structured_json", "json_schema", "agentic_tool_calling", "tool_calling"):
+            val_color = "#059669" if schema_validity >= 99.0 else "#DC2626"
+            penalty_sub = (
+                f"+{grammar_penalty:.1f}% TPOT overhead"
+                if grammar_penalty
+                else "Constrained decode"
+            )
+            row1 = [
+                card(
+                    "GOODPUT (SLO YIELD)",
+                    f"<font color='{goodput_color}'>{goodput:.1f}%</font>",
+                    "Target SLO Satisfied",
+                ),
+                card(
+                    "SCHEMA VALIDITY %",
+                    f"<font color='{val_color}'>{schema_validity:.1f}%</font>",
+                    "Grammar / schema compliant",
+                ),
+                card(
+                    "CONSTRAINED DECODE",
+                    f"{tps_decode:.1f} <font size=8>tok/s</font>",
+                    penalty_sub,
+                ),
+                card("TOTAL SPEND (USD)", f"${cost:.4f}", f"${cost_1k:.4f} / 1K goodput"),
+            ]
+            row2 = [
+                card(
+                    "MEDIAN TTFT (P50)",
+                    f"{ttft_p50:.1f} <font size=8>ms</font>",
+                    f"P95: {ttft_p95:.1f} ms",
+                ),
+                card(
+                    "TIME PER TOKEN (TPOT)",
+                    f"{tpot:.1f} <font size=8>ms/tok</font>",
+                    "Mean generation cycle",
+                ),
+                card(
+                    "REQUEST VOLUME",
+                    f"{completed} <font size=8>ok</font> / {failed} <font size=8>err</font>",
+                    f"Total: {total_reqs} requests",
+                ),
+                card(
+                    "ERROR & FAILURE RATE",
+                    f"{error_rate:.1f}%",
+                    "Zero dropped packets" if failed == 0 else f"{failed} failed requests",
+                ),
+            ]
+            return [row1, row2]
+
+        # 6. Prompt Prefix Cache Reuse
+        if preset == "kv_cache_reuse":
+            speedup_val = f"{cache_speedup:.2f}x" if cache_speedup else "—"
+            row1 = [
+                card(
+                    "GOODPUT (SLO YIELD)",
+                    f"<font color='{goodput_color}'>{goodput:.1f}%</font>",
+                    "Target SLO Satisfied",
+                ),
+                card("PROMPT CACHE SPEEDUP", speedup_val, "Warm vs Cold TTFT Ratio"),
+                card(
+                    "MEDIAN TTFT (WARM)",
+                    f"{ttft_p50:.1f} <font size=8>ms</font>",
+                    f"P95: {ttft_p95:.1f} ms",
+                ),
+                card("TOTAL SPEND (USD)", f"${cost:.4f}", f"${cost_1k:.4f} / 1K goodput"),
+            ]
+            row2 = [
+                card("COST / 1K GOODPUT", f"${cost_1k:.4f}", "True unit economic spend"),
+                card(
+                    "DECODE THROUGHPUT",
+                    f"{tps_decode:.1f} <font size=8>tok/s</font>",
+                    f"TPOT: {tpot:.1f} ms/tok",
+                ),
+                card(
+                    "TOTAL TOKEN VOLUME",
+                    f"{total_tokens:,}",
+                    f"{total_prompt:,} in • {total_gen:,} out",
+                ),
+                card(
+                    "ERROR & FAILURE RATE",
+                    f"{error_rate:.1f}%",
+                    "Zero dropped packets" if failed == 0 else f"{failed} failed requests",
+                ),
+            ]
+            return [row1, row2]
+
+        # 7. Default / Conversational Chat / Few-Shot / Custom
+        return [
+            [
+                card(
+                    "GOODPUT (SLO YIELD)",
+                    f"<font color='{goodput_color}'>{goodput:.1f}%</font>",
+                    "Target SLO Satisfied",
+                ),
+                card(
+                    "DECODE THROUGHPUT",
+                    f"{tps_decode:.1f} <font size=8>tok/s</font>",
+                    f"Req Rate: {req_rate:.2f} req/s",
+                ),
+                card(
+                    "REQUEST VOLUME",
+                    f"{completed} <font size=8>ok</font> / {failed} <font size=8>err</font>",
+                    f"Total: {total_reqs} requests",
+                ),
+                card(
+                    "TOTAL SPEND (USD)",
+                    f"${cost:.4f}",
+                    f"${cost_per_1m_gen:.4f} / 1M gen tok",
+                ),
+            ],
+            [
+                card(
+                    "MEDIAN TTFT (P50)",
+                    f"{ttft_p50:.1f} <font size=8>ms</font>",
+                    f"P95: {ttft_p95:.1f} ms",
+                ),
+                card(
+                    "MEDIAN ITL (P50)",
+                    f"{itl_p50:.1f} <font size=8>ms</font>",
+                    f"Max ITL: {max_itl:.1f} ms",
+                ),
+                card(
+                    "TOTAL TOKEN VOLUME",
+                    f"{total_tokens:,}",
+                    f"{total_prompt:,} in • {total_gen:,} out",
+                ),
+                card(
+                    "ERROR & FAILURE RATE",
+                    f"{error_rate:.1f}%",
+                    "Zero dropped packets" if failed == 0 else f"{failed} failed requests",
+                ),
+            ],
+        ]
+
+    @classmethod
     def generate_pdf(cls, run: BenchmarkRun) -> bytes:
         """Generate an executive, comprehensive multi-page PDF report using ReportLab."""
         buffer = io.BytesIO()
@@ -388,6 +841,10 @@ class ReportExporter:
         )
         story = []
 
+        preset_key = (run.workload_preset or "chat").lower()
+        profile = WORKLOAD_METRIC_PROFILES.get(preset_key, {})
+        preset_tagline = profile.get("tagline", "Standardized LLM Inference Benchmark Telemetry")
+
         # Safe extraction of all metrics
         goodput = run.goodput_pct if run.goodput_pct is not None else 0.0
         tps_decode = run.tps_decode if run.tps_decode is not None else 0.0
@@ -399,10 +856,6 @@ class ReportExporter:
         duration = run.duration_seconds if run.duration_seconds is not None else 1
         req_rate = completed / max(1, duration)
 
-        total_prompt = run.total_prompt_tokens if run.total_prompt_tokens is not None else 0
-        total_gen = run.total_gen_tokens if run.total_gen_tokens is not None else 0
-        total_tokens = total_prompt + total_gen
-        cost_per_1m_gen = (cost / max(1, total_gen)) * 1_000_000 if total_gen > 0 else 0.0
         error_rate = (
             run.error_rate_pct
             if run.error_rate_pct is not None
@@ -425,6 +878,18 @@ class ReportExporter:
         tcp_p50 = run.tcp_p50 if run.tcp_p50 is not None else 0.0
         tls_p50 = run.tls_p50 if run.tls_p50 is not None else 0.0
         total_net = dns_p50 + tcp_p50 + tls_p50
+
+        raw = run.raw_telemetry or {}
+        rate_limit_pct = raw.get("rate_limit_pct", 0.0)
+        rate_limit_count = raw.get("rate_limit_count", 0)
+        rpm = raw.get("current_rpm") or (req_rate * 60.0)
+        tpm = raw.get("current_tpm") or (
+            ((run.total_prompt_tokens or 0) + (run.total_gen_tokens or 0))
+            / max(0.001, duration)
+            * 60.0
+        )
+        est_rpm_lim = raw.get("estimated_rpm_limit")
+        est_tpm_lim = raw.get("estimated_tpm_limit")
 
         config = run.config_snapshot or {}
         slo_cfg = config.get("slo", {}) if isinstance(config, dict) else {}
@@ -530,7 +995,7 @@ class ReportExporter:
         story.append(Paragraph("⚡ LLMark Benchmark Execution Report", title_style))
         story.append(
             Paragraph(
-                f"Standardized Microsecond Inference Telemetry & Tail Latency Profile | Run Name: <b>{cls._esc(run.name or 'Benchmark Run')}</b>",
+                f"{cls._esc(preset_tagline)} | Run: <b>{cls._esc(run.name or 'Benchmark Run')}</b>",
                 subtitle_style,
             )
         )
@@ -548,7 +1013,7 @@ class ReportExporter:
                 Paragraph("<b>Model Name</b>", cell_muted),
                 Paragraph(f"<b>{cls._esc(run.model or 'N/A')}</b>", cell_bold),
                 Paragraph("<b>Workload Preset</b>", cell_muted),
-                Paragraph(f"{cls._esc(run.workload_preset or 'standard')}", cell_regular),
+                Paragraph(f"<b>{cls._esc(run.workload_preset or 'standard')}</b>", cell_bold),
             ],
             [
                 Paragraph("<b>Load Curve & Concurrency</b>", cell_muted),
@@ -583,65 +1048,12 @@ class ReportExporter:
         story.append(meta_table)
         story.append(Spacer(1, 8))
 
-        # 2. Executive Performance & Cost KPIs Matrix
+        # 2. Executive Performance & Cost KPIs Matrix (Preset-Tailored)
         story.append(Paragraph("1. Executive Performance & Cost KPIs", section_style))
 
-        goodput_color = (
-            "#059669" if goodput >= 90.0 else ("#D97706" if goodput >= 75.0 else "#DC2626")
+        kpi_matrix_data = cls._build_kpi_matrix_data(
+            run, cell_kpi_label, cell_kpi_val, cell_kpi_sub
         )
-
-        kpi_matrix_data = [
-            [
-                [
-                    Paragraph("GOODPUT (SLO YIELD)", cell_kpi_label),
-                    Paragraph(f"<font color='{goodput_color}'>{goodput:.1f}%</font>", cell_kpi_val),
-                    Paragraph("Target SLO Satisfied", cell_kpi_sub),
-                ],
-                [
-                    Paragraph("DECODE THROUGHPUT", cell_kpi_label),
-                    Paragraph(f"{tps_decode:.1f} <font size=8>tok/s</font>", cell_kpi_val),
-                    Paragraph(f"Req Rate: {req_rate:.2f} req/s", cell_kpi_sub),
-                ],
-                [
-                    Paragraph("REQUEST VOLUME", cell_kpi_label),
-                    Paragraph(
-                        f"{completed} <font size=8>ok</font> / {failed} <font size=8>err</font>",
-                        cell_kpi_val,
-                    ),
-                    Paragraph(f"Total: {total_reqs} requests", cell_kpi_sub),
-                ],
-                [
-                    Paragraph("TOTAL SPEND (USD)", cell_kpi_label),
-                    Paragraph(f"${cost:.4f}", cell_kpi_val),
-                    Paragraph(f"${cost_per_1m_gen:.4f} / 1M gen tok", cell_kpi_sub),
-                ],
-            ],
-            [
-                [
-                    Paragraph("MEDIAN TTFT (P50)", cell_kpi_label),
-                    Paragraph(f"{ttft_p50:.1f} <font size=8>ms</font>", cell_kpi_val),
-                    Paragraph(f"P95: {ttft_p95:.1f} ms", cell_kpi_sub),
-                ],
-                [
-                    Paragraph("MEDIAN ITL (P50)", cell_kpi_label),
-                    Paragraph(f"{itl_p50:.1f} <font size=8>ms</font>", cell_kpi_val),
-                    Paragraph(f"Max ITL: {max_itl:.1f} ms", cell_kpi_sub),
-                ],
-                [
-                    Paragraph("TOTAL TOKEN VOLUME", cell_kpi_label),
-                    Paragraph(f"{total_tokens:,}", cell_kpi_val),
-                    Paragraph(f"{total_prompt:,} in • {total_gen:,} out", cell_kpi_sub),
-                ],
-                [
-                    Paragraph("ERROR & FAILURE RATE", cell_kpi_label),
-                    Paragraph(f"{error_rate:.1f}%", cell_kpi_val),
-                    Paragraph(
-                        "Zero dropped packets" if failed == 0 else f"{failed} failed requests",
-                        cell_kpi_sub,
-                    ),
-                ],
-            ],
-        ]
 
         kpi_table = Table(kpi_matrix_data, colWidths=[135, 135, 135, 135])
         kpi_table.setStyle(
@@ -657,86 +1069,154 @@ class ReportExporter:
         story.append(kpi_table)
         story.append(Spacer(1, 8))
 
-        # 3. Microsecond Tail Latency Distribution Table
-        story.append(
-            Paragraph("2. Microsecond Tail Latency & Stability Distribution", section_style)
-        )
-
+        # 3. Latency & Tail Stability Distribution Table
         ttft_p95_pass = "✓ PASS" if (not target_ttft or ttft_p95 <= target_ttft) else "⚠ BREACH"
         itl_p95_pass = "✓ PASS" if (not target_tpot or itl_p95 <= target_tpot) else "⚠ BREACH"
 
-        latency_table_data = [
-            [
-                Paragraph("<b>Latency Metric</b>", cell_bold),
-                Paragraph("<b>P50 (Median)</b>", cell_bold),
-                Paragraph("<b>P75</b>", cell_bold),
-                Paragraph("<b>P95 (Tail)</b>", cell_bold),
-                Paragraph("<b>P99 (Extreme)</b>", cell_bold),
-                Paragraph("<b>Max / Worst</b>", cell_bold),
-                Paragraph("<b>SLO Evaluation</b>", cell_bold),
-            ],
-            [
-                Paragraph("<b>Time To First Token (TTFT)</b>", cell_regular),
-                Paragraph(f"{ttft_p50:.1f} ms", cell_regular),
-                Paragraph(f"{ttft_p75:.1f} ms", cell_regular),
-                Paragraph(f"<b>{ttft_p95:.1f} ms</b>", cell_bold),
-                Paragraph(f"{ttft_p99:.1f} ms", cell_regular),
-                Paragraph("—", cell_muted),
-                Paragraph(
-                    f"<font color='{'#059669' if 'PASS' in ttft_p95_pass else '#DC2626'}'><b>{ttft_p95_pass}</b></font>",
-                    cell_bold,
-                ),
-            ],
-            [
-                Paragraph("<b>Inter-Token Latency (ITL)</b>", cell_regular),
-                Paragraph(f"{itl_p50:.1f} ms", cell_regular),
-                Paragraph(f"{itl_p75:.1f} ms", cell_regular),
-                Paragraph(f"<b>{itl_p95:.1f} ms</b>", cell_bold),
-                Paragraph(f"{itl_p99:.1f} ms", cell_regular),
-                Paragraph(f"<b>{max_itl:.1f} ms</b>", cell_bold),
-                Paragraph(
-                    f"<font color='{'#059669' if 'PASS' in itl_p95_pass else '#DC2626'}'><b>{itl_p95_pass}</b></font>",
-                    cell_bold,
-                ),
-            ],
-            [
-                Paragraph("<b>Time Per Output Token (TPOT)</b>", cell_regular),
-                Paragraph(f"{tpot:.1f} ms/tok", cell_regular),
-                Paragraph("—", cell_muted),
-                Paragraph("—", cell_muted),
-                Paragraph("—", cell_muted),
-                Paragraph("—", cell_muted),
-                Paragraph(f"{tps_decode:.1f} tok/s decode", cell_muted),
-            ],
-        ]
-
-        if run.ttfa_p50 is not None:
-            latency_table_data.append(
-                [
-                    Paragraph("<b>Time To First Audio (TTFA)</b>", cell_regular),
-                    Paragraph(f"{run.ttfa_p50:.1f} ms", cell_regular),
-                    Paragraph("—", cell_muted),
-                    Paragraph(f"{run.ttfa_p95 or 0.0:.1f} ms", cell_regular),
-                    Paragraph("—", cell_muted),
-                    Paragraph("—", cell_muted),
-                    Paragraph("Multimodal Audio", cell_muted),
-                ]
+        if preset_key == "rate_limit_probe":
+            story.append(
+                Paragraph("2. Rate Limiting & Probing Latency Metrics", section_style)
             )
-
-        lat_table = Table(latency_table_data, colWidths=[150, 65, 60, 65, 65, 65, 70])
-        lat_table.setStyle(
-            TableStyle(
+            rl_latency_data = [
                 [
-                    ("BACKGROUND", (0, 0), (-1, 0), c_card_bg),
-                    ("GRID", (0, 0), (-1, -1), 0.5, c_border),
-                    ("PADDING", (0, 0), (-1, -1), 4.5),
-                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_light]),
-                ]
+                    Paragraph("<b>Probing Metric</b>", cell_bold),
+                    Paragraph("<b>P50 (Median)</b>", cell_bold),
+                    Paragraph("<b>P75</b>", cell_bold),
+                    Paragraph("<b>P95 (Tail)</b>", cell_bold),
+                    Paragraph("<b>P99 (Extreme)</b>", cell_bold),
+                    Paragraph("<b>Max / Ceiling</b>", cell_bold),
+                    Paragraph("<b>Quota Evaluation</b>", cell_bold),
+                ],
+                [
+                    Paragraph("<b>Micro-Probe Latency (TTFT)</b>", cell_regular),
+                    Paragraph(f"{ttft_p50:.1f} ms", cell_regular),
+                    Paragraph(f"{ttft_p75:.1f} ms", cell_regular),
+                    Paragraph(f"<b>{ttft_p95:.1f} ms</b>", cell_bold),
+                    Paragraph(f"{ttft_p99:.1f} ms", cell_regular),
+                    Paragraph("—", cell_muted),
+                    Paragraph(
+                        f"<font color='{'#059669' if 'PASS' in ttft_p95_pass else '#DC2626'}'><b>{ttft_p95_pass}</b></font>",
+                        cell_bold,
+                    ),
+                ],
+                [
+                    Paragraph("<b>HTTP 429 Throttle Rate</b>", cell_regular),
+                    Paragraph(f"{rate_limit_pct:.1f}%", cell_regular),
+                    Paragraph(f"{rate_limit_count} throttled", cell_regular),
+                    Paragraph(f"<b>{rate_limit_count} / {total_reqs}</b>", cell_bold),
+                    Paragraph("—", cell_muted),
+                    Paragraph(
+                        f"{est_rpm_lim:.0f} RPM" if est_rpm_lim else "Unbounded",
+                        cell_bold if est_rpm_lim else cell_muted,
+                    ),
+                    Paragraph(
+                        f"<font color='{'#059669' if rate_limit_count == 0 else '#DC2626'}'><b>{'✓ OPTIMAL' if rate_limit_count == 0 else '⚠ THROTTLED'}</b></font>",
+                        cell_bold,
+                    ),
+                ],
+                [
+                    Paragraph("<b>Saturated Throughput</b>", cell_regular),
+                    Paragraph(f"{rpm:.0f} RPM", cell_regular),
+                    Paragraph(f"{req_rate:.1f} req/s", cell_regular),
+                    Paragraph(f"<b>{tpm:,.0f} TPM</b>", cell_bold),
+                    Paragraph("—", cell_muted),
+                    Paragraph(
+                        f"{est_tpm_lim:,.0f} TPM" if est_tpm_lim else "Unbounded",
+                        cell_bold if est_tpm_lim else cell_muted,
+                    ),
+                    Paragraph("Capacity Ceilings", cell_muted),
+                ],
+            ]
+            lat_table = Table(rl_latency_data, colWidths=[150, 65, 60, 65, 65, 65, 70])
+            lat_table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), c_card_bg),
+                        ("GRID", (0, 0), (-1, -1), 0.5, c_border),
+                        ("PADDING", (0, 0), (-1, -1), 4.5),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_light]),
+                    ]
+                )
             )
-        )
-        story.append(lat_table)
-        story.append(Spacer(1, 8))
+            story.append(lat_table)
+            story.append(Spacer(1, 8))
+        else:
+            story.append(
+                Paragraph("2. Microsecond Tail Latency & Stability Distribution", section_style)
+            )
+            latency_table_data = [
+                [
+                    Paragraph("<b>Latency Metric</b>", cell_bold),
+                    Paragraph("<b>P50 (Median)</b>", cell_bold),
+                    Paragraph("<b>P75</b>", cell_bold),
+                    Paragraph("<b>P95 (Tail)</b>", cell_bold),
+                    Paragraph("<b>P99 (Extreme)</b>", cell_bold),
+                    Paragraph("<b>Max / Worst</b>", cell_bold),
+                    Paragraph("<b>SLO Evaluation</b>", cell_bold),
+                ],
+                [
+                    Paragraph("<b>Time To First Token (TTFT)</b>", cell_regular),
+                    Paragraph(f"{ttft_p50:.1f} ms", cell_regular),
+                    Paragraph(f"{ttft_p75:.1f} ms", cell_regular),
+                    Paragraph(f"<b>{ttft_p95:.1f} ms</b>", cell_bold),
+                    Paragraph(f"{ttft_p99:.1f} ms", cell_regular),
+                    Paragraph("—", cell_muted),
+                    Paragraph(
+                        f"<font color='{'#059669' if 'PASS' in ttft_p95_pass else '#DC2626'}'><b>{ttft_p95_pass}</b></font>",
+                        cell_bold,
+                    ),
+                ],
+                [
+                    Paragraph("<b>Inter-Token Latency (ITL)</b>", cell_regular),
+                    Paragraph(f"{itl_p50:.1f} ms", cell_regular),
+                    Paragraph(f"{itl_p75:.1f} ms", cell_regular),
+                    Paragraph(f"<b>{itl_p95:.1f} ms</b>", cell_bold),
+                    Paragraph(f"{itl_p99:.1f} ms", cell_regular),
+                    Paragraph(f"<b>{max_itl:.1f} ms</b>", cell_bold),
+                    Paragraph(
+                        f"<font color='{'#059669' if 'PASS' in itl_p95_pass else '#DC2626'}'><b>{itl_p95_pass}</b></font>",
+                        cell_bold,
+                    ),
+                ],
+                [
+                    Paragraph("<b>Time Per Output Token (TPOT)</b>", cell_regular),
+                    Paragraph(f"{tpot:.1f} ms/tok", cell_regular),
+                    Paragraph("—", cell_muted),
+                    Paragraph("—", cell_muted),
+                    Paragraph("—", cell_muted),
+                    Paragraph("—", cell_muted),
+                    Paragraph(f"{tps_decode:.1f} tok/s decode", cell_muted),
+                ],
+            ]
+
+            if run.ttfa_p50 is not None or preset_key == "reasoning_cot":
+                latency_table_data.append(
+                    [
+                        Paragraph("<b>Time To First Answer (TTFA)</b>", cell_regular),
+                        Paragraph(f"{run.ttfa_p50 or ttft_p50:.1f} ms", cell_regular),
+                        Paragraph("—", cell_muted),
+                        Paragraph(f"{run.ttfa_p95 or ttft_p95:.1f} ms", cell_regular),
+                        Paragraph("—", cell_muted),
+                        Paragraph("—", cell_muted),
+                        Paragraph("Reasoning / CoT", cell_muted),
+                    ]
+                )
+
+            lat_table = Table(latency_table_data, colWidths=[150, 65, 60, 65, 65, 65, 70])
+            lat_table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), c_card_bg),
+                        ("GRID", (0, 0), (-1, -1), 0.5, c_border),
+                        ("PADDING", (0, 0), (-1, -1), 4.5),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_light]),
+                    ]
+                )
+            )
+            story.append(lat_table)
+            story.append(Spacer(1, 8))
 
         # 4. Network Handshake Waterfall Baseline
         story.append(Paragraph("3. Network Handshake Waterfall Baseline", section_style))
@@ -795,11 +1275,7 @@ class ReportExporter:
         story.append(wf_table)
         story.append(Spacer(1, 8))
 
-        # 4. Workload-Specific Derived Performance Indicators
-        story.append(
-            Paragraph("4. Workload-Specific Derived Performance Indicators", section_style)
-        )
-        raw = run.raw_telemetry or {}
+        # 5. Workload-Specific Derived Performance Indicators (Dynamically Filtered)
         cost_1k = raw.get("cost_per_1k_goodput_usd") or (
             (cost / max(1, completed)) * 1000.0 if completed > 0 else 0.0
         )
@@ -817,106 +1293,160 @@ class ReportExporter:
                 Paragraph("<b>Measured Value</b>", cell_bold),
                 Paragraph("<b>Production & Engineering Significance</b>", cell_bold),
             ],
-            [
-                Paragraph("<b>Cost / 1K SLO-Satisfied Calls</b>", cell_regular),
-                Paragraph(f"<b>${cost_1k:.4f}</b>", cell_bold),
-                Paragraph(
-                    "True unit economic cost per valid response meeting all latency and status SLOs",
-                    cell_regular,
-                ),
-            ],
-            [
-                Paragraph("<b>ITL Jitter Coefficient ($CV_{ITL}$)</b>", cell_regular),
-                Paragraph(
-                    f"<b>{f'{itl_jitter_cv:.3f}' if itl_jitter_cv is not None else '—'}</b>",
-                    cell_bold if itl_jitter_cv else cell_muted,
-                ),
-                Paragraph(
-                    "Stream smoothness index: <0.30 Glass Smooth, >0.70 Choppy / Stalling",
-                    cell_regular,
-                ),
-            ],
-            [
-                Paragraph("<b>Prefill Latency Slope</b>", cell_regular),
-                Paragraph(
-                    f"<b>{f'{prefill_slope:.2f} ms/1K' if prefill_slope is not None else '—'}</b>",
-                    cell_bold if prefill_slope else cell_muted,
-                ),
-                Paragraph(
-                    "First-token compute latency overhead per 1,000 prompt tokens", cell_regular
-                ),
-            ],
-            [
-                Paragraph("<b>Prompt Cache Speedup Factor</b>", cell_regular),
-                Paragraph(
-                    f"<b>{f'{cache_speedup:.2f}x' if cache_speedup is not None else '—'}</b>",
-                    cell_bold if cache_speedup else cell_muted,
-                ),
-                Paragraph(
-                    "TTFT acceleration ratio achieved via warm KV prefix caching vs cold prefill",
-                    cell_regular,
-                ),
-            ],
-            [
-                Paragraph("<b>Thinking Wait Tax (TTFA/TTFT)</b>", cell_regular),
-                Paragraph(
-                    f"<b>{f'{wait_mult:.2f}x' if wait_mult is not None else '—'}</b>",
-                    cell_bold if wait_mult else cell_muted,
-                ),
-                Paragraph(
-                    "Multiplier of user wait time before readable answer text streams", cell_regular
-                ),
-            ],
-            [
-                Paragraph("<b>Reasoning Budget Share</b>", cell_regular),
-                Paragraph(
-                    f"<b>{f'{thinking_cost_share:.1f}%' if thinking_cost_share is not None else '—'}</b>",
-                    cell_bold if thinking_cost_share else cell_muted,
-                ),
-                Paragraph(
-                    "Percentage of total token billing consumed by internal thinking tokens",
-                    cell_regular,
-                ),
-            ],
-            [
-                Paragraph("<b>Grammar Constraint Penalty</b>", cell_regular),
-                Paragraph(
-                    f"<b>{f'+{grammar_penalty:.1f}%' if grammar_penalty is not None else '—'}</b>",
-                    cell_bold if grammar_penalty else cell_muted,
-                ),
-                Paragraph(
-                    "TPOT decode throughput penalty under constrained regex / JSON grammar decoding",
-                    cell_regular,
-                ),
-            ],
-            [
-                Paragraph("<b>Parallel Scaling Efficiency</b>", cell_regular),
-                Paragraph(
-                    f"<b>{f'{scaling_eff:.1f}%' if scaling_eff is not None else '—'}</b>",
-                    cell_bold if scaling_eff else cell_muted,
-                ),
-                Paragraph(
-                    "Aggregate throughput scaling relative to linear single-stream capacity",
-                    cell_regular,
-                ),
-            ],
         ]
-        derived_table = Table(derived_table_data, colWidths=[160, 95, 285])
-        derived_table.setStyle(
-            TableStyle(
+
+        if cost_1k > 0:
+            derived_table_data.append(
                 [
-                    ("BACKGROUND", (0, 0), (-1, 0), c_card_bg),
-                    ("GRID", (0, 0), (-1, -1), 0.5, c_border),
-                    ("PADDING", (0, 0), (-1, -1), 4),
-                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_light]),
+                    Paragraph("<b>Cost / 1K SLO-Satisfied Calls</b>", cell_regular),
+                    Paragraph(f"<b>${cost_1k:.4f}</b>", cell_bold),
+                    Paragraph(
+                        "True unit economic cost per valid response meeting all latency and status SLOs",
+                        cell_regular,
+                    ),
                 ]
             )
-        )
-        story.append(derived_table)
-        story.append(Spacer(1, 8))
 
-        # 5. Workload Specification & Diagnostics Snapshot
+        if itl_jitter_cv is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>ITL Jitter Coefficient ($CV_{ITL}$)</b>", cell_regular),
+                    Paragraph(f"<b>{itl_jitter_cv:.3f}</b>", cell_bold),
+                    Paragraph(
+                        "Stream smoothness index: <0.30 Glass Smooth, >0.70 Choppy / Stalling",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if prefill_slope is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Prefill Latency Slope</b>", cell_regular),
+                    Paragraph(f"<b>{prefill_slope:.2f} ms/1K</b>", cell_bold),
+                    Paragraph(
+                        "First-token compute latency overhead per 1,000 prompt tokens",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if cache_speedup is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Prompt Cache Speedup Factor</b>", cell_regular),
+                    Paragraph(f"<b>{cache_speedup:.2f}x</b>", cell_bold),
+                    Paragraph(
+                        "TTFT acceleration ratio achieved via warm KV prefix caching vs cold prefill",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if wait_mult is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Thinking Wait Tax (TTFA/TTFT)</b>", cell_regular),
+                    Paragraph(f"<b>{wait_mult:.2f}x</b>", cell_bold),
+                    Paragraph(
+                        "Multiplier of user wait time before readable answer text streams",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if thinking_cost_share is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Reasoning Budget Share</b>", cell_regular),
+                    Paragraph(f"<b>{thinking_cost_share:.1f}%</b>", cell_bold),
+                    Paragraph(
+                        "Percentage of total token billing consumed by internal thinking tokens",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if grammar_penalty is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Grammar Constraint Penalty</b>", cell_regular),
+                    Paragraph(f"<b>+{grammar_penalty:.1f}%</b>", cell_bold),
+                    Paragraph(
+                        "TPOT decode throughput penalty under constrained regex / JSON grammar decoding",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if scaling_eff is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Parallel Scaling Efficiency</b>", cell_regular),
+                    Paragraph(f"<b>{scaling_eff:.1f}%</b>", cell_bold),
+                    Paragraph(
+                        "Aggregate throughput scaling relative to linear single-stream capacity",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if est_rpm_lim is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Estimated RPM Saturation Limit</b>", cell_regular),
+                    Paragraph(f"<b>{est_rpm_lim:.0f} RPM</b>", cell_bold),
+                    Paragraph(
+                        "Probed concurrency saturation boundary where provider triggers 429 rate limits",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if est_tpm_lim is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Estimated TPM Token Ceiling</b>", cell_regular),
+                    Paragraph(f"<b>{est_tpm_lim:,.0f} TPM</b>", cell_bold),
+                    Paragraph(
+                        "Probed token consumption ceiling before throttling",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if raw.get("schema_validity_pct") is not None:
+            derived_table_data.append(
+                [
+                    Paragraph("<b>Schema / Grammar Validity</b>", cell_regular),
+                    Paragraph(f"<b>{raw['schema_validity_pct']:.1f}%</b>", cell_bold),
+                    Paragraph(
+                        "Strict JSON schema / tool call arguments validity compliance",
+                        cell_regular,
+                    ),
+                ]
+            )
+
+        if len(derived_table_data) > 1:
+            story.append(
+                Paragraph("4. Workload-Specific Derived Performance Indicators", section_style)
+            )
+            derived_table = Table(derived_table_data, colWidths=[160, 95, 285])
+            derived_table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), c_card_bg),
+                        ("GRID", (0, 0), (-1, -1), 0.5, c_border),
+                        ("PADDING", (0, 0), (-1, -1), 4),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_light]),
+                    ]
+                )
+            )
+            story.append(derived_table)
+            story.append(Spacer(1, 8))
+
+        # 6. Workload Specification & Diagnostics Snapshot
         story.append(
             Paragraph("5. Benchmark Configuration & Execution Specification", section_style)
         )
@@ -968,8 +1498,8 @@ class ReportExporter:
         story.append(spec_table)
         story.append(Spacer(1, 8))
 
-        # 6. Diagnostics & Reliability Summary
-        story.append(Paragraph("5. Reliability & Error Diagnostics", section_style))
+        # 7. Diagnostics & Reliability Summary (Numbered 6.)
+        story.append(Paragraph("6. Reliability & Error Diagnostics", section_style))
         if failed == 0:
             diag_text = (
                 "<b>Status: 100% Operational Reliability.</b> "

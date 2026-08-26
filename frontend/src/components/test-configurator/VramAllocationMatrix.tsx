@@ -9,8 +9,13 @@ import {
   CheckCircle2,
   Sparkles,
   Info,
+  BookOpen,
+  ChevronDown,
+  Gauge,
+  Database,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MathFormula } from "@/components/ui/math-formula";
 
 interface VramAllocationMatrixProps {
   model: string;
@@ -41,6 +46,7 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
   totalGpuMemoryGb = 80, // Default to NVIDIA H100 80GB SXM5
 }) => {
   const [hoveredSegment, setHoveredSegment] = useState<MemorySegment | null>(null);
+  const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
 
   // Heuristic model weight size based on model name
   const modelWeightsGb = useMemo(() => {
@@ -55,7 +61,6 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
   }, [model]);
 
   // Compute KV Cache Memory footprint (in GB)
-  // Formula: KV per token ≈ 2 * 2 (K+V) * layers * kv_heads * head_dim / 10^9
   const { kvCacheGb, sharedPromptSavingsGb, totalAllocatedGb, vramUtilizationPct, isOverVramLimit } = useMemo(() => {
     const kvBytesPerToken = 0.00012; // ~120KB per 1,000 tokens per stream with modern GQA
 
@@ -103,96 +108,99 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
         color: "bg-[#612D53] dark:bg-[#7E3B6C]",
         textColor: "text-[#612D53] dark:text-[#C57BB2]",
         border: "border-[#612D53]/40",
-        desc: "Static neural network tensor weights loaded in high-bandwidth memory (HBM3).",
+        desc: `Fixed FP8/Int8 parameter weights resident in GPU High-Bandwidth Memory (HBM).`,
       },
       {
         id: "kv_cache",
-        name: cacheBust ? "KV Cache (Cold Unshared)" : "KV Cache (Prefix Shared)",
+        name: `KV Cache Buffer (${concurrency} streams)`,
         sizeGb: kvCacheGb,
         pct: (kvCacheGb / totalGpuMemoryGb) * 100,
         color: cacheBust ? "bg-[#853953] dark:bg-[#A74B6A]" : "bg-emerald-600 dark:bg-emerald-500",
         textColor: cacheBust ? "text-[#853953] dark:text-[#A74B6A]" : "text-emerald-700 dark:text-emerald-400",
         border: cacheBust ? "border-[#853953]/40" : "border-emerald-500/40",
         desc: cacheBust
-          ? "Unshared KV slots per stream. High VRAM consumption under concurrency."
-          : `Prefix caching active: shared prompt saved ~${sharedPromptSavingsGb}GB of GPU memory.`,
+          ? `Cold KV cache buffer allocated across ${concurrency} independent streams.`
+          : `Prefix-shared KV cache buffer (+${sharedPromptSavingsGb}GB VRAM saved).`,
       },
       {
         id: "activations",
-        name: "Activation & CUDA Buffers",
+        name: "Activations & CUDA Runtime Overhead",
         sizeGb: activationsGb,
         pct: (activationsGb / totalGpuMemoryGb) * 100,
         color: "bg-blue-600 dark:bg-blue-500",
         textColor: "text-blue-700 dark:text-blue-400",
         border: "border-blue-500/40",
-        desc: "Intermediate tensor activations, attention workspace, and kernel scratchpads.",
+        desc: "Intermediate tensor activation buffers, scratchpad memory, and CUDA workspace.",
       },
-    ];
-
-    if (freeGb > 0) {
-      segs.push({
+      {
         id: "free",
         name: "Available Headroom (Free VRAM)",
         sizeGb: freeGb,
         pct: (freeGb / totalGpuMemoryGb) * 100,
-        color: "bg-[#F3F4F4] dark:bg-[#2C2C2C]",
+        color: "bg-[#F3F4F4] dark:bg-[#1E1D1F] border border-dashed border-[#2C2C2C]/20",
         textColor: "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60",
-        border: "border-[#2C2C2C]/10",
-        desc: "Remaining VRAM available for additional concurrent streams before queuing begins.",
-      });
-    }
+        border: "border-[#2C2C2C]/20",
+        desc: "Unallocated GPU high-bandwidth memory available for additional concurrency.",
+      },
+    ];
 
     return segs;
-  }, [modelWeightsGb, kvCacheGb, totalAllocatedGb, totalGpuMemoryGb, cacheBust, sharedPromptSavingsGb]);
+  }, [modelWeightsGb, kvCacheGb, totalAllocatedGb, totalGpuMemoryGb, concurrency, cacheBust, sharedPromptSavingsGb]);
 
   return (
     <div className="rounded-xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-4 space-y-3.5 shadow-xs">
       {/* Header bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg border bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/30 text-[#853953] dark:text-[#A74B6A]">
+          <div className={`p-1.5 rounded-lg border ${
+            isOverVramLimit
+              ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-400"
+              : "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/30 text-[#853953] dark:text-[#A74B6A]"
+          }`}>
             <HardDrive className="h-4 w-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                GPU VRAM & KV Cache Memory Map ({totalGpuMemoryGb}GB HBM3)
+                GPU VRAM Allocation & KV Cache Footprint
               </span>
               <Badge
-                variant={isOverVramLimit ? "destructive" : "outline"}
+                variant="outline"
                 className={`text-[10px] font-sans py-0 px-1.5 ${
-                  !isOverVramLimit && (cacheBust ? "text-[#853953] dark:text-[#A74B6A]" : "text-emerald-700 dark:text-emerald-400")
+                  isOverVramLimit
+                    ? "text-rose-700 dark:text-rose-400 border-rose-300"
+                    : "text-[#853953] dark:text-[#A74B6A]"
                 }`}
               >
-                {isOverVramLimit ? "VRAM Saturation Warning" : cacheBust ? "Cold KV Allocation" : "Prefix Cache Deduplicated"}
+                {isOverVramLimit ? "VRAM Capacity Warning" : `${vramUtilizationPct}% VRAM Occupancy`}
               </Badge>
             </div>
             <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-              Simulates physical GPU High-Bandwidth Memory (HBM) occupancy across {concurrency} active streams.
+              Hardware simulation for NVIDIA H100 80GB SXM5 GPU memory partition.
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className={`text-sm font-bold font-sans tabular-nums ${
+          <span className={`text-xs font-semibold font-sans tabular-nums ${
             isOverVramLimit ? "text-rose-700 dark:text-rose-400" : "text-[#853953] dark:text-[#A74B6A]"
           }`}>
             {totalAllocatedGb} / {totalGpuMemoryGb} GB
           </span>
           <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
-            {vramUtilizationPct}% VRAM Occupancy
+            Estimated Memory Map
           </span>
         </div>
       </div>
 
-      {/* Visual Memory Map Segment Bar */}
-      <div className="space-y-1.5 select-none">
-        <div className="h-6 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-0.5 flex items-center overflow-hidden gap-0.5">
+      {/* Visual Memory Allocation Bar */}
+      <div className="space-y-1.5">
+        <div className="h-5 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-0.5 flex items-center overflow-hidden gap-0.5 select-none">
           {segments.map((seg) => (
             <motion.div
               key={seg.id}
-              initial={false}
-              animate={{ width: `${Math.max(2, seg.pct)}%` }}
+              initial={{ width: 0 }}
+              animate={{ width: `${seg.pct}%` }}
               transition={{ duration: 0.25, ease: "easeOut" }}
               onMouseEnter={() => setHoveredSegment(seg)}
               onMouseLeave={() => setHoveredSegment(null)}
@@ -274,6 +282,74 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
             {concurrency} streams @ {maxTokens} tok
           </div>
         </div>
+      </div>
+
+      {/* Expandable Deep-Dive Knowledge Dropdown */}
+      <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 bg-[#F3F4F4]/40 dark:bg-[#1E1D1F]/60 overflow-hidden transition-all">
+        <button
+          type="button"
+          onClick={() => setIsKnowledgeOpen(!isKnowledgeOpen)}
+          className="w-full flex items-center justify-between p-3 px-3.5 text-left hover:bg-[#F3F4F4]/80 dark:hover:bg-[#2C2C2C]/50 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <div>
+              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                Understanding GPU Memory & KV Cache Sizing
+              </span>
+              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                Click to explore how model parameters, KV cache token buffers, and prefix sharing consume GPU VRAM.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px] font-sans py-0 px-1.5 text-[#853953] dark:text-[#A74B6A] border-[#853953]/30">
+              {isKnowledgeOpen ? "Hide Guide" : "Expand Guide"}
+            </Badge>
+            <motion.div
+              animate={{ rotate: isKnowledgeOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="h-4 w-4 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60" />
+            </motion.div>
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {isKnowledgeOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5 space-y-3 text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[#612D53] dark:text-[#C57BB2] font-semibold text-xs">
+                    <Database className="h-3.5 w-3.5" />
+                    <span>Static Model Weights vs. Dynamic KV Cache</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    Model weights are static (<MathFormula math="\text{VRAM}_{\text{weights}} \approx 38\text{ GB}" /> for FP8 70B). The dynamic KV cache footprint scales as:
+                  </p>
+                  <MathFormula math="\text{VRAM}_{\text{KV}} \propto 2 \times n_{\text{layers}} \times n_{\text{kv\_heads}} \times d_{\text{head}} \times N_{\text{streams}} \times N_{\text{tokens}}" block className="text-[10px] text-[#853953] dark:text-[#A74B6A]" />
+                </div>
+
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold text-xs">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>Prefix Caching Memory Multiplier</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    When <MathFormula math="N_{\text{streams}}" /> share identical system instructions, <strong>Prefix Caching</strong> stores prompt tensors once, saving:
+                  </p>
+                  <MathFormula math="\Delta \text{VRAM}_{\text{saved}} = (N_{\text{streams}} - 1) \times N_{\text{prompt}} \times \text{BytesPerToken}" block className="text-[10px] text-emerald-700 dark:text-emerald-400" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

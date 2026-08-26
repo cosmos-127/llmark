@@ -40,6 +40,15 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  // Sync active metric tab when preset changes
+  React.useEffect(() => {
+    if (isRateLimit && activeMetric !== "ratelimit" && activeMetric !== "overview" && activeMetric !== "goodput" && activeMetric !== "cost") {
+      setActiveMetric("ratelimit");
+    } else if (!isRateLimit && activeMetric === "ratelimit") {
+      setActiveMetric("overview");
+    }
+  }, [isRateLimit, workloadPreset]);
+
   // Format data points for recharts
   const formattedData = React.useMemo(() => {
     if (!data || data.length === 0) {
@@ -77,7 +86,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
       ];
     }
 
-    return data.map((d) => ({
+    const mapped = data.map((d) => ({
       time: `${(d.elapsed || 0).toFixed(1)}s`,
       "Throughput (tok/s)": Math.round((d.tps || 0) * 10) / 10,
       "Prefill Speed (tok/s)": Math.round((d.prefill_tps_instant ?? d.prefill_tps_p95 ?? 0) * 10) / 10,
@@ -92,6 +101,30 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
       "Saturated RPM": Math.round(d.rpm || 0),
       "Thinking Tokens (tok)": Math.round(d.thinking_tokens_avg || 0),
     }));
+
+    // If only 1 data point has arrived, prepend a 0.0s baseline so Recharts renders the area curve immediately
+    if (mapped.length === 1 && (data[0].elapsed || 0) > 0) {
+      return [
+        {
+          time: "0.0s",
+          "Throughput (tok/s)": 0,
+          "Prefill Speed (tok/s)": 0,
+          "Instant TTFT (ms)": mapped[0]["Instant TTFT (ms)"],
+          "TTFT P95 (ms)": mapped[0]["TTFT P95 (ms)"],
+          "Instant ITL (ms)": mapped[0]["Instant ITL (ms)"],
+          "ITL P95 (ms)": mapped[0]["ITL P95 (ms)"],
+          "Goodput SLO Yield (%)": mapped[0]["Goodput SLO Yield (%)"],
+          "Instant SLO Pass (%)": mapped[0]["Instant SLO Pass (%)"],
+          "Total Cost ($)": 0,
+          "HTTP 429 Rate (%)": 0,
+          "Saturated RPM": 0,
+          "Thinking Tokens (tok)": 0,
+        },
+        mapped[0],
+      ];
+    }
+
+    return mapped;
   }, [data]);
 
   const latest = data[data.length - 1] || null;
@@ -141,35 +174,77 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               Composite Overview
             </Button>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveMetric("latency")}
-              className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                activeMetric === "latency"
-                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-              }`}
-            >
-              <Gauge className="h-3 w-3 mr-1" />
-              Tail Latency (TTFT)
-            </Button>
+            {(isRateLimit || (latest?.rate_limit_pct || 0) > 0) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveMetric("ratelimit")}
+                className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                  activeMetric === "ratelimit"
+                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                }`}
+              >
+                <ShieldCheck className="h-3 w-3 mr-1" />
+                HTTP 429 & Quotas
+              </Button>
+            )}
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveMetric("throughput")}
-              className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                activeMetric === "throughput"
-                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-              }`}
-            >
-              <Zap className="h-3 w-3 mr-1" />
-              {isPrefill ? "Prefill & Output" : "Throughput (TPS)"}
-            </Button>
+            {!isRateLimit && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveMetric("latency")}
+                className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                  activeMetric === "latency"
+                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                }`}
+              >
+                <Gauge className="h-3 w-3 mr-1" />
+                {isReasoning
+                  ? "Tail Latency (TTFA)"
+                  : isPrefill
+                  ? "Tail Latency (TTFT)"
+                  : "Stream Latency (ITL)"}
+              </Button>
+            )}
+
+            {!isRateLimit && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveMetric("throughput")}
+                className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                  activeMetric === "throughput"
+                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                }`}
+              >
+                <Zap className="h-3 w-3 mr-1" />
+                {isPrefill ? "Prefill Speed (tok/s)" : "Throughput (TPS)"}
+              </Button>
+            )}
+
+            {isReasoning && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveMetric("thinking")}
+                className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                  activeMetric === "thinking"
+                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                }`}
+              >
+                <Sparkles className="h-3 w-3 mr-1" />
+                Thinking Tokens
+              </Button>
+            )}
 
             <Button
               type="button"
@@ -200,40 +275,6 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               <DollarSign className="h-3 w-3 mr-1" />
               Spend ($)
             </Button>
-
-            {(isRateLimit || (latest?.rate_limit_pct || 0) > 0) && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setActiveMetric("ratelimit")}
-                className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                  activeMetric === "ratelimit"
-                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-                }`}
-              >
-                <ShieldCheck className="h-3 w-3 mr-1" />
-                HTTP 429 %
-              </Button>
-            )}
-
-            {isReasoning && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setActiveMetric("thinking")}
-                className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                  activeMetric === "thinking"
-                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-                }`}
-              >
-                <Sparkles className="h-3 w-3 mr-1" />
-                Thinking Tokens
-              </Button>
-            )}
           </div>
         </div>
 
@@ -241,32 +282,66 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
         <div className="flex flex-wrap items-center gap-3 pt-2 font-sans text-xs">
           {activeMetric === "overview" && (
             <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-              <div className="flex items-center gap-1.5">
-                <span>{isPrefill ? "Prefill Speed:" : "Throughput:"}</span>
-                <Badge variant="emerald" className="font-sans text-xs font-semibold tabular-nums">
-                  {isPrefill
-                    ? `${(latest?.prefill_tps_instant ?? latest?.prefill_tps_p95 ?? 0).toFixed(0)} tok/s`
-                    : `${(latest?.tps || 0).toFixed(1)} tok/s`}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span>Live TTFT (Instant):</span>
-                <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
-                  {formatMs(latest?.ttft_instant ?? latest?.ttft_p95)}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span>TTFT P95 Tail:</span>
-                <Badge variant="secondary" className="font-sans text-xs font-semibold tabular-nums">
-                  {formatMs(latest?.ttft_p95)}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span>Goodput:</span>
-                <Badge variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"} className="font-sans text-xs font-semibold tabular-nums">
-                  {formatPct(latest?.goodput || 100)}
-                </Badge>
-              </div>
+              {isRateLimit ? (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <span>Saturated RPM:</span>
+                    <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
+                      {latest?.rpm ? `${latest.rpm.toFixed(0)} req/min` : "0 req/min"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>HTTP 429 Rate:</span>
+                    <Badge
+                      variant={(latest?.rate_limit_pct || 0) > 0 ? "destructive" : "emerald"}
+                      className="font-sans text-xs font-semibold tabular-nums"
+                    >
+                      {formatPct(latest?.rate_limit_pct || 0)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>Non-Throttled Goodput:</span>
+                    <Badge
+                      variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"}
+                      className="font-sans text-xs font-semibold tabular-nums"
+                    >
+                      {formatPct(latest?.goodput || 100)}
+                    </Badge>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <span>{isPrefill ? "Prefill Speed:" : "Throughput:"}</span>
+                    <Badge variant="emerald" className="font-sans text-xs font-semibold tabular-nums">
+                      {isPrefill
+                        ? `${(latest?.prefill_tps_instant ?? latest?.prefill_tps_p95 ?? 0).toFixed(0)} tok/s`
+                        : `${(latest?.tps || 0).toFixed(1)} tok/s`}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>Live TTFT (Instant):</span>
+                    <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
+                      {formatMs(latest?.ttft_instant ?? latest?.ttft_p95)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>TTFT P95 Tail:</span>
+                    <Badge variant="secondary" className="font-sans text-xs font-semibold tabular-nums">
+                      {formatMs(latest?.ttft_p95)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span>Goodput:</span>
+                    <Badge
+                      variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"}
+                      className="font-sans text-xs font-semibold tabular-nums"
+                    >
+                      {formatPct(latest?.goodput || 100)}
+                    </Badge>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -375,8 +450,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
       </CardHeader>
 
       <CardContent className="p-5 pt-2">
-        <div className="h-76 w-full pt-2">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-80 min-h-[320px] w-full pt-2">
+          <ResponsiveContainer width="100%" height="100%" minHeight={280}>
             <AreaChart data={formattedData} margin={{ top: 10, right: 15, left: -5, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorThroughput" x1="0" y1="0" x2="0" y2="1">
@@ -425,7 +500,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 interval="preserveStartEnd"
               />
 
-              {/* 1. Composite Overview View (Dual Axis: Token Velocity on Left, Latency on Right) */}
+              {/* 1. Composite Overview View (Dual Axis: Token Velocity/RPM on Left, Latency/429% on Right) */}
               {activeMetric === "overview" && (
                 <>
                   <YAxis
@@ -434,8 +509,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                     fontSize="11px"
                     tickLine={false}
                     fontFamily="var(--font-sans), sans-serif"
-                    unit=" tok/s"
-                    domain={[0, "auto"]}
+                    unit={isRateLimit ? " RPM" : " tok/s"}
+                    domain={[0, (dataMax: number) => (dataMax > 0 ? Math.ceil(dataMax * 1.15) : (isRateLimit ? 100 : 25))]}
                   />
                   <YAxis
                     yAxisId="right"
@@ -444,8 +519,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                     fontSize="11px"
                     tickLine={false}
                     fontFamily="var(--font-sans), sans-serif"
-                    unit=" ms"
-                    domain={[0, "auto"]}
+                    unit={isRateLimit ? "%" : " ms"}
+                    domain={isRateLimit ? [0, 100] : [0, (dataMax: number) => (dataMax > 0 ? Math.ceil(dataMax * 1.15) : 200)]}
                   />
                 </>
               )}
@@ -460,7 +535,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                     tickLine={false}
                     fontFamily="var(--font-sans), sans-serif"
                     unit=" ms"
-                    domain={[0, "auto"]}
+                    domain={[0, (dataMax: number) => (dataMax > 0 ? Math.ceil(dataMax * 1.15) : 200)]}
                   />
                   <YAxis
                     yAxisId="right"
@@ -470,7 +545,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                     tickLine={false}
                     fontFamily="var(--font-sans), sans-serif"
                     unit=" ms"
-                    domain={[0, "auto"]}
+                    domain={[0, (dataMax: number) => (dataMax > 0 ? Math.ceil(dataMax * 1.15) : 50)]}
                   />
                 </>
               )}
@@ -483,7 +558,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   tickLine={false}
                   fontFamily="var(--font-sans), sans-serif"
                   unit=" tok/s"
-                  domain={[0, "auto"]}
+                  domain={[0, (dataMax: number) => (dataMax > 0 ? Math.ceil(dataMax * 1.15) : 25)]}
                 />
               )}
 
@@ -507,7 +582,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   tickLine={false}
                   fontFamily="var(--font-sans), sans-serif"
                   unit="$"
-                  domain={[0, "auto"]}
+                  domain={[0, (dataMax: number) => (dataMax > 0 ? Number((dataMax * 1.25).toFixed(4)) : 0.01)]}
                 />
               )}
 
@@ -531,7 +606,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   tickLine={false}
                   fontFamily="var(--font-sans), sans-serif"
                   unit=" tok"
-                  domain={[0, "auto"]}
+                  domain={[0, (dataMax: number) => (dataMax > 0 ? Math.ceil(dataMax * 1.15) : 100)]}
                 />
               )}
 
@@ -552,49 +627,96 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               {/* 1. Composite Overview Plots */}
               {activeMetric === "overview" && (
                 <>
-                  {isPrefill ? (
-                    <Area
-                      yAxisId="left"
-                      type="monotone"
-                      dataKey="Prefill Speed (tok/s)"
-                      stroke={cyanColor}
-                      strokeWidth={2.5}
-                      fillOpacity={1}
-                      fill="url(#colorPrefill)"
-                      isAnimationActive={false}
-                    />
+                  {isRateLimit ? (
+                    <>
+                      <Area
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="Saturated RPM"
+                        stroke={plumColor}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#colorThinking)"
+                        isAnimationActive={false}
+                      />
+                      <Area
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="HTTP 429 Rate (%)"
+                        stroke={roseColor}
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorRateLimit)"
+                        isAnimationActive={false}
+                      />
+                    </>
+                  ) : isPrefill ? (
+                    <>
+                      <Area
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="Prefill Speed (tok/s)"
+                        stroke={cyanColor}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#colorPrefill)"
+                        isAnimationActive={false}
+                      />
+                      <Area
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="Instant TTFT (ms)"
+                        stroke={primaryColor}
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorTtft)"
+                        isAnimationActive={false}
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="TTFT P95 (ms)"
+                        stroke={plumColor}
+                        strokeWidth={2}
+                        strokeDasharray="4 4"
+                        dot={false}
+                        isAnimationActive={false}
+                      />
+                    </>
                   ) : (
-                    <Area
-                      yAxisId="left"
-                      type="monotone"
-                      dataKey="Throughput (tok/s)"
-                      stroke={emeraldColor}
-                      strokeWidth={2.5}
-                      fillOpacity={1}
-                      fill="url(#colorThroughput)"
-                      isAnimationActive={false}
-                    />
+                    <>
+                      <Area
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="Throughput (tok/s)"
+                        stroke={emeraldColor}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#colorThroughput)"
+                        isAnimationActive={false}
+                      />
+                      <Area
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="Instant TTFT (ms)"
+                        stroke={primaryColor}
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorTtft)"
+                        isAnimationActive={false}
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="TTFT P95 (ms)"
+                        stroke={plumColor}
+                        strokeWidth={2}
+                        strokeDasharray="4 4"
+                        dot={false}
+                        isAnimationActive={false}
+                      />
+                    </>
                   )}
-                  <Area
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="Instant TTFT (ms)"
-                    stroke={primaryColor}
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorTtft)"
-                    isAnimationActive={false}
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="TTFT P95 (ms)"
-                    stroke={plumColor}
-                    strokeWidth={2}
-                    strokeDasharray="4 4"
-                    dot={false}
-                    isAnimationActive={false}
-                  />
                 </>
               )}
 

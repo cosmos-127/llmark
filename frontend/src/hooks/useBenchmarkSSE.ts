@@ -72,7 +72,7 @@ export function useBenchmarkSSE(benchmarkId: string | null, onComplete?: (finalS
         const data = JSON.parse(e.data) as MetricsSnapshot;
         setSnapshot(data);
         setTimeSeries((prev) => [
-          ...prev.slice(-40), // Keep last 40 time-series points
+          ...prev.slice(-300), // Retain up to 300 time-series points (30s at 100ms interval)
           {
             timestamp: Date.now(),
             elapsed: data.elapsed_seconds,

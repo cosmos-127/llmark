@@ -50,6 +50,11 @@ export const BenchmarkPage: React.FC = () => {
     abort,
   } = useBenchmarkSSE(activeBenchmarkId);
 
+  // Automatically scroll to top whenever launching benchmark or resetting back to configurator
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [activeBenchmarkId]);
+
   useEffect(() => {
     if (isFinished) {
       queryClient.invalidateQueries({ queryKey: ["benchmark-history"] });

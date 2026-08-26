@@ -21,6 +21,12 @@ const badgeVariants = cva(
           "border border-sky-300/60 dark:border-sky-700/60 bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300",
         violet:
           "border border-[#612D53]/30 dark:border-[#7E3B6C]/40 bg-[#612D53]/10 dark:bg-[#7E3B6C]/15 text-[#612D53] dark:text-[#C57BB2]",
+        amber:
+          "border border-amber-300/60 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300",
+        purple:
+          "border border-purple-300/60 dark:border-purple-700/60 bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300",
+        slate:
+          "border border-slate-300/60 dark:border-slate-700/60 bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300",
       },
     },
     defaultVariants: {

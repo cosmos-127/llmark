@@ -121,3 +121,145 @@ def test_pdf_export_with_none_values():
     pdf_bytes = ReportExporter.generate_pdf(sparse_run)
     assert len(pdf_bytes) > 500
     assert pdf_bytes.startswith(b"%PDF")
+
+
+def test_pdf_export_rate_limit_preset():
+    """Verify rate limit probe preset PDF export works cleanly with custom metrics."""
+    run = BenchmarkRun(
+        id="bmk_rl_001",
+        name="Rate Limit Saturation Test",
+        vendor="openai",
+        model="gpt-4o-mini",
+        workload_preset="rate_limit_probe",
+        load_curve="ramp",
+        concurrency=15,
+        duration_seconds=20,
+        status="completed",
+        total_requests=100,
+        completed_requests=80,
+        failed_requests=20,
+        error_rate_pct=20.0,
+        goodput_pct=80.0,
+        total_cost_usd=0.004,
+        ttft_p50=95.0,
+        ttft_p95=140.0,
+        raw_telemetry={
+            "rate_limit_pct": 20.0,
+            "rate_limit_count": 20,
+            "current_rpm": 300.0,
+            "current_tpm": 1500.0,
+            "estimated_rpm_limit": 280.0,
+            "estimated_tpm_limit": 1400.0,
+        },
+    )
+    pdf_bytes = ReportExporter.generate_pdf(run)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+
+    md = ReportExporter.generate_markdown(run)
+    assert "Rate Limit Saturation Test" in md
+    assert "Estimated RPM Saturation Limit" in md
+
+
+def test_pdf_export_reasoning_cot_preset():
+    """Verify reasoning preset PDF export properly formats TTFA and reasoning tokens."""
+    run = BenchmarkRun(
+        id="bmk_cot_001",
+        name="DeepSeek R1 Thinking Benchmark",
+        vendor="openai_compatible",
+        model="deepseek-reasoner",
+        workload_preset="reasoning_cot",
+        load_curve="constant",
+        concurrency=4,
+        duration_seconds=30,
+        status="completed",
+        total_requests=20,
+        completed_requests=20,
+        failed_requests=0,
+        goodput_pct=100.0,
+        total_cost_usd=0.085,
+        total_prompt_tokens=4000,
+        total_gen_tokens=16000,
+        ttft_p50=220.0,
+        ttft_p95=350.0,
+        ttfa_p50=4500.0,
+        ttfa_p95=7200.0,
+        tps_decode=65.0,
+        raw_telemetry={
+            "thinking_wait_multiplier": 20.45,
+            "thinking_cost_share_pct": 72.5,
+            "thinking_tokens_avg": 750.0,
+        },
+    )
+    pdf_bytes = ReportExporter.generate_pdf(run)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+
+    md = ReportExporter.generate_markdown(run)
+    assert "Thinking Wait Multiplier" in md
+    assert "Reasoning Budget Share" in md
+
+
+def test_pdf_export_prefill_preset():
+    """Verify prefill TTFT preset PDF export formats prefill slope and throughput."""
+    run = BenchmarkRun(
+        id="bmk_prefill_001",
+        name="Prefill Scaling Benchmark",
+        vendor="anthropic",
+        model="claude-3-5-sonnet",
+        workload_preset="prefill_ttft",
+        load_curve="constant",
+        concurrency=4,
+        duration_seconds=25,
+        status="completed",
+        total_requests=30,
+        completed_requests=30,
+        failed_requests=0,
+        goodput_pct=100.0,
+        total_cost_usd=0.12,
+        ttft_p50=450.0,
+        ttft_p95=620.0,
+        ttft_p99=800.0,
+        raw_telemetry={
+            "prefill_tps_p95": 8200.0,
+            "prefill_slope_ms_per_1k": 112.5,
+        },
+    )
+    pdf_bytes = ReportExporter.generate_pdf(run)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+
+    md = ReportExporter.generate_markdown(run)
+    assert "Prefill Latency Slope" in md
+
+
+def test_pdf_export_structured_json_preset():
+    """Verify structured JSON preset PDF export properly formats grammar penalty and validity."""
+    run = BenchmarkRun(
+        id="bmk_json_001",
+        name="JSON Schema Benchmark",
+        vendor="openai",
+        model="gpt-4o",
+        workload_preset="structured_json",
+        load_curve="constant",
+        concurrency=5,
+        duration_seconds=30,
+        status="completed",
+        total_requests=50,
+        completed_requests=50,
+        failed_requests=0,
+        goodput_pct=100.0,
+        total_cost_usd=0.035,
+        raw_telemetry={
+            "schema_validity_pct": 100.0,
+            "grammar_penalty_pct": 14.5,
+        },
+    )
+    pdf_bytes = ReportExporter.generate_pdf(run)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+
+    md = ReportExporter.generate_markdown(run)
+    assert "Grammar Masking Penalty" in md
+    assert "Schema / Grammar Validity" in md
+
