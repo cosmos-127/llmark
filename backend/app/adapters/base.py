@@ -8,7 +8,7 @@ class VendorAdapter(ABC):
     """Abstract Base Class for all LLM Vendor Streaming Adapters."""
 
     @abstractmethod
-    async def stream_completion(
+    def stream_completion(
         self,
         credential: VendorCredential | None,
         config: BenchmarkConfig,

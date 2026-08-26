@@ -50,8 +50,8 @@ class OpenAICompatAdapter(VendorAdapter):
         final_usage = None
 
         try:
-            stream = await client.chat.completions.create(**create_kwargs)
-            async for chunk in stream:
+            stream = await client.chat.completions.create(**create_kwargs)  # type: ignore[call-overload]
+            async for chunk in stream:  # type: ignore[union-attr]
                 t_now = time.perf_counter()
                 choices = chunk.choices if hasattr(chunk, "choices") and chunk.choices else []
 
@@ -178,23 +178,23 @@ class OpenAICompatAdapter(VendorAdapter):
                         model_ids.append(m_id)
                     # Parse dynamic pricing if exposed in extra attributes
                     pricing = getattr(m, "pricing", None)
-                    if pricing:
+                    if pricing and m_id:
                         try:
                             p_in = float(getattr(pricing, "prompt", 0.0)) * 1_000_000.0
                             p_out = float(getattr(pricing, "completion", 0.0)) * 1_000_000.0
                             if p_in > 0 or p_out > 0:
                                 from app.core.cost_guard import CostGuard
 
-                                CostGuard.register_dynamic_pricing(m_id, p_in, p_out)
+                                CostGuard.register_dynamic_pricing(str(m_id), p_in, p_out)
                         except Exception:
                             pass
 
             if not model_ids:
                 try:
-                    for m in response:
-                        m_id = getattr(m, "id", None)
-                        if m_id:
-                            model_ids.append(m_id)
+                    for item in response:  # type: ignore[union-attr]
+                        item_id = getattr(item, "id", None)
+                        if item_id:
+                            model_ids.append(str(item_id))
                 except Exception:
                     pass
             return sorted(model_ids, key=lambda x: x.lower())

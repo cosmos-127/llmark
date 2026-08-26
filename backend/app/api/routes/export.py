@@ -70,26 +70,20 @@ async def _get_run_or_active(run_id: str, db: AsyncSession) -> BenchmarkRun:
             goodput_pct=snapshot.goodput_pct,
             error_rate_pct=snapshot.error_rate_pct,
             tps_decode=snapshot.current_tps,
-            dns_p50=snapshot.waterfall_avg.dns_ms
-            if snapshot.waterfall_avg
-            else (
-                getattr(execution, "waterfall_baseline", None).dns_ms
-                if getattr(execution, "waterfall_baseline", None)
-                else 0.0
+            dns_p50=(
+                snapshot.waterfall_avg.dns_ms
+                if snapshot.waterfall_avg
+                else getattr(getattr(execution, "waterfall_baseline", None), "dns_ms", 0.0)
             ),
-            tcp_p50=snapshot.waterfall_avg.tcp_ms
-            if snapshot.waterfall_avg
-            else (
-                getattr(execution, "waterfall_baseline", None).tcp_ms
-                if getattr(execution, "waterfall_baseline", None)
-                else 0.0
+            tcp_p50=(
+                snapshot.waterfall_avg.tcp_ms
+                if snapshot.waterfall_avg
+                else getattr(getattr(execution, "waterfall_baseline", None), "tcp_ms", 0.0)
             ),
-            tls_p50=snapshot.waterfall_avg.tls_ms
-            if snapshot.waterfall_avg
-            else (
-                getattr(execution, "waterfall_baseline", None).tls_ms
-                if getattr(execution, "waterfall_baseline", None)
-                else 0.0
+            tls_p50=(
+                snapshot.waterfall_avg.tls_ms
+                if snapshot.waterfall_avg
+                else getattr(getattr(execution, "waterfall_baseline", None), "tls_ms", 0.0)
             ),
             config_snapshot=config.model_dump(mode="json") if hasattr(config, "model_dump") else {},
             raw_telemetry={"metrics": [m.model_dump(mode="json") for m in execution.metrics]}

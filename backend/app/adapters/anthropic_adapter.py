@@ -36,8 +36,8 @@ class AnthropicAdapter(VendorAdapter):
             async with client.messages.stream(
                 model=config.model,
                 max_tokens=config.max_tokens,
-                temperature=config.temperature,
-                messages=messages,
+                temperature=config.temperature,  # type: ignore[call-arg]
+                messages=messages,  # type: ignore[arg-type]
             ) as stream:
                 async for text in stream.text_stream:
                     t_now = time.perf_counter()

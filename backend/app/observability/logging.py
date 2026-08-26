@@ -1,5 +1,6 @@
 import logging
 import re
+from collections.abc import Mapping, MutableMapping
 from typing import Any
 
 import structlog
@@ -31,9 +32,11 @@ def _sanitize_recursive(data: Any) -> Any:
         return data
 
 
-def sanitize_sensitive_data(_: Any, __: str, event_dict: dict[str, Any]) -> dict[str, Any]:
+def sanitize_sensitive_data(
+    _: Any, __: str, event_dict: MutableMapping[str, Any]
+) -> Mapping[str, Any]:
     """Scrub sensitive credentials and API keys from all structured log outputs."""
-    return _sanitize_recursive(event_dict)
+    return _sanitize_recursive(dict(event_dict))
 
 
 def setup_logging(debug: bool = False) -> None:

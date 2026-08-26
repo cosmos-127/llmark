@@ -13,6 +13,9 @@ from app.models.schemas import (
     CostEstimate,
     ListModelsRequest,
     ListModelsResponse,
+    TestMode,
+    VendorType,
+    WorkloadPreset,
 )
 from app.observability.logging import logger
 
@@ -61,13 +64,13 @@ async def get_cost_estimate(
 ) -> CostEstimate:
     """Get pre-flight cost and token bounds calculation before launching a benchmark."""
     config = BenchmarkConfig(
-        vendor=vendor,
+        vendor=VendorType(vendor),
         model=model,
-        workload_preset=workload_preset,
+        workload_preset=WorkloadPreset(workload_preset),
         concurrency=concurrency,
         duration_seconds=duration_seconds,
         hard_spend_cap=hard_spend_cap,
-        test_mode=test_mode,
+        test_mode=TestMode(test_mode),
         total_requests=total_requests,
         max_tokens=max_tokens,
         custom_prompt_price_per_1m=custom_prompt_price_per_1m,

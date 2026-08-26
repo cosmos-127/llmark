@@ -66,8 +66,8 @@ class AzureOpenAIAdapter(VendorAdapter):
         final_usage = None
 
         try:
-            stream = await client.chat.completions.create(**create_kwargs)
-            async for chunk in stream:
+            stream = await client.chat.completions.create(**create_kwargs)  # type: ignore[call-overload]
+            async for chunk in stream:  # type: ignore[union-attr]
                 t_now = time.perf_counter()
                 choices = chunk.choices if hasattr(chunk, "choices") and chunk.choices else []
 
