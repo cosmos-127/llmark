@@ -7,6 +7,13 @@ export type VendorType =
   | "mock";
 
 export type WorkloadPreset =
+  | "rate_limit_probe"
+  | "prefill_ttft"
+  | "decode_throughput"
+  | "reasoning_cot"
+  | "rag_synthesis"
+  | "structured_json"
+  | "chat_interactive"
   | "chat"
   | "rag"
   | "code"
@@ -85,9 +92,14 @@ export interface SingleRequestMetric {
   request_id: string;
   status_code: number;
   is_error: boolean;
+  is_rate_limit?: boolean;
+  retry_after_ms?: number;
   error_message?: string;
   prompt_tokens: number;
   completion_tokens: number;
+  thinking_tokens?: number;
+  prefill_tps?: number;
+  schema_valid?: boolean;
   waterfall: WaterfallTiming;
   ttft_ms: number;
   ttfa_ms?: number;
@@ -107,6 +119,8 @@ export interface MetricsSnapshot {
   failed_requests: number;
   current_tps: number;
   current_rps: number;
+  current_rpm?: number;
+  current_tpm?: number;
   current_spend_usd: number;
   waterfall_avg: WaterfallTiming;
   ttft_p50: number;
@@ -123,6 +137,21 @@ export interface MetricsSnapshot {
   tpot_mean: number;
   goodput_pct: number;
   error_rate_pct: number;
+
+  // Workload-specific metric extensions
+  rate_limit_count?: number;
+  rate_limit_pct?: number;
+  status_distribution?: Record<string, number>;
+  estimated_rpm_limit?: number;
+  estimated_tpm_limit?: number;
+  prefill_tps_p50?: number;
+  prefill_tps_p95?: number;
+  thinking_tokens_avg?: number;
+  thinking_token_ratio_pct?: number;
+  schema_validity_pct?: number;
+  schema_error_count?: number;
+  profile_metrics?: string[];
+  workload_preset?: string;
 }
 
 export interface CostEstimate {

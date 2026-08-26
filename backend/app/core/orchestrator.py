@@ -22,8 +22,31 @@ from app.models.schemas import (
 
 logger = structlog.get_logger()
 
+import json
+import re
+
 # Pre-defined prompt templates for presets
 PROMPT_PRESET_TEXT = {
+    WorkloadPreset.RATE_LIMIT_PROBE: "ping",
+    WorkloadPreset.PREFILL_TTFT: (
+        "Context: The internal architecture of large language model serving engines requires optimizing memory bandwidth "
+        "and KV cache allocation across multi-GPU tensor parallel topologies. PagedAttention divides contiguous key-value "
+        "sequences into non-contiguous physical memory blocks to eliminate internal fragmentation.\n\n"
+        + "System Log History Record:\n"
+        + ("2026-08-26T10:00:00Z [INFO] Worker node nvme-gpu-04 cache block allocated with 99.4% saturation.\n" * 40)
+        + "\nTask: Acknowledge document ingestion by replying with 'OK'."
+    ),
+    WorkloadPreset.DECODE_THROUGHPUT: "Write a comprehensive, step-by-step master guide explaining the architecture, mechanics, and design patterns of distributed streaming telemetry systems in deep detail.",
+    WorkloadPreset.REASONING_COT: "A farmer has 17 sheep. All but 9 run away. How many sheep does the farmer have left? Think step by step and explain your full reasoning path before providing the final answer.",
+    WorkloadPreset.RAG_SYNTHESIS: (
+        "Context: Kubernetes is an open-source container orchestration system for automating software deployment, "
+        "scaling, and management. Pods are the smallest deployable units of computing that you can create and manage. "
+        "A Pod encapsulates one or more applications containers, storage resources, a unique network IP, and options "
+        "that govern how the containers should run.\n\n"
+        "Question: Explain how Pod lifecycle management interacts with container restart policies and node affinity."
+    ),
+    WorkloadPreset.STRUCTURED_JSON: "Return a valid JSON object matching this schema: {'service': str, 'status': str, 'latency_ms': float, 'metrics': {'cpu': float, 'memory_pct': float}}.",
+    WorkloadPreset.CHAT_INTERACTIVE: "Explain the architectural difference between REST and Server-Sent Events in 2 paragraphs.",
     WorkloadPreset.CHAT: "Explain the architectural difference between REST and Server-Sent Events in 2 paragraphs.",
     WorkloadPreset.RAG: (
         "Context: Kubernetes is an open-source container orchestration system for automating software deployment, "
@@ -197,6 +220,7 @@ class BenchmarkOrchestrator:
                         total_requests=len(execution.metrics),
                         metrics=execution.metrics,
                         slo=config.slo,
+                        workload_preset=config.workload_preset.value,
                     )
                     await execution.broadcast("progress_snapshot", snapshot.model_dump())
                     await asyncio.sleep(0.1)
@@ -224,6 +248,7 @@ class BenchmarkOrchestrator:
                 total_requests=len(execution.metrics),
                 metrics=execution.metrics,
                 slo=config.slo,
+                workload_preset=config.workload_preset.value,
             )
 
             # Persist to database
@@ -245,6 +270,7 @@ class BenchmarkOrchestrator:
                 total_requests=len(execution.metrics),
                 metrics=execution.metrics,
                 slo=config.slo,
+                workload_preset=config.workload_preset.value,
             )
             await cls._persist_run_to_db(execution, error_snapshot)
             await execution.broadcast("run_complete", error_snapshot.model_dump())
@@ -266,6 +292,8 @@ class BenchmarkOrchestrator:
         t_first_answer: Optional[float] = None
         t_prev_chunk: Optional[float] = None
         itl_deltas_ms: List[float] = []
+        collected_tokens: List[str] = []
+        thinking_token_count = 0
 
         prompt_tokens = 0
         completion_tokens = 0
@@ -283,10 +311,16 @@ class BenchmarkOrchestrator:
                 if event.token and t_first_answer is None:
                     t_first_answer = t_now
 
+                if event.reasoning:
+                    thinking_token_count += 1
+                if event.token:
+                    collected_tokens.append(event.token)
+
                 # Record Inter-Token/Chunk Delays
                 if t_prev_chunk is not None and t_now > t_prev_chunk:
                     delta_ms = (t_now - t_prev_chunk) * 1000.0
-                    itl_deltas_ms.append(round(delta_ms, 3))
+                    chunk_tokens = max(1, len(event.token or "") // 4)
+                    itl_deltas_ms.append(round(delta_ms / chunk_tokens, 3))
                     t_prev_chunk = t_now
 
                 # Extract token usage if provided in final chunk
@@ -305,7 +339,27 @@ class BenchmarkOrchestrator:
                 prompt_tokens = max(10, int(len(prompt.split()) * 1.3))
 
             decode_duration_ms = max(0.001, (t_last - (t_first_chunk or t_last)) * 1000.0)
-            tpot_ms = round(decode_duration_ms / max(1, completion_tokens), 3)
+            if t_first_chunk is None or t_first_chunk == t_last:
+                tpot_ms = round((t_last - t_request_sent) * 1000.0 / max(1, completion_tokens), 3)
+            else:
+                tpot_ms = round(decode_duration_ms / max(1, completion_tokens), 3)
+
+            # Prefill Token Velocity (Prompt tok/s)
+            prefill_tps = round(prompt_tokens / max(0.0001, (ttft_ms / 1000.0)), 1) if ttft_ms > 0 else None
+
+            # Structured JSON validation check if requested
+            schema_valid = None
+            is_json_workload = (
+                config.workload_preset in ("structured_json", "json_schema", WorkloadPreset.STRUCTURED_JSON, WorkloadPreset.JSON_SCHEMA)
+                or config.json_schema is not None
+            )
+            if is_json_workload:
+                full_text = "".join(collected_tokens).strip()
+                try:
+                    json.loads(full_text)
+                    schema_valid = True
+                except Exception:
+                    schema_valid = False
 
             cost_usd = CostGuard.calculate_request_cost(
                 config.model,
@@ -328,8 +382,12 @@ class BenchmarkOrchestrator:
                 request_id=req_id,
                 status_code=200,
                 is_error=False,
+                is_rate_limit=False,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
+                thinking_tokens=thinking_token_count,
+                prefill_tps=prefill_tps,
+                schema_valid=schema_valid,
                 waterfall=waterfall,
                 ttft_ms=ttft_ms,
                 ttfa_ms=ttfa_ms,
@@ -343,11 +401,26 @@ class BenchmarkOrchestrator:
 
         except Exception as e:
             t_last = time.perf_counter()
+            err_str = str(e)
+            is_429 = "429" in err_str or "rate limit" in err_str.lower() or "too many requests" in err_str.lower() or "quota" in err_str.lower()
+            status_code = 429 if is_429 else getattr(e, "status_code", 500)
+            
+            # Extract Retry-After if present in message
+            retry_ms = None
+            retry_match = re.search(r"Retry-After[:\s]+([\d\.]+)", err_str, re.IGNORECASE)
+            if retry_match:
+                try:
+                    retry_ms = float(retry_match.group(1)) * 1000.0
+                except Exception:
+                    pass
+
             return SingleRequestMetric(
                 request_id=req_id,
-                status_code=500,
-                is_error=True,
-                error_message=str(e),
+                status_code=status_code,
+                is_error=not is_429,
+                is_rate_limit=is_429,
+                retry_after_ms=retry_ms,
+                error_message=err_str,
                 e2e_ms=round((t_last - t_request_sent) * 1000.0, 2),
                 meets_slo=False,
             )

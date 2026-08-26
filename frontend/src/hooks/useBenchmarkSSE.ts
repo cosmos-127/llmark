@@ -10,6 +10,12 @@ export interface TimeSeriesPoint {
   tps: number;
   goodput: number;
   spend: number;
+  rate_limit_pct?: number;
+  rpm?: number;
+  tpm?: number;
+  prefill_tps_p95?: number;
+  schema_validity_pct?: number;
+  thinking_tokens_avg?: number;
 }
 
 export function useBenchmarkSSE(benchmarkId: string | null, onComplete?: (finalSnapshot: MetricsSnapshot) => void) {
@@ -71,6 +77,12 @@ export function useBenchmarkSSE(benchmarkId: string | null, onComplete?: (finalS
             tps: data.current_tps,
             goodput: data.goodput_pct,
             spend: data.current_spend_usd,
+            rate_limit_pct: data.rate_limit_pct,
+            rpm: data.current_rpm || (data.current_rps || 0) * 60,
+            tpm: data.current_tpm,
+            prefill_tps_p95: data.prefill_tps_p95,
+            schema_validity_pct: data.schema_validity_pct,
+            thinking_tokens_avg: data.thinking_tokens_avg,
           },
         ]);
       } catch (err) {

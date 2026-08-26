@@ -19,7 +19,9 @@ class AnthropicAdapter(VendorAdapter):
         config: BenchmarkConfig,
         prompt: str,
     ) -> AsyncIterator[TokenEvent]:
-        api_key = credential.api_key if credential and credential.api_key else "EMPTY"
+        api_key = credential.api_key if credential and credential.api_key else ""
+        if not api_key:
+            raise ValueError("Anthropic API key is strictly required for this vendor.")
 
         client = AsyncAnthropic(
             api_key=api_key,

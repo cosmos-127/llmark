@@ -11,6 +11,8 @@ import {
   ShieldCheck,
   Clock,
   Layers,
+  Sparkles,
+  Braces,
   Copy,
   Check,
   Download,
@@ -38,6 +40,7 @@ interface KpiSummaryTableProps {
 
 export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, config }) => {
   const [copied, setCopied] = useState(false);
+  const preset = (snapshot?.workload_preset || config.workload_preset || "chat") as string;
 
   const ttftP95 = snapshot?.ttft_p95 || 0;
   const maxTtftSLO = config.slo.max_ttft_ms;
@@ -62,7 +65,21 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
   const isSpendProtected = currentSpend <= hardCap;
 
   const handleCopyTable = async () => {
-    const markdownTable = `
+    let markdownTable = "";
+
+    if (preset === "rate_limit_probe") {
+      markdownTable = `
+| Category | Metric | Measured Value | Quota / Ceiling | Compliance |
+| :--- | :--- | :--- | :--- | :--- |
+| **Rate Limit** | HTTP 429 Rate Limit % | ${formatPct(snapshot?.rate_limit_pct || 0)} | ${snapshot?.rate_limit_count || 0} throttled requests | ${snapshot?.rate_limit_count ? "THROTTLED" : "OPTIMAL"} |
+| **Rate Limit** | Request Rate Saturation (RPM) | ${(snapshot?.current_rpm || (snapshot?.current_rps || 0) * 60).toFixed(0)} req/min | Ceiling: ${snapshot?.estimated_rpm_limit ? `${snapshot.estimated_rpm_limit} RPM` : "Unbounded"} | ACTIVE |
+| **Rate Limit** | Token Rate Saturation (TPM) | ${Math.round(snapshot?.current_tpm || 0).toLocaleString()} tok/min | Ceiling: ${snapshot?.estimated_tpm_limit ? `${snapshot.estimated_tpm_limit} TPM` : "Unbounded"} | ACTIVE |
+| **Rate Limit** | Status Code Distribution | 200 OK: ${snapshot?.status_distribution?.["200"] || snapshot?.completed_requests || 0} | 429: ${snapshot?.status_distribution?.["429"] || snapshot?.rate_limit_count || 0} | 5xx: ${snapshot?.status_distribution?.["500"] || 0} |
+| **Reliability** | Non-Throttled Goodput | ${formatPct(snapshot?.goodput_pct)} | ${snapshot?.completed_requests} passed / ${snapshot?.failed_requests} failed | ${isGoodputOptimal ? "OPTIMAL" : "THROTTLED"} |
+| **Economics** | Micro-Probing Total Spend | ${formatUsd(snapshot?.current_spend_usd)} | Hard Cap: ${formatUsd(hardCap)} | ${isSpendProtected ? "PROTECTED" : "CAP REACHED"} |
+`.trim();
+    } else {
+      markdownTable = `
 | Category | Metric | P50 / Nominal | P95 / Tail | SLO Target | Compliance |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Latency** | Time to First Token (TTFT) | ${formatMs(snapshot?.ttft_p50)} | ${formatMs(snapshot?.ttft_p95)} (P99: ${formatMs(snapshot?.ttft_p99)}) | ≤ ${formatMs(maxTtftSLO)} | ${isTtftPass ? "PASSED" : "EXCEEDED"} |
@@ -78,6 +95,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
 | **Waterfall** | TLS Crypto Handshake | ${formatMs(snapshot?.waterfall_avg?.tls_ms)} | TLS 1.3 negotiation | — | OPTIMAL |
 | **Economics** | Total Billed Spend | ${formatUsd(snapshot?.current_spend_usd)} | Hard Cap: ${formatUsd(hardCap)} | ≤ ${formatUsd(hardCap)} | ${isSpendProtected ? "PROTECTED" : "CAP REACHED"} |
 `.trim();
+    }
 
     await navigator.clipboard.writeText(markdownTable);
     setCopied(true);
@@ -97,7 +115,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                 Executive KPI Benchmark Telemetry Matrix
               </CardTitle>
               <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                Detailed latency percentiles, throughput velocity, SLO yield compliance, and token economics
+                Workload-targeted metrics telemetry profile: {preset.replace("_", " ")}
               </CardDescription>
             </div>
           </div>
@@ -138,7 +156,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   P50 / Nominal
                 </TableHead>
                 <TableHead className="w-[22%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
-                  Tail Latency (P95 / P99)
+                  Tail / Saturated Rate
                 </TableHead>
                 <TableHead className="w-[13%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
                   SLO Target
@@ -151,225 +169,505 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
 
             <TableBody className="text-xs">
               {/* ========================================================================= */}
-              {/* 1. LATENCY & RESPONSIVENESS GROUP                                         */}
+              {/* SPECIALIZED PROFILE 1: RATE LIMIT & CAPACITY PROBING                      */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
-                  <div className="flex items-center gap-1.5">
-                    <Gauge className="h-3.5 w-3.5" />
-                    <span>1. Latency & Responsiveness Dynamics</span>
-                  </div>
-                </TableCell>
-              </TableRow>
+              {preset === "rate_limit_probe" && (
+                <>
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                      <div className="flex items-center gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        <span>1. Rate Limiting & Quota Saturation Probing</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
 
-              {/* TTFT */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Token (TTFT)</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Prefill computation + socket handshake before first token stream arrives
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  {formatMs(snapshot?.ttft_p50)}
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
-                  <span>P95: <strong>{formatMs(snapshot?.ttft_p95)}</strong></span>
-                  <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
-                  <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.ttft_p99)}</span>
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                  ≤ {formatMs(maxTtftSLO)}
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant={isTtftPass ? "emerald" : "destructive"} className="text-[10px] font-mono">
-                    {isTtftPass ? "Passed" : "Breached"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
+                  {/* 429 Rate */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">HTTP 429 Rate Limit %</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Proportion of probing requests throttled by provider rate limiters
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {formatPct(snapshot?.rate_limit_pct || 0)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      {snapshot?.rate_limit_count || 0} throttled requests
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                      0.0% (Zero Throttling)
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={(snapshot?.rate_limit_count || 0) === 0 ? "emerald" : "destructive"} className="text-[10px] font-mono">
+                        {(snapshot?.rate_limit_count || 0) === 0 ? "Passed" : "Throttled"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
 
-              {/* TTFA (Reasoning Models) */}
-              {snapshot?.ttfa_p50 !== null && snapshot?.ttfa_p50 !== undefined && (
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Answer (TTFA)</span>
-                    </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                      Elapsed latency until thinking reasoning trace concludes & user answer starts
-                    </p>
-                  </TableCell>
-                  <TableCell className="font-mono font-bold text-sm text-[#612D53] dark:text-[#C57BB2]">
-                    {formatMs(snapshot?.ttfa_p50)}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
-                    P95: <strong>{formatMs(snapshot?.ttfa_p95)}</strong>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
-                    —
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <Badge variant="secondary" className="text-[10px] font-mono">Reasoning</Badge>
-                  </TableCell>
-                </TableRow>
+                  {/* Saturated RPM */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Saturated Request Rate (RPM)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Probed request frequency per minute under concurrent load
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {(snapshot?.current_rpm || (snapshot?.current_rps || 0) * 60).toFixed(0)} req/min
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      {snapshot?.estimated_rpm_limit ? `Ceiling ~${snapshot.estimated_rpm_limit.toFixed(0)} RPM` : "Unbounded capacity"}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant="secondary" className="text-[10px] font-mono">Active</Badge>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Saturated TPM */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Saturated Token Rate (TPM)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Aggregate prompt + generation token volume consumed per minute
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {Math.round(snapshot?.current_tpm || 0).toLocaleString()} tok/min
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      {snapshot?.estimated_tpm_limit ? `Ceiling ~${snapshot.estimated_tpm_limit.toFixed(0)} TPM` : "Probing volume"}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant="secondary" className="text-[10px] font-mono">Active</Badge>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Status Code Breakdown */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Status Code Matrix</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        HTTP response status code distribution across all probing pings
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      200 OK: {snapshot?.status_distribution?.["200"] || snapshot?.completed_requests || 0}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      429: {snapshot?.status_distribution?.["429"] || snapshot?.rate_limit_count || 0} • 5xx: {snapshot?.status_distribution?.["500"] || 0}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                      200 OK Only
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={(snapshot?.rate_limit_count || 0) === 0 ? "emerald" : "destructive"} className="text-[10px] font-mono">
+                        {(snapshot?.rate_limit_count || 0) === 0 ? "Clean 200s" : "429 Detected"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                </>
               )}
 
-              {/* TPOT */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time Per Output Token (TPOT)</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Hardware decode cycle duration (inverse of single-stream generation speed)
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  {formatMs(snapshot?.tpot_mean)} / tok
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
-                  Mean decode throughput
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                  ≤ {formatMs(maxTpotSLO)}
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant={isTpotPass ? "emerald" : "destructive"} className="text-[10px] font-mono">
-                    {isTpotPass ? "Passed" : "Breached"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
+              {/* ========================================================================= */}
+              {/* SPECIALIZED PROFILE 2: PREFILL & TTFT                                      */}
+              {/* ========================================================================= */}
+              {preset === "prefill_ttft" && (
+                <>
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                      <div className="flex items-center gap-1.5">
+                        <Layers className="h-3.5 w-3.5" />
+                        <span>1. KV Cache Prefill & Time to First Token</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
 
-              {/* ITL */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Inter-Token Latency (ITL / Jitter)</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Delta spacing between consecutive streaming chunks (delivery smoothness)
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  {formatMs(snapshot?.itl_p50)}
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
-                  <span>P95: <strong>{formatMs(snapshot?.itl_p95)}</strong></span>
-                  <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
-                  <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.itl_p99)}</span>
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
-                  —
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant={isItlSmooth ? "emerald" : "violet"} className="text-[10px] font-mono">
-                    {isItlSmooth ? "Smooth" : "Jitter"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
+                  {/* TTFT */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Token (TTFT)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Heavy prompt ingestion + socket handshake before first token stream begins
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {formatMs(snapshot?.ttft_p50)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      <span>P95: <strong>{formatMs(snapshot?.ttft_p95)}</strong></span>
+                      <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
+                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.ttft_p99)}</span>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                      ≤ {formatMs(maxTtftSLO)}
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={isTtftPass ? "emerald" : "destructive"} className="text-[10px] font-mono">
+                        {isTtftPass ? "Passed" : "Breached"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
 
-              {/* Max ITL Freeze */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Max Token Stream Freeze</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    The single longest latency freeze/stall experienced between any two tokens
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
-                  {formatMs(snapshot?.max_itl)}
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                  Peak worst pause
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                  ≤ 200.0 ms
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant={isItlSmooth ? "secondary" : "destructive"} className="text-[10px] font-mono">
-                    {isItlSmooth ? "No Stall" : "Stall Detected"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
+                  {/* Prefill TPS */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Prefill Processing Velocity</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        KV cache memory ingestion speed in prompt tokens per second
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400">
+                      {snapshot?.prefill_tps_p50 ? `${snapshot.prefill_tps_p50.toFixed(0)} tok/s` : "Computing..."}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      P95: {snapshot?.prefill_tps_p95 ? `${snapshot.prefill_tps_p95.toFixed(0)} tok/s` : "—"}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant="emerald" className="text-[10px] font-mono">Hardware Prefill</Badge>
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
 
               {/* ========================================================================= */}
-              {/* 2. THROUGHPUT & TRANSACTIONAL CAPACITY                                    */}
+              {/* SPECIALIZED PROFILE 3: REASONING & COT                                     */}
+              {/* ========================================================================= */}
+              {preset === "reasoning_cot" && (
+                <>
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>1. Reasoning & Chain-of-Thought Dynamics</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* TTFA */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Answer (TTFA)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Elapsed latency until thinking reasoning trace concludes & user answer starts
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#612D53] dark:text-[#C57BB2]">
+                      {formatMs(snapshot?.ttfa_p50 || snapshot?.ttft_p50)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      P95: <strong>{formatMs(snapshot?.ttfa_p95 || snapshot?.ttft_p95)}</strong>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant="secondary" className="text-[10px] font-mono">User Wait</Badge>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Thinking Tokens */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Thinking Tokens per Query</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Average internal Chain-of-Thought tokens allocated before response output
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {snapshot?.thinking_tokens_avg ? `${snapshot.thinking_tokens_avg.toFixed(0)} tok` : "—"}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      {snapshot?.thinking_token_ratio_pct ? `${snapshot.thinking_token_ratio_pct.toFixed(1)}% of total output` : "Measuring..."}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant="secondary" className="text-[10px] font-mono">CoT Budget</Badge>
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
+
+              {/* ========================================================================= */}
+              {/* SPECIALIZED PROFILE 4: STRUCTURED JSON                                     */}
+              {/* ========================================================================= */}
+              {(preset === "structured_json" || preset === "json_schema") && (
+                <>
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                      <div className="flex items-center gap-1.5">
+                        <Braces className="h-3.5 w-3.5" />
+                        <span>1. Structured JSON & Guided Grammar Compliance</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Schema Validity */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">JSON Schema Syntax Validity</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Proportion of output responses that strictly parsed as valid JSON
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400">
+                      {formatPct(snapshot?.schema_validity_pct ?? 100)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      {snapshot?.schema_error_count || 0} syntax parsing errors
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                      100.0% (Zero Errors)
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={(snapshot?.schema_error_count || 0) === 0 ? "emerald" : "destructive"} className="text-[10px] font-mono">
+                        {(snapshot?.schema_error_count || 0) === 0 ? "Valid Schema" : "Parse Failures"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
+
+              {/* ========================================================================= */}
+              {/* DEFAULT / STANDARD PROFILES (CHAT, DECODE, RAG, CUSTOM)                   */}
+              {/* ========================================================================= */}
+              {preset !== "rate_limit_probe" && preset !== "prefill_ttft" && preset !== "reasoning_cot" && (
+                <>
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                      <div className="flex items-center gap-1.5">
+                        <Gauge className="h-3.5 w-3.5" />
+                        <span>1. Latency & Responsiveness Dynamics</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* TTFT */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Token (TTFT)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Prefill computation + socket handshake before first token stream arrives
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {formatMs(snapshot?.ttft_p50)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      <span>P95: <strong>{formatMs(snapshot?.ttft_p95)}</strong></span>
+                      <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
+                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.ttft_p99)}</span>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                      ≤ {formatMs(maxTtftSLO)}
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={isTtftPass ? "emerald" : "destructive"} className="text-[10px] font-mono">
+                        {isTtftPass ? "Passed" : "Breached"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* TPOT */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time Per Output Token (TPOT)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Hardware decode cycle duration (inverse of single-stream generation speed)
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {formatMs(snapshot?.tpot_mean)} / tok
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      Mean decode throughput
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                      ≤ {formatMs(maxTpotSLO)}
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={isTpotPass ? "emerald" : "destructive"} className="text-[10px] font-mono">
+                        {isTpotPass ? "Passed" : "Breached"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* ITL */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Inter-Token Latency (ITL / Jitter)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Delta spacing between consecutive streaming chunks (delivery smoothness)
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {formatMs(snapshot?.itl_p50)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                      <span>P95: <strong>{formatMs(snapshot?.itl_p95)}</strong></span>
+                      <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
+                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.itl_p99)}</span>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={isItlSmooth ? "emerald" : "violet"} className="text-[10px] font-mono">
+                        {isItlSmooth ? "Smooth" : "Jitter"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Max ITL Freeze */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Max Token Stream Freeze</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        The single longest latency freeze/stall experienced between any two tokens
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                      {formatMs(snapshot?.max_itl)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                      Peak worst pause
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                      ≤ 200.0 ms
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant={isItlSmooth ? "secondary" : "destructive"} className="text-[10px] font-mono">
+                        {isItlSmooth ? "No Stall" : "Stall Detected"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
+
+              {/* ========================================================================= */}
+              {/* THROUGHPUT & CLUSTER CAPACITY (FOR DECODE & MULTI-STREAM RUNS)            */}
+              {/* ========================================================================= */}
+              {preset !== "rate_limit_probe" && (
+                <>
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
+                      <div className="flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5" />
+                        <span>2. Throughput & Cluster Capacity</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* TPS */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Decode Token Velocity (TPS)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Cluster-wide aggregate generation output tokens per second across all workers
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
+                      {(snapshot?.current_tps || 0).toFixed(1)} tok/s
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
+                      Active aggregate
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant="emerald" className="text-[10px] font-mono">Active</Badge>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* RPS */}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Request Throughput (RPS)</span>
+                      </div>
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                        Completed transactional volume per elapsed wall-clock second
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
+                      {(snapshot?.current_rps || 0).toFixed(1)} req/s
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
+                      {config.concurrency} concurrent streams
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                      —
+                    </TableCell>
+                    <TableCell className="text-right pr-4">
+                      <Badge variant="secondary" className="text-[10px] font-mono">Sustained</Badge>
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
+
+              {/* ========================================================================= */}
+              {/* COMMON SECTION: RELIABILITY & STRICT SLO YIELD                            */}
               {/* ========================================================================= */}
               <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
                 <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
                   <div className="flex items-center gap-1.5">
-                    <Zap className="h-3.5 w-3.5" />
-                    <span>2. Throughput & Cluster Capacity</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-
-              {/* TPS */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Decode Token Velocity (TPS)</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Cluster-wide aggregate generation output tokens per second across all workers
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
-                  {(snapshot?.current_tps || 0).toFixed(1)} tok/s
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
-                  Active aggregate
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
-                  —
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant="emerald" className="text-[10px] font-mono">Active</Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* RPS */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Request Throughput (RPS)</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Completed transactional volume per elapsed wall-clock second
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
-                  {(snapshot?.current_rps || 0).toFixed(1)} req/s
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
-                  {config.concurrency} concurrent streams
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
-                  —
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant="secondary" className="text-[10px] font-mono">Sustained</Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* ========================================================================= */}
-              {/* 3. RELIABILITY & STRICT SLO YIELD                                         */}
-              {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="h-3.5 w-3.5" />
+                    <CheckCircle2 className="h-3.5 w-3.5" />
                     <span>3. Reliability & Strict SLO Compliance</span>
                   </div>
                 </TableCell>
@@ -383,7 +681,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Goodput % (SLO Yield Rate)</span>
                   </div>
                   <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Percentage of total requests strictly satisfying TTFT, TPOT, E2E & error SLAs
+                    Percentage of total requests strictly satisfying latency, syntax & error thresholds
                   </p>
                 </TableCell>
                 <TableCell className="font-mono font-bold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
@@ -430,100 +728,13 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               </TableRow>
 
               {/* ========================================================================= */}
-              {/* 4. NETWORK TRANSPORT WATERFALL (DNS, TCP, TLS)                            */}
-              {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
-                  <div className="flex items-center gap-1.5">
-                    <Globe className="h-3.5 w-3.5" />
-                    <span>4. Physical Network Transport Waterfall</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-
-              {/* DNS */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">DNS Hostname Lookup</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    Domain name to socket IP resolution latency
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
-                  {formatMs(snapshot?.waterfall_avg?.dns_ms)}
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                  Socket connect stage
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
-                  —
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant="secondary" className="text-[10px] font-mono">Optimal</Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* TCP */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">TCP Connection Handshake</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    SYN / ACK round-trip socket connection establish
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
-                  {formatMs(snapshot?.waterfall_avg?.tcp_ms)}
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                  Socket connect stage
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
-                  —
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant="secondary" className="text-[10px] font-mono">Optimal</Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* TLS */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">TLS Crypto Handshake</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
-                    TLS 1.3 cryptographic key negotiation and cipher exchange
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono font-bold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
-                  {formatMs(snapshot?.waterfall_avg?.tls_ms)}
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                  Cryptographic handshake
-                </TableCell>
-                <TableCell className="font-mono text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
-                  —
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant="secondary" className="text-[10px] font-mono">Optimal</Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* ========================================================================= */}
-              {/* 5. FINANCIAL SPEND & TOKEN ECONOMICS                                      */}
+              {/* COMMON SECTION: FINANCIAL SPEND & TOKEN ECONOMICS                         */}
               {/* ========================================================================= */}
               <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
                 <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[10px] font-sans">
                   <div className="flex items-center gap-1.5">
                     <Coins className="h-3.5 w-3.5" />
-                    <span>5. Financial Spend & Token Economics</span>
+                    <span>4. Financial Spend & Token Economics</span>
                   </div>
                 </TableCell>
               </TableRow>

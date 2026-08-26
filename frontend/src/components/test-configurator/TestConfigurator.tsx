@@ -88,60 +88,87 @@ const PRESET_OPTIONS: {
   promptTokens: number;
   genTokens: number;
   tag: string;
+  metrics: string[];
 }[] = [
   {
-    id: "chat",
-    name: "Interactive chat",
-    desc: "Real-time conversational streaming responsiveness & fast decode",
-    icon: MessageSquare,
-    promptTokens: 200,
-    genTokens: 150,
-    tag: "Low prefill / fast decode",
+    id: "rate_limit_probe",
+    name: "Rate Limit & Quota Probing",
+    desc: "Micro-token calls (5 in / 2 out) probing HTTP 429 ceilings, RPM/TPM saturation & backoff delays",
+    icon: ShieldCheck,
+    promptTokens: 5,
+    genTokens: 2,
+    tag: "Micro-cost / 429 probe",
+    metrics: ["HTTP 429 %", "Saturated RPM", "Saturated TPM", "Status Codes"],
   },
   {
-    id: "rag",
-    name: "RAG synthesis",
-    desc: "Heavy document context prefill & KV cache memory loading",
+    id: "prefill_ttft",
+    name: "Prefill Scaling & TTFT",
+    desc: "Heavy document context with 1-token output isolating KV prefill velocity & TTFT percentiles",
+    icon: Layers,
+    promptTokens: 4000,
+    genTokens: 2,
+    tag: "Prefill & TTFT focus",
+    metrics: ["TTFT P95/P99", "Prefill tok/s", "DNS/TCP/TLS", "Goodput"],
+  },
+  {
+    id: "decode_throughput",
+    name: "Streaming Decode & Jitter",
+    desc: "Light prompt with long decode stream measuring decode TPS, ITL percentiles & max token freezes",
+    icon: Zap,
+    promptTokens: 40,
+    genTokens: 800,
+    tag: "Decode & ITL focus",
+    metrics: ["Decode tok/s", "ITL P95", "Max Freeze", "TPOT Mean"],
+  },
+  {
+    id: "reasoning_cot",
+    name: "Reasoning & CoT Deep-Dive",
+    desc: "Chain-of-thought prompts measuring Time to First Answer (TTFA), thinking duration & token budget",
+    icon: Sparkles,
+    promptTokens: 300,
+    genTokens: 800,
+    tag: "Reasoning & TTFA",
+    metrics: ["TTFA P95", "Thinking tok/s", "Reasoning Ratio", "Goodput"],
+  },
+  {
+    id: "rag_synthesis",
+    name: "Enterprise RAG Synthesis",
+    desc: "Heavy document context prefill & KV cache memory loading with synthesized answers",
     icon: FileSearch,
     promptTokens: 3500,
     genTokens: 400,
-    tag: "High prefill / context heavy",
+    tag: "Context heavy / RAG",
+    metrics: ["E2E Latency", "TTFT P95", "Decode TPS", "Goodput"],
   },
   {
-    id: "code",
-    name: "Code generation",
-    desc: "Sustained long-sequence token decode throughput",
-    icon: Code2,
-    promptTokens: 1200,
-    genTokens: 800,
-    tag: "Long decode stream",
-  },
-  {
-    id: "long_context",
-    name: "Long-context",
-    desc: "Extreme KV cache pressure & tail degradation stress test",
-    icon: BookOpen,
-    promptTokens: 16000,
-    genTokens: 500,
-    tag: "Extreme KV pressure",
-  },
-  {
-    id: "vision",
-    name: "Vision multimodal",
-    desc: "Image patch token encoding & visual prefill latency",
-    icon: Image,
-    promptTokens: 1600,
-    genTokens: 300,
-    tag: "Image encoding + text",
-  },
-  {
-    id: "json_schema",
-    name: "Structured JSON",
-    desc: "Guided grammar constrained decoding overhead penalty",
+    id: "structured_json",
+    name: "Structured JSON & Grammar",
+    desc: "Guided grammar decoding measuring JSON syntax validity compliance & constrained decode speed",
     icon: Braces,
-    promptTokens: 800,
-    genTokens: 400,
+    promptTokens: 600,
+    genTokens: 300,
     tag: "Grammar constraint",
+    metrics: ["Schema Validity %", "Constrained TPS", "TPOT Mean", "Parse Errors"],
+  },
+  {
+    id: "chat_interactive",
+    name: "Interactive Conversational",
+    desc: "Real-time conversational streaming responsiveness, reading speed & decode smoothness",
+    icon: MessageSquare,
+    promptTokens: 200,
+    genTokens: 150,
+    tag: "Human conversational",
+    metrics: ["TTFT P95", "ITL P95", "TPOT", "Goodput"],
+  },
+  {
+    id: "custom",
+    name: "Custom Workload",
+    desc: "User-defined prompt payload, custom token bounds & full telemetry matrix",
+    icon: Sliders,
+    promptTokens: 500,
+    genTokens: 500,
+    tag: "User custom",
+    metrics: ["TTFT P95", "ITL P95", "Decode tok/s", "Full Suite"],
   },
 ];
 
@@ -993,7 +1020,16 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       return (
                         <div
                           key={preset.id}
-                          onClick={() => onChange({ ...config, workload_preset: preset.id })}
+                          onClick={() => {
+                            const newConfig = { ...config, workload_preset: preset.id };
+                            if (preset.id === "rate_limit_probe") {
+                              newConfig.max_tokens = 2;
+                              newConfig.concurrency = Math.max(10, config.concurrency);
+                            } else if (preset.id === "prefill_ttft") {
+                              newConfig.max_tokens = 2;
+                            }
+                            onChange(newConfig);
+                          }}
                           className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between relative overflow-hidden group font-sans active:scale-[0.99] ${
                             isSelected
                               ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/50 dark:border-[#A74B6A]/50 shadow-xs ring-1 ring-[#853953]/30 dark:ring-[#A74B6A]/40 text-[#853953] dark:text-[#A74B6A]"
@@ -1015,23 +1051,50 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 <div>
                                   <div className="text-xs font-bold">{preset.name}</div>
                                   <div className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-mono">
-                                    {(preset.promptTokens + preset.genTokens).toLocaleString()} tok total
+                                    {(preset.promptTokens + preset.genTokens).toLocaleString()} tok baseline
                                   </div>
                                 </div>
                               </div>
-                              {isSelected && <span className="h-2 w-2 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />}
+                              {isSelected ? (
+                                <Badge variant="default" className="text-[10px] px-1.5 py-0 h-5 font-mono">Active</Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                                  {preset.tag}
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed pt-1">{preset.desc}</p>
+
+                            {/* Targeted Metrics Pill List */}
+                            <div className="pt-2">
+                              <div className="text-[10px] font-mono text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 mb-1 font-semibold uppercase tracking-wider">
+                                Metrics Shown in UI:
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {preset.metrics.map((m) => (
+                                  <span
+                                    key={m}
+                                    className={`text-[10px] font-mono px-1.5 py-0.5 rounded-md border ${
+                                      isSelected
+                                        ? "bg-[#853953]/20 dark:bg-[#A74B6A]/25 border-[#853953]/40 text-[#853953] dark:text-[#A74B6A] font-semibold"
+                                        : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70"
+                                    }`}
+                                  >
+                                    {m}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
                           </div>
 
                           {/* Token Ratio Mini Bar */}
                           <div className="mt-4 pt-3 border-t border-[#F3F4F4] dark:border-[#F3F4F4]/10 space-y-1.5">
                             <div className="flex justify-between text-[11px] font-mono">
                               <span className="text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                                Prompt: <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">{preset.promptTokens.toLocaleString()}</strong>
+                                In: <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">{preset.promptTokens.toLocaleString()}</strong>
                               </span>
                               <span className="text-[#853953] dark:text-[#A74B6A]">
-                                Gen: <strong>{preset.genTokens.toLocaleString()}</strong>
+                                Out: <strong>{preset.genTokens.toLocaleString()}</strong>
                               </span>
                             </div>
                             <div className="h-1.5 w-full rounded-full bg-[#F3F4F4] dark:bg-[#2C2C2C] flex overflow-hidden border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">

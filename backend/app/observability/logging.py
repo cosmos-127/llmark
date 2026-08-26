@@ -10,18 +10,28 @@ SENSITIVE_PATTERNS = [
 ]
 
 
+def _sanitize_recursive(data: Any) -> Any:
+    if isinstance(data, dict):
+        new_dict = {}
+        for k, v in data.items():
+            if any(p.search(str(k)) for p in SENSITIVE_PATTERNS):
+                new_dict[k] = "[MASKED_CREDENTIAL]"
+            else:
+                new_dict[k] = _sanitize_recursive(v)
+        return new_dict
+    elif isinstance(data, list):
+        return [_sanitize_recursive(item) for item in data]
+    elif isinstance(data, str):
+        for pattern in SENSITIVE_PATTERNS:
+            if pattern.search(data) and len(data) > 8:
+                return f"{data[:4]}...[MASKED]"
+        return data
+    else:
+        return data
+
 def sanitize_sensitive_data(_: Any, __: str, event_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Scrub sensitive credentials and API keys from all structured log outputs."""
-    for key, value in event_dict.items():
-        if isinstance(value, str):
-            for pattern in SENSITIVE_PATTERNS:
-                if pattern.search(value) and len(value) > 8:
-                    event_dict[key] = f"{value[:4]}...[MASKED]"
-        elif isinstance(value, dict):
-            for sub_key in list(value.keys()):
-                if any(p.search(sub_key) for p in SENSITIVE_PATTERNS):
-                    value[sub_key] = "[MASKED_CREDENTIAL]"
-    return event_dict
+    return _sanitize_recursive(event_dict)
 
 
 def setup_logging(debug: bool = False) -> None:

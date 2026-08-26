@@ -14,13 +14,107 @@ class VendorType(str, Enum):
 
 
 class WorkloadPreset(str, Enum):
-    CHAT = "chat"                   # ~200 in / ~150 out
-    RAG = "rag"                     # ~3,500 in / ~400 out
-    CODE = "code"                   # ~1,200 in / ~800 out
-    LONG_CONTEXT = "long_context"   # ~16k-32k in / ~500 out
-    VISION = "vision"               # 1080p chart image + prompt
-    JSON_SCHEMA = "json_schema"     # Pydantic structured output
-    CUSTOM = "custom"               # User-provided prompt
+    # Specialized Workload Profiles
+    RATE_LIMIT_PROBE = "rate_limit_probe"  # Micro-calls (5 in / 1-2 out) to probe 429 rate limits, RPM/TPM saturation & ceilings
+    PREFILL_TTFT = "prefill_ttft"          # Heavy prompt / tiny decode (4k-16k in / 1-2 out) to isolate TTFT & prefill tok/s
+    DECODE_THROUGHPUT = "decode_throughput"# Light prompt / long decode (30 in / 1k out) for sustained decode tok/s & ITL jitter
+    REASONING_COT = "reasoning_cot"        # Reasoning models (o1/o3/R1) to measure TTFA, thinking phase & reasoning token ratio
+    RAG_SYNTHESIS = "rag_synthesis"        # Heavy document retrieval context (3.5k in / 400 out)
+    STRUCTURED_JSON = "structured_json"    # Guided grammar decoding with JSON schema constraint validation
+    CHAT_INTERACTIVE = "chat_interactive"  # Standard balanced conversational (~200 in / ~150 out)
+    # Legacy / alias presets for backwards compatibility
+    CHAT = "chat"
+    RAG = "rag"
+    CODE = "code"
+    LONG_CONTEXT = "long_context"
+    VISION = "vision"
+    JSON_SCHEMA = "json_schema"
+    CUSTOM = "custom"
+
+
+# Metadata profile mapping defining exact target metrics displayed per workload
+WORKLOAD_METRIC_PROFILES: Dict[str, Dict[str, Any]] = {
+    WorkloadPreset.RATE_LIMIT_PROBE.value: {
+        "name": "Rate Limit & Quota Probing",
+        "tagline": "Micro-token calls probing HTTP 429 thresholds, RPM/TPM capacity & backoff delays",
+        "target_metrics": ["rate_limit_pct", "rate_limit_count", "current_rpm", "current_tpm", "status_distribution", "current_spend_usd"],
+        "default_in_tokens": 5,
+        "default_out_tokens": 2,
+        "default_concurrency": 15,
+        "default_max_tokens": 2,
+        "default_duration": 20,
+    },
+    WorkloadPreset.PREFILL_TTFT.value: {
+        "name": "Prefill Scaling & TTFT",
+        "tagline": "Heavy prompt context with 1-token output isolating KV prefill velocity & TTFT percentiles",
+        "target_metrics": ["ttft_p95", "ttft_p50", "ttft_p99", "prefill_tps_p95", "waterfall_avg", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 4000,
+        "default_out_tokens": 2,
+        "default_concurrency": 4,
+        "default_max_tokens": 2,
+        "default_duration": 30,
+    },
+    WorkloadPreset.DECODE_THROUGHPUT.value: {
+        "name": "Streaming Decode & Jitter",
+        "tagline": "Light prompt with long decode stream measuring decode TPS, ITL percentiles & max token freezes",
+        "target_metrics": ["current_tps", "itl_p95", "max_itl", "tpot_mean", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 40,
+        "default_out_tokens": 800,
+        "default_concurrency": 5,
+        "default_max_tokens": 800,
+        "default_duration": 30,
+    },
+    WorkloadPreset.REASONING_COT.value: {
+        "name": "Reasoning & CoT Deep-Dive",
+        "tagline": "Chain-of-Thought prompts measuring Time to First Answer (TTFA), thinking duration & token budget",
+        "target_metrics": ["ttfa_p95", "ttfa_p50", "thinking_tokens_avg", "thinking_token_ratio_pct", "current_tps", "current_spend_usd"],
+        "default_in_tokens": 300,
+        "default_out_tokens": 800,
+        "default_concurrency": 3,
+        "default_max_tokens": 1024,
+        "default_duration": 30,
+    },
+    WorkloadPreset.RAG_SYNTHESIS.value: {
+        "name": "Enterprise RAG Synthesis",
+        "tagline": "Document context ingestion measuring End-to-End latency, prefill/decode split & goodput yield",
+        "target_metrics": ["ttft_p95", "current_tps", "tpot_mean", "goodput_pct", "error_rate_pct", "current_spend_usd"],
+        "default_in_tokens": 3500,
+        "default_out_tokens": 400,
+        "default_concurrency": 4,
+        "default_max_tokens": 512,
+        "default_duration": 30,
+    },
+    WorkloadPreset.STRUCTURED_JSON.value: {
+        "name": "Structured JSON & Grammar",
+        "tagline": "Guided JSON schema decoding measuring syntax validity compliance & constrained decode speed",
+        "target_metrics": ["schema_validity_pct", "current_tps", "tpot_mean", "ttft_p95", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 600,
+        "default_out_tokens": 300,
+        "default_concurrency": 4,
+        "default_max_tokens": 512,
+        "default_duration": 30,
+    },
+    WorkloadPreset.CHAT_INTERACTIVE.value: {
+        "name": "Interactive Conversational",
+        "tagline": "Balanced conversational stream measuring TTFT responsiveness, decode smoothness & reading speed",
+        "target_metrics": ["ttft_p95", "itl_p95", "current_tps", "tpot_mean", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 200,
+        "default_out_tokens": 150,
+        "default_concurrency": 5,
+        "default_max_tokens": 512,
+        "default_duration": 30,
+    },
+    WorkloadPreset.CUSTOM.value: {
+        "name": "Custom Workload",
+        "tagline": "User-defined prompt payload, token limits and full telemetry matrix",
+        "target_metrics": ["ttft_p95", "itl_p95", "current_tps", "max_itl", "goodput_pct", "current_spend_usd"],
+        "default_in_tokens": 500,
+        "default_out_tokens": 500,
+        "default_concurrency": 5,
+        "default_max_tokens": 512,
+        "default_duration": 30,
+    },
+}
 
 
 class LoadCurveType(str, Enum):
@@ -101,9 +195,14 @@ class SingleRequestMetric(BaseModel):
     request_id: str
     status_code: int = 200
     is_error: bool = False
+    is_rate_limit: bool = False
+    retry_after_ms: Optional[float] = None
     error_message: Optional[str] = None
     prompt_tokens: int = 0
     completion_tokens: int = 0
+    thinking_tokens: int = 0
+    prefill_tps: Optional[float] = None
+    schema_valid: Optional[bool] = None
     waterfall: WaterfallTiming = Field(default_factory=WaterfallTiming)
     ttft_ms: float = 0.0
     ttfa_ms: Optional[float] = None
@@ -123,6 +222,8 @@ class MetricsSnapshot(BaseModel):
     failed_requests: int = 0
     current_tps: float = 0.0
     current_rps: float = 0.0
+    current_rpm: float = 0.0
+    current_tpm: float = 0.0
     current_spend_usd: float = 0.0
     waterfall_avg: WaterfallTiming = Field(default_factory=WaterfallTiming)
     ttft_p50: float = 0.0
@@ -139,6 +240,30 @@ class MetricsSnapshot(BaseModel):
     tpot_mean: float = 0.0
     goodput_pct: float = 0.0
     error_rate_pct: float = 0.0
+
+    # Rate Limiting & Capacity Probing Telemetry
+    rate_limit_count: int = 0
+    rate_limit_pct: float = 0.0
+    status_distribution: Dict[str, int] = Field(default_factory=dict)
+    estimated_rpm_limit: Optional[float] = None
+    estimated_tpm_limit: Optional[float] = None
+
+    # Prefill Processing Dynamics
+    prefill_tps_p50: Optional[float] = None
+    prefill_tps_p95: Optional[float] = None
+
+    # Reasoning / Thinking Dynamics
+    thinking_tokens_avg: Optional[float] = None
+    thinking_token_ratio_pct: Optional[float] = None
+    thinking_duration_p50_ms: Optional[float] = None
+
+    # Structured Output & JSON Grammar Compliance
+    schema_validity_pct: Optional[float] = None
+    schema_error_count: int = 0
+
+    # Target Metric Profile Tags for Dynamic Frontend Filtering
+    profile_metrics: List[str] = Field(default_factory=list)
+    workload_preset: Optional[str] = None
 
 
 class CostEstimate(BaseModel):

@@ -86,6 +86,13 @@ export const MODEL_PRICING: Record<string, [number, number]> = {
 };
 
 export const PRESET_TOKEN_PROFILES: Record<WorkloadPreset, [number, number]> = {
+  rate_limit_probe: [5, 2],
+  prefill_ttft: [4000, 2],
+  decode_throughput: [40, 800],
+  reasoning_cot: [300, 800],
+  rag_synthesis: [3500, 400],
+  structured_json: [600, 300],
+  chat_interactive: [200, 150],
   chat: [200, 150],
   rag: [3500, 400],
   code: [1200, 800],

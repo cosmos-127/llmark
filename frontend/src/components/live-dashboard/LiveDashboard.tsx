@@ -235,8 +235,8 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
           )}
         </AnimatePresence>
 
-        {/* 1. Real-Time KPI Metric Cards Row */}
-        <MetricCards snapshot={snapshot} />
+        {/* 1. Real-Time KPI Metric Cards Row (Profile Filtered) */}
+        <MetricCards snapshot={snapshot} workloadPreset={config.workload_preset} />
 
         {/* 2. Interactive View Switcher: Telemetry Table vs Visual Charts */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-4">
@@ -266,8 +266,8 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
             {/* Full-Width Latency Waterfall Profiler */}
             <WaterfallBar waterfall={snapshot?.waterfall_avg} />
 
-            {/* Live Streaming Area Chart */}
-            <StreamingChart data={timeSeries} />
+            {/* Live Streaming Area Chart (Profile Filtered) */}
+            <StreamingChart data={timeSeries} workloadPreset={config.workload_preset} />
           </TabsContent>
 
           {/* Tab 2: Executive Telemetry Matrix Table */}
@@ -279,7 +279,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
           <TabsContent value="all" className="space-y-6 mt-0">
             <KpiSummaryTable snapshot={snapshot} config={config} />
             <WaterfallBar waterfall={snapshot?.waterfall_avg} />
-            <StreamingChart data={timeSeries} />
+            <StreamingChart data={timeSeries} workloadPreset={config.workload_preset} />
           </TabsContent>
         </Tabs>
       </div>

@@ -4,6 +4,13 @@ from app.models.schemas import BenchmarkConfig, CostEstimate, TestMode, Workload
 
 # Approximate token profiles for presets
 PRESET_TOKEN_PROFILES = {
+    WorkloadPreset.RATE_LIMIT_PROBE: (5, 2),
+    WorkloadPreset.PREFILL_TTFT: (4000, 2),
+    WorkloadPreset.DECODE_THROUGHPUT: (40, 800),
+    WorkloadPreset.REASONING_COT: (300, 800),
+    WorkloadPreset.RAG_SYNTHESIS: (3500, 400),
+    WorkloadPreset.STRUCTURED_JSON: (600, 300),
+    WorkloadPreset.CHAT_INTERACTIVE: (200, 150),
     WorkloadPreset.CHAT: (200, 150),
     WorkloadPreset.RAG: (3500, 400),
     WorkloadPreset.CODE: (1200, 800),
