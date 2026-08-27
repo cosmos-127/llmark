@@ -873,8 +873,9 @@ def _normalize_text(text: str) -> str:
     return re.sub(r"[^\w\s]", "", text)
 
 
-def _find_best_knowledge_match(query: str, context_topic: Optional[str]) -> Optional[Dict[str, Any]]:
-    """Accurately finds matching knowledge answer using normalized string comparison, Jaccard overlap, and keyword scoring."""
+def _find_best_knowledge_match(query: str, context_topic: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Accurately finds matching curated knowledge answer only for exact or high-confidence question matches.
+    Never hijacks custom questions with generic topic overviews."""
     q_norm = _normalize_text(query)
     q_words = set(q_norm.split())
 
@@ -882,7 +883,7 @@ def _find_best_knowledge_match(query: str, context_topic: Optional[str]) -> Opti
     stopwords = {"what", "is", "the", "how", "do", "does", "why", "for", "and", "or", "in", "to", "of", "a", "an", "vs", "difference", "between"}
     meaningful_q_words = q_words - stopwords
 
-    # 1. Exact or near-exact question match in dedicated QA items
+    # 1. Exact or high-confidence match in dedicated QA items
     for item in DEDICATED_QA_ITEMS:
         item_q_norm = _normalize_text(item["question"])
         if q_norm == item_q_norm:
@@ -892,42 +893,22 @@ def _find_best_knowledge_match(query: str, context_topic: Optional[str]) -> Opti
         if meaningful_q_words and item_words:
             overlap = len(meaningful_q_words & item_words)
             jaccard = overlap / len(meaningful_q_words | item_words)
-            if jaccard >= 0.55 or (overlap >= 3 and overlap == len(item_words)):
+            if jaccard >= 0.70 or (overlap >= 4 and overlap == len(item_words)):
                 return item
 
-    # 2. Check keyword matches with scoring in dedicated QA
-    best_item = None
-    highest_score = 0
-
-    for item in DEDICATED_QA_ITEMS:
-        score = 0
-        for kw in item["keywords"]:
-            kw_clean = _normalize_text(kw)
-            if kw_clean in q_norm:
-                score += len(kw_clean.split()) * 3
-            elif any(w in q_norm for w in kw_clean.split() if w not in stopwords):
-                score += 1
-        if score > highest_score:
-            highest_score = score
-            best_item = item
-
-    if best_item and highest_score >= 4:
-        return best_item
-
-    # 3. Match against topic articles if context_topic explicitly requested
-    if context_topic:
-        normalized_topic = context_topic.lower().replace("_", "-")
-        for key, article in TOPIC_ARTICLES.items():
-            if normalized_topic in (key, key.replace("-", "")):
-                if len(meaningful_q_words) <= 2 or any(_normalize_text(kw) in q_norm for kw in article["keywords"]):
-                    return article
-
-    # 4. Check topic articles general keyword search
+    # 2. Exact match against curated default questions in topic articles
     for key, article in TOPIC_ARTICLES.items():
-        if any(_normalize_text(kw) in q_norm for kw in article["keywords"]):
+        article_q_norm = _normalize_text(article.get("default_question", ""))
+        if article_q_norm and q_norm == article_q_norm:
             return article
 
+    # If it is a custom question or does not match dedicated questions, return None so it is handled dynamically
     return None
+
+
+# Specifically hardcoded production models for Groq
+GROQ_CHEAPEST_MODEL = "llama-3.1-8b-instant"   # $0.05 / 1M tokens, ultra-fast 800+ tok/s
+GROQ_BEST_MODEL = "llama-3.3-70b-versatile"     # Flagship 70B reasoning & accuracy
 
 
 async def _query_groq_llm(
@@ -937,40 +918,93 @@ async def _query_groq_llm(
     vendor: Optional[str],
     model: Optional[str],
     messages_history: Optional[List[ChatMessage]],
+    custom_base_url: Optional[str] = None,
 ) -> Optional[ExpertQueryResponse]:
-    """Queries Groq Chat Completions API with fast Llama-3.3-70b / Llama-3.1-8b models."""
-    models_to_try = [
-        getattr(settings, "GROQ_MODEL", "llama-3.3-70b-versatile"),
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
-    ]
-    # Deduplicate while preserving order
-    models_to_try = list(dict.fromkeys(models_to_try))
+    """Queries Groq / OpenAI-compatible Chat Completions API with dynamic model discovery and fallback."""
+    # Determine Base URL: custom -> OpenAI if standard sk- -> Groq
+    base_url = custom_base_url
+    is_openai = bool(api_key.startswith("sk-") and not api_key.startswith("gsk_"))
+    if not base_url:
+        base_url = "https://api.openai.com/v1" if is_openai else "https://api.groq.com/openai/v1"
+
+    groq_client = AsyncOpenAI(
+        api_key=api_key,
+        base_url=base_url,
+        timeout=30.0,
+    )
+
+    # 1. Dynamically discover active models from the remote endpoint via models.list()
+    active_remote_models: List[str] = []
+    try:
+        remote_models_resp = await groq_client.models.list()
+        if remote_models_resp and getattr(remote_models_resp, "data", None):
+            for m in remote_models_resp.data:
+                mid = getattr(m, "id", None)
+                if mid and isinstance(mid, str):
+                    mid_lower = mid.lower()
+                    # Filter out non-chat models (whisper, audio, embeddings, moderation)
+                    if not any(x in mid_lower for x in ("whisper", "guard", "embed", "tts", "moderation")):
+                        active_remote_models.append(mid)
+    except Exception as e:
+        logger.debug("Could not dynamically list models from %s: %s", base_url, e)
+
+    # 2. Build prioritized candidate list
+    models_to_try: List[str] = []
+
+    # If user/env specified a model and it makes sense for this endpoint
+    env_model = os.environ.get("GROQ_MODEL") or getattr(settings, "GROQ_MODEL", None)
+    if env_model and env_model.strip():
+        models_to_try.append(env_model.strip())
+
+    if model and model.strip():
+        m_str = model.strip()
+        # Don't try OpenAI model IDs on Groq unless configured
+        if not ("groq" in base_url and m_str.lower().startswith(("gpt-", "o1-", "o3-", "claude-"))):
+            models_to_try.append(m_str)
+
+    if is_openai:
+        models_to_try.extend(["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"])
+    else:
+        # Specifically prioritize the cheapest and best models
+        if active_remote_models:
+            # 1. Cheapest & fastest model if accessible
+            if GROQ_CHEAPEST_MODEL in active_remote_models:
+                models_to_try.append(GROQ_CHEAPEST_MODEL)
+            # 2. Best quality model if accessible
+            if GROQ_BEST_MODEL in active_remote_models:
+                models_to_try.append(GROQ_BEST_MODEL)
+            # 3. Known alternate chat models
+            for pref in ["llama-3.1-70b-versatile", "qwen-2.5-32b", "qwen-2.5-coder-32b", "gpt-oss-20b", "deepseek-r1-distill-qwen-32b", "meta-llama/llama-3.3-70b-instruct"]:
+                if pref in active_remote_models:
+                    models_to_try.append(pref)
+            # 4. Any other discovered active chat models
+            models_to_try.extend(active_remote_models)
+        else:
+            # Explicitly hardcoded fallback list: cheapest first, then best
+            models_to_try.extend([
+                GROQ_CHEAPEST_MODEL,
+                GROQ_BEST_MODEL,
+                "qwen-2.5-32b",
+                "gpt-oss-20b",
+                "meta-llama/llama-3.3-70b-instruct",
+            ])
+
+    # Deduplicate while preserving priority order
+    models_to_try = list(dict.fromkeys([m for m in models_to_try if m]))
 
     for target_model in models_to_try:
         try:
-            groq_client = AsyncOpenAI(
-                api_key=api_key,
-                base_url="https://api.groq.com/openai/v1",
-                timeout=30.0,
-            )
-
             system_prompt = (
-                "You are LLMark Inference Copilot, a world-class AI Systems & LLM Inference Performance Architect.\n"
-                "Your mission is to make complex distributed inference, hardware memory physics, continuous batching, and latency metrics easy to understand for everyone, while providing deep, mathematically rigorous engineering precision.\n\n"
-                "Pedagogical Philosophy (Explain Clearly & Simply):\n"
-                "1. Always start with a concise **💡 In Simple Terms (TL;DR)** section explaining the concept using plain English, intuition, or a real-world analogy before diving into technical depth.\n"
-                "2. Follow with **🔬 How It Works Under the Hood** providing architectural mechanics, hardware equations ($...$ or $$...$$), and concrete metrics (e.g. TTFT, TPOT, VRAM bytes, Little's Law, memory bandwidth).\n"
-                "3. Conclude with **🛠️ Benchmark Recommendation / Actionable Rule of Thumb** detailing exact parameter choices, thresholds, and configurations in LLMark.\n\n"
-                f"Active Benchmark Context:\n"
-                f"- Target Vendor / Protocol: {vendor or 'cloud / OpenAI-compatible'}\n"
-                f"- Target Model: {model or 'unspecified'}\n"
-                f"- Domain Topic: {context_topic or 'General Benchmarking & Serving Physics'}\n\n"
-                "Formatting Guidelines:\n"
-                "- Use clean GitHub-flavored Markdown with bold key terms, tables, and bullet points.\n"
-                "- Write mathematical equations in LaTeX ($...$ inline or $$...$$ block format).\n"
-                "- Never dump impenetrable walls of academic jargon without explaining what it means practically.\n"
-                "- End your response with exactly 3 to 4 progressive, insightful follow-up questions formatted as:\n"
+                "You are LLMark Inference Copilot, a world-class AI Systems & LLM Inference Architect.\n"
+                "Provide direct, concise, and easy-to-understand answers (under 160 words total). Keep responses punchy, scannable, and free of verbose filler.\n\n"
+                "Structure in 3 compact parts:\n"
+                "1. **💡 In Simple Terms**: 1-2 plain-English sentences capturing the core idea.\n"
+                "2. **🔬 Key Mechanics**: 2-3 concise bullet points with key formulas ($...$) or hardware metrics.\n"
+                "3. **🛠️ Benchmark Tip**: 1 actionable parameter or threshold recommendation for LLMark.\n\n"
+                f"Context: Vendor={vendor or 'cloud'}, Model={model or target_model}, Topic={context_topic or 'Inference'}\n\n"
+                "Guidelines:\n"
+                "- Keep explanations compact, tight, and directly answering what was asked.\n"
+                "- End with exactly 3 short follow-up questions formatted as:\n"
                 "FOLLOWUP_QUESTIONS: [\"Question 1?\", \"Question 2?\", \"Question 3?\"]"
             )
 
@@ -987,7 +1021,7 @@ async def _query_groq_llm(
                 model=target_model,
                 messages=formatted_messages,  # type: ignore[arg-type]
                 temperature=0.3,
-                max_tokens=1024,
+                max_tokens=400,
             )
 
             raw_text = response.choices[0].message.content or ""
@@ -1017,11 +1051,11 @@ async def _query_groq_llm(
                 answer=answer_text,
                 topic=f"Inference Copilot ({target_model})",
                 suggested_followups=followups,
-                source="groq_llm",
+                source="groq_llm" if "groq" in base_url else "openai_llm",
                 model=target_model,
             )
         except Exception as e:
-            logger.warning("Groq LLM call with model %s failed: %s", target_model, e)
+            logger.warning("LLM call with model %s on %s failed: %s", target_model, base_url, e)
             continue
 
     return None
@@ -1046,29 +1080,7 @@ async def ask_expert(payload: ExpertQueryRequest) -> ExpertQueryResponse:
     query = payload.query.strip()
     context_topic = payload.context_topic
 
-    # Determine Groq API Key (priority: payload key -> credential -> system env -> settings)
-    groq_api_key = (
-        payload.groq_api_key
-        or (payload.credential.get("groq_api_key") if payload.credential else None)
-        or (payload.credential.get("api_key") if payload.credential and (payload.vendor == "groq" or "groq" in str(payload.credential.get("base_url", ""))) else None)
-        or os.environ.get("GROQ_API_KEY")
-        or getattr(settings, "GROQ_API_KEY", None)
-    )
-
-    # 1. If Groq API Key is available, prioritize live Groq LLM reasoning
-    if groq_api_key and groq_api_key.strip():
-        llm_response = await _query_groq_llm(
-            api_key=groq_api_key.strip(),
-            query=query,
-            context_topic=context_topic,
-            vendor=payload.vendor,
-            model=payload.model,
-            messages_history=payload.messages,
-        )
-        if llm_response:
-            return llm_response
-
-    # 2. Check knowledge engine with high-precision semantic matching
+    # 1. First, check if the question matches a presaved / curated knowledge question
     matched_knowledge = _find_best_knowledge_match(query, context_topic)
     if matched_knowledge:
         return ExpertQueryResponse(
@@ -1079,26 +1091,52 @@ async def ask_expert(payload: ExpertQueryRequest) -> ExpertQueryResponse:
             model="built-in",
         )
 
-    # 3. Informative fallback response with guidance
+    # 2. If it is a CUSTOM question, attempt to call the LLM
+    groq_api_key = (
+        payload.groq_api_key
+        or (payload.credential.get("groq_api_key") if payload.credential else None)
+        or (payload.credential.get("api_key") if payload.credential and (payload.vendor == "groq" or "groq" in str(payload.credential.get("base_url", ""))) else None)
+        or os.environ.get("GROQ_API_KEY")
+        or getattr(settings, "GROQ_API_KEY", None)
+    )
+    custom_base_url = payload.credential.get("base_url") if payload.credential else None
+
+    if groq_api_key and groq_api_key.strip():
+        llm_response = await _query_groq_llm(
+            api_key=groq_api_key.strip(),
+            query=query,
+            context_topic=context_topic,
+            vendor=payload.vendor,
+            model=payload.model,
+            messages_history=payload.messages,
+            custom_base_url=custom_base_url,
+        )
+        if llm_response:
+            return llm_response
+
+    # 3. If it is a CUSTOM question and LLM key is missing or failed: DO NOT answer with generic filler.
+    topic_followups = [
+        "What is Goodput and why is it superior to Raw Throughput?",
+        "How do token ratios (prefill vs. decode) affect benchmarking results?",
+        "How to find the saturation cliff of a cluster?",
+        "How is KV cache memory calculated per stream?",
+    ]
+    if context_topic and context_topic in TOPIC_ARTICLES:
+        topic_followups = TOPIC_ARTICLES[context_topic].get("suggested_followups", topic_followups)
+
     return ExpertQueryResponse(
         answer=(
-            "### 💡 Benchmark Architect Insight\n\n"
-            "#### 💡 In Simple Terms (TL;DR)\n"
-            "When evaluating LLM endpoints, benchmark speed is determined by two distinct phases: how fast the GPU ingests and reads your prompt (**TTFT**), and how fast it generates new words one by one (**TPOT**).\n\n"
-            "#### 🔬 How It Works Under the Hood\n"
-            "1. **Prefill Phase (Compute-Bound FLOPs)**: TTFT measures the time to process your input tokens in parallel using Tensor Cores.\n"
-            "2. **Decode Phase (Memory-Bandwidth-Bound GB/s)**: TPOT measures autoregressive token generation, loading gigabytes of weights per generated token from High Bandwidth Memory.\n"
-            "3. **Saturation Knee & Queuing**: Continuous batching engines scale throughput until KV-cache memory fills up, causing request queues and tail latencies to spike (Little's Law).\n"
-            "4. **Production Goodput**: Always enforce SLO latency gates (TTFT $\\le 800\\text{ms}$, TPOT $\\le 35\\text{ms}$) so only responsive streams count toward effective throughput.\n\n"
-            "#### 🛠️ Benchmark Recommendation\n"
-            "- Add your **Groq API Key** (`GROQ_API_KEY=gsk_...`) in `.env` to get live, unconstrained AI answers powered by **Llama 3.3 70B** on Groq LPUs!"
+            "### ⚠️ Live AI Response Unavailable for Custom Question\n\n"
+            f"**Your Question**: *\"{query}\"*\n\n"
+            "This is a custom, open-ended question that requires a live LLM endpoint to generate an answer.\n\n"
+            "**To answer custom questions:**\n"
+            "1. Add your **Groq API Key** in `.env` (`GROQ_API_KEY=gsk_...`) or click the **Key icon (🔑)** in the top right of this drawer.\n"
+            "2. Ensure the model ID (e.g. `gpt-oss-20b`, `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`) is supported by your endpoint.\n\n"
+            "💡 **Curated Presaved Questions Available Offline**:\n"
+            "You can click any of the verified suggested questions below to get instant architectural explanations without needing an API key."
         ),
-        topic="Inference Engineering Guidance",
-        suggested_followups=[
-            "What is Goodput and why is it superior to Raw Throughput?",
-            "How to find the saturation cliff of a cluster?",
-            "Why is TTFT critical for RAG vs. Chat?",
-        ],
-        source="knowledge_engine",
-        model="built-in",
+        topic="Custom Question (Key Required)",
+        suggested_followups=topic_followups,
+        source="key_required",
+        model="none",
     )

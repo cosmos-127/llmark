@@ -20,6 +20,7 @@ import {
   HelpCircle,
   ArrowUpRight,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
 import { EXPERT_KNOWLEDGE, TOPIC_SUGGESTED_QUESTIONS, getExpertAnswer } from "@/lib/expertKnowledge";
 import { api } from "@/lib/api";
@@ -143,22 +144,15 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // When context changes or drawer opens: prefill the question chatbot ready to fire (do NOT output wall of text)
+  // When context changes or drawer opens: focus input without auto-prefilling text
   useEffect(() => {
     if (isOpen) {
       const targetTopic = context?.topicId || "workload-preset";
       setActiveTopicId(targetTopic);
-
-      const topicMeta = TOPIC_SUGGESTED_QUESTIONS[targetTopic] || TOPIC_SUGGESTED_QUESTIONS["workload-preset"];
-      const questionToPrefill = context?.defaultQuestion || topicMeta?.defaultQuestion || "";
-
-      if (questionToPrefill) {
-        setInputQuery(questionToPrefill);
-      }
+      setInputQuery("");
 
       setTimeout(() => {
         inputRef.current?.focus();
-        inputRef.current?.select();
       }, 150);
     }
   }, [context, isOpen]);
@@ -253,8 +247,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
 
   const handleReset = () => {
     setMessages([]);
-    const topicMeta = TOPIC_SUGGESTED_QUESTIONS[activeTopicId] || TOPIC_SUGGESTED_QUESTIONS["workload-preset"];
-    setInputQuery(topicMeta.defaultQuestion);
+    setInputQuery("");
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
@@ -334,7 +327,19 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
+                {messages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    title="Clear chat conversation"
+                    className="h-8 px-2.5 rounded-xl text-xs font-medium text-[#2C2C2C]/70 hover:text-rose-600 dark:text-[#F3F4F4]/70 dark:hover:text-rose-400 hover:bg-rose-500/10 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                    <span className="text-[11px] font-medium">Clear Chat</span>
+                  </button>
+                )}
+
                 <Button
                   variant="ghost"
                   size="icon"
@@ -350,16 +355,6 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                   {hasGroqKey && (
                     <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   )}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleReset}
-                  title="Reset conversation"
-                  className="h-8 w-8 text-[#2C2C2C]/60 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/60 dark:hover:text-[#F3F4F4] cursor-pointer"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
                 </Button>
 
                 <Button
@@ -438,25 +433,16 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
               )}
             </AnimatePresence>
 
-            {/* Quick Context Topic Selector Ribbon */}
-            <div className="px-3.5 py-2 bg-[#853953]/5 dark:bg-[#A74B6A]/5 border-b border-[#853953]/10 dark:border-[#A74B6A]/10 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px]">
-              <span className="text-[#853953] dark:text-[#A74B6A] font-semibold shrink-0 flex items-center gap-1">
-                <BookOpen className="h-3 w-3" /> Domains:
-              </span>
+            {/* Minimal Topic Selector Ribbon */}
+            <div className="px-3 py-1.5 bg-[#853953]/5 dark:bg-[#A74B6A]/5 border-b border-[#853953]/10 dark:border-[#A74B6A]/10 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px]">
               {Object.entries(TOPIC_SUGGESTED_QUESTIONS).map(([key, item]) => {
                 const isActive = activeTopicId === key;
                 return (
                   <button
                     key={key}
                     type="button"
-                    onClick={() => {
-                      setActiveTopicId(key);
-                      setInputQuery(item.defaultQuestion);
-                      setTimeout(() => {
-                        inputRef.current?.focus();
-                      }, 100);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg shrink-0 transition-all font-medium text-[11px] cursor-pointer select-none ${
+                    onClick={() => setActiveTopicId(key)}
+                    className={`px-2 py-0.5 rounded-md shrink-0 transition-all font-medium text-[11px] cursor-pointer select-none ${
                       isActive
                         ? "bg-[#853953] text-white dark:bg-[#A74B6A] shadow-xs"
                         : "bg-white dark:bg-[#252426] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#853953]/15 hover:text-[#853953] dark:hover:text-[#A74B6A] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
@@ -469,73 +455,39 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
             </div>
 
             {/* Chat Body */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-4">
-              {/* If no messages yet, show Clean Copilot Welcome with Topic Relevant Suggested Questions */}
+            <div className="flex-1 p-3 overflow-y-auto space-y-3">
+              {/* If no messages yet, show Clean Suggested Questions */}
               {messages.length === 0 ? (
-                <div className="py-2 space-y-4 animate-in fade-in duration-200">
-                  {/* Hero Prompt Card */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-[#853953]/10 via-[#853953]/5 to-transparent dark:from-[#A74B6A]/15 dark:via-[#A74B6A]/5 dark:to-transparent border border-[#853953]/20 dark:border-[#A74B6A]/25 shadow-2xs">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="purple" className="text-[10px] font-sans py-0.5 px-2">
-                        {activeTopicGroup.badge}
-                      </Badge>
-                      {hasGroqKey && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                          <Zap className="h-3 w-3 fill-current" /> Llama 3.3 70B
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4] mb-1">
-                      {activeTopicGroup.title}
-                    </h4>
-                    <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed">
-                      Ask any question below, or select a suggested topic inquiry to get an instant, in-depth architectural breakdown.
-                    </p>
+                <div className="py-1 space-y-2.5 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-xs font-semibold text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 flex items-center gap-1.5">
+                      <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                      <span>Suggested Questions • {activeTopicGroup.title.split(" ")[0]}</span>
+                    </span>
+                    <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                      Click to ask
+                    </span>
                   </div>
 
-                  {/* Detailed Topic Relevant Suggested Questions */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-[11px] font-bold text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 flex items-center gap-1.5 uppercase tracking-wider">
-                        <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
-                        <span>Topic Suggested Questions</span>
-                      </span>
-                      <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-                        Click to ask
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2">
-                      {activeTopicGroup.questions.map((qText, qIdx) => (
-                        <button
-                          key={qIdx}
-                          type="button"
-                          onClick={() => handleSendMessage(qText)}
-                          className="text-left p-3 rounded-xl bg-white dark:bg-[#242327] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/50 dark:hover:border-[#A74B6A]/50 hover:bg-[#853953]/5 dark:hover:bg-[#A74B6A]/5 shadow-2xs hover:shadow-xs transition-all group flex items-start justify-between gap-3 cursor-pointer"
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] text-[10px] font-bold mt-0.5">
-                              {qIdx + 1}
-                            </span>
-                            <span className="text-xs font-medium text-[#2C2C2C]/85 dark:text-[#F3F4F4]/85 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] transition-colors leading-snug">
-                              {qText}
-                            </span>
-                          </div>
-                          <ArrowUpRight className="h-3.5 w-3.5 text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Ready to Fire Tip */}
-                  <div className="px-1 py-1 flex items-center justify-between text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-                    <span className="flex items-center gap-1">
-                      <Sparkles className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
-                      Question prefilled in input below & ready to fire.
-                    </span>
-                    <span className="font-mono text-[10px] bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/10 px-1.5 py-0.5 rounded">
-                      ↵ Enter to send
-                    </span>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {activeTopicGroup.questions.map((qText, qIdx) => (
+                      <button
+                        key={qIdx}
+                        type="button"
+                        onClick={() => handleSendMessage(qText)}
+                        className="text-left p-2.5 px-3 rounded-xl bg-white dark:bg-[#242327] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/50 dark:hover:border-[#A74B6A]/50 hover:bg-[#853953]/5 dark:hover:bg-[#A74B6A]/5 shadow-2xs hover:shadow-xs transition-all group flex items-center justify-between gap-2.5 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-md bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] text-[9.5px] font-bold">
+                            {qIdx + 1}
+                          </span>
+                          <span className="text-xs font-medium text-[#2C2C2C]/85 dark:text-[#F3F4F4]/85 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] transition-colors leading-snug">
+                            {qText}
+                          </span>
+                        </div>
+                        <ArrowUpRight className="h-3.5 w-3.5 text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                      </button>
+                    ))}
                   </div>
                 </div>
               ) : (
@@ -546,11 +498,11 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                     return (
                       <motion.div
                         key={msg.id || idx}
-                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        initial={{ opacity: 0, y: 8, scale: 0.99 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.18 }}
-                        className={`flex flex-col ${isUser ? "items-end" : "items-start"} space-y-1.5`}
+                        transition={{ duration: 0.15 }}
+                        className={`flex flex-col ${isUser ? "items-end" : "items-start"} space-y-1`}
                       >
                         <div className="flex items-center gap-1.5 text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 px-1">
                           {isUser ? (
@@ -565,12 +517,19 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                               <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
                                 {msg.topic || "Inference Copilot"}
                               </span>
-                              {msg.source === "groq_llm" ? (
+                              {msg.source === "groq_llm" || msg.source === "openai_llm" ? (
                                 <Badge
                                   variant="outline"
                                   className="text-[9px] py-0 px-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
                                 >
-                                  ⚡ Groq LLM
+                                  ⚡ {msg.model || "Live LLM"}
+                                </Badge>
+                              ) : msg.source === "key_required" ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[9px] py-0 px-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                                >
+                                  🔑 Key Required
                                 </Badge>
                               ) : (
                                 <Badge
@@ -587,10 +546,10 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                         </div>
 
                         <div
-                          className={`relative group max-w-[94%] p-3.5 rounded-2xl text-xs leading-relaxed ${
+                          className={`relative group ${
                             isUser
-                              ? "bg-[#853953] dark:bg-[#A74B6A] text-white rounded-tr-xs shadow-xs"
-                              : "bg-[#F3F4F4] dark:bg-[#242327] text-[#2C2C2C] dark:text-[#F3F4F4] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 rounded-tl-xs shadow-2xs"
+                              ? "max-w-[85%] p-2.5 px-3 bg-[#853953] dark:bg-[#A74B6A] text-white rounded-2xl rounded-tr-xs shadow-2xs text-xs font-sans leading-normal"
+                              : "max-w-[92%] p-2.5 px-3.5 bg-[#F3F4F4] dark:bg-[#242327] text-[#2C2C2C] dark:text-[#F3F4F4] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 rounded-2xl rounded-tl-xs shadow-2xs text-xs leading-relaxed"
                           }`}
                         >
                           {/* Markdown Rendered Content */}
@@ -605,7 +564,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                             <button
                               type="button"
                               onClick={() => handleCopy(msg.id, msg.text)}
-                              className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md bg-white/80 dark:bg-[#1E1E20]/80 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#853953] dark:hover:text-[#A74B6A] shadow-2xs cursor-pointer"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md bg-white/80 dark:bg-[#1E1E20]/80 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#853953] dark:hover:text-[#A74B6A] shadow-2xs cursor-pointer"
                               title="Copy response"
                             >
                               {copiedId === msg.id ? (
@@ -619,17 +578,23 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
 
                         {/* Suggested Follow-up Prompt Chips */}
                         {!isUser && msg.suggestedFollowups && msg.suggestedFollowups.length > 0 && (
-                          <div className="pt-1.5 space-y-1.5 w-full pl-1">
+                          <div className="pt-1 space-y-1 w-full pl-0.5">
                             <span className="text-[10px] font-semibold text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 flex items-center gap-1">
                               <Lightbulb className="h-3 w-3 text-amber-500" /> Follow-up inquiries:
                             </span>
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="flex flex-wrap gap-1">
                               {msg.suggestedFollowups.map((followup, fIdx) => (
                                 <button
                                   key={fIdx}
                                   type="button"
-                                  onClick={() => handleSendMessage(followup)}
-                                  className="text-[11px] text-left py-1 px-2.5 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/50 dark:hover:border-[#A74B6A]/50 text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 hover:text-[#853953] dark:hover:text-[#A74B6A] hover:bg-[#853953]/5 dark:hover:bg-[#A74B6A]/5 shadow-2xs transition-all flex items-center gap-1.5 group cursor-pointer"
+                                  onClick={() => {
+                                    setInputQuery(followup);
+                                    setTimeout(() => {
+                                      inputRef.current?.focus();
+                                    }, 50);
+                                  }}
+                                  title="Fill question in input field"
+                                  className="text-[10.5px] text-left py-0.5 px-2 rounded-md bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/50 dark:hover:border-[#A74B6A]/50 text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 hover:text-[#853953] dark:hover:text-[#A74B6A] hover:bg-[#853953]/5 dark:hover:bg-[#A74B6A]/5 shadow-2xs transition-all flex items-center gap-1 group cursor-pointer"
                                 >
                                   <span>{followup}</span>
                                   <ChevronRight className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform text-[#853953] dark:text-[#A74B6A]" />
@@ -646,12 +611,12 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
 
               {/* Pulsing AI Typing indicator */}
               {isLoading && (
-                <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F3F4F4] dark:bg-[#242327] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 w-fit shadow-2xs">
-                  <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A] animate-spin" />
-                  <span className="font-medium">
-                    {hasGroqKey ? "Querying Groq LPU Copilot..." : "Synthesizing inference analysis..."}
+                <div className="flex items-center gap-2 p-2 px-3 rounded-xl bg-[#F3F4F4] dark:bg-[#242327] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 w-fit shadow-2xs">
+                  <Sparkles className="h-3 w-3 text-[#853953] dark:text-[#A74B6A] animate-spin" />
+                  <span className="font-medium text-[11px]">
+                    {hasGroqKey ? "Querying Groq Copilot..." : "Synthesizing inference analysis..."}
                   </span>
-                  <div className="flex items-center gap-1 pl-1">
+                  <div className="flex items-center gap-1 pl-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A] animate-bounce [animation-delay:-0.3s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A] animate-bounce [animation-delay:-0.15s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A] animate-bounce" />
@@ -662,14 +627,14 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar */}
-            <div className="p-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#18171A]">
+            {/* Polished Input Bar */}
+            <div className="p-2.5 px-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white/95 dark:bg-[#18171A]/95 backdrop-blur-xs">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage();
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5"
               >
                 <div className="relative flex-1">
                   <Input
@@ -682,13 +647,13 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                         ? "Ask anything about LLMs, GPU architectures, or load curves..."
                         : "Ask about TTFT, Goodput, VRAM sizing, or connect Groq..."
                     }
-                    className="pr-9 text-xs h-9.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#242327] border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 focus:border-[#853953] dark:focus:border-[#A74B6A] transition-all focus:ring-1 focus:ring-[#853953]/20"
+                    className="pr-8 text-xs h-9 rounded-lg bg-[#F3F4F4]/70 dark:bg-[#242327] border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 focus:border-[#853953] dark:focus:border-[#A74B6A] transition-all focus:ring-1 focus:ring-[#853953]/20"
                   />
                   {inputQuery && (
                     <button
                       type="button"
                       onClick={() => setInputQuery("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/40 dark:hover:text-[#F3F4F4] cursor-pointer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/40 dark:hover:text-[#F3F4F4] cursor-pointer p-0.5"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -699,10 +664,10 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                   type="submit"
                   disabled={!inputQuery.trim() || isLoading}
                   size="sm"
-                  className="h-9.5 px-3.5 rounded-xl bg-[#853953] hover:bg-[#722f46] text-white dark:bg-[#A74B6A] dark:hover:bg-[#913f5b] shadow-xs cursor-pointer flex items-center gap-1.5 font-medium text-xs"
+                  className="h-9 px-3 rounded-lg bg-[#853953] hover:bg-[#722f46] text-white dark:bg-[#A74B6A] dark:hover:bg-[#913f5b] shadow-xs cursor-pointer flex items-center gap-1 font-medium text-xs"
                 >
                   <span>Send</span>
-                  <Send className="h-3.5 w-3.5" />
+                  <Send className="h-3 w-3" />
                 </Button>
               </form>
             </div>

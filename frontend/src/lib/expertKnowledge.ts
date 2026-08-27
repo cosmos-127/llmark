@@ -1105,7 +1105,7 @@ export function getExpertAnswer(
       const intersection = new Set([...meaningfulWords].filter((w) => qaWords.has(w)));
       const union = new Set([...meaningfulWords, ...qaWords]);
       const jaccard = intersection.size / union.size;
-      if (jaccard >= 0.6 || (intersection.size >= 3 && intersection.size === qaWords.size)) {
+      if (jaccard >= 0.70 || (intersection.size >= 4 && intersection.size === qaWords.size)) {
         return {
           answer: qa.answer,
           topic: qa.topic,
@@ -1116,39 +1116,9 @@ export function getExpertAnswer(
     }
   }
 
-  // 2. Exact keyword phrase matching across dedicated QA items
-  let bestQAMatch: QuestionAnswer | null = null;
-  let highestQAScore = 0;
-
-  for (const qa of DEDICATED_QA_ANSWERS) {
-    let score = 0;
-    for (const kw of qa.keywords) {
-      const kwNorm = normalize(kw);
-      if (qNorm.includes(kwNorm)) {
-        score += kwNorm.split(/\s+/).length * 3;
-      }
-    }
-    if (score > highestQAScore) {
-      highestQAScore = score;
-      bestQAMatch = qa;
-    }
-  }
-
-  if (bestQAMatch && highestQAScore >= 6) {
-    return {
-      answer: bestQAMatch.answer,
-      topic: bestQAMatch.topic,
-      badge: bestQAMatch.badge,
-      followups: bestQAMatch.followups,
-    };
-  }
-
-  // 3. Match on general EXPERT_KNOWLEDGE articles
+  // 2. Exact match against curated default questions in topic articles
   for (const article of Object.values(EXPERT_KNOWLEDGE)) {
-    if (
-      normalize(article.defaultQuestion) === qNorm ||
-      article.suggestedFollowups.some((f) => normalize(f) === qNorm)
-    ) {
+    if (normalize(article.defaultQuestion) === qNorm) {
       return {
         answer: article.markdown,
         topic: article.topic,
@@ -1158,46 +1128,33 @@ export function getExpertAnswer(
     }
   }
 
-  // 4. If query is very short or matches context topic exactly
-  if (contextTopicId && EXPERT_KNOWLEDGE[contextTopicId]) {
-    const article = EXPERT_KNOWLEDGE[contextTopicId];
-    if (meaningfulWords.size <= 2) {
-      return {
-        answer: article.markdown,
-        topic: article.topic,
-        badge: article.badge,
-        followups: article.suggestedFollowups,
-      };
-    }
-  }
+  // 5. If it is a custom query that did not match any curated/presaved knowledge:
+  // Do NOT answer with a generic canned answer. Explain that custom questions require a live LLM API Key.
+  const fallbackFollowups =
+    contextTopicId && TOPIC_SUGGESTED_QUESTIONS[contextTopicId]
+      ? TOPIC_SUGGESTED_QUESTIONS[contextTopicId].questions.slice(0, 3)
+      : [
+          "What is Goodput and why is it superior to Raw Throughput?",
+          "How do token ratios (prefill vs. decode) affect benchmarking results?",
+          "How to find the saturation cliff of a cluster?",
+        ];
 
-  // 5. Intelligent guidance fallback
   return {
-    answer: `### 💡 Inference Architect Guidance
+    answer: `### ⚠️ Live AI Response Unavailable for Custom Question
 
-#### 💡 In Simple Terms (TL;DR)
-When evaluating LLM endpoints, benchmark speed is determined by two separate steps: how fast the model reads your prompt (**TTFT**), and how fast it generates new words one by one (**TPOT**).
+**Your Question**: *"${query}"*
 
-#### 🔬 How It Works Under the Hood
-1. **Prefill vs. Decode Separation**:
-   - **TTFT (Time to First Token)** measures how fast the GPU processes your input prompt in parallel (compute-bound FLOPs).
-   - **TPOT (Time Per Output Token)** measures how fast the GPU transfers weights from memory to generate each next token (memory-bandwidth-bound GB/s).
-2. **Queuing & Concurrency Curves**:
-   - As you send more concurrent requests, continuous batching engines scale throughput linearly until hitting the **Saturation Knee**, where GPU memory runs out and requests queue up.
-3. **Production Goodput**:
-   - Rather than counting raw tokens, **Goodput** only counts responses that pass your real-world SLO gates (e.g. $\\text{TTFT} \\le 800\\text{ms}$, $\\text{TPOT} \\le 35\\text{ms}$).
+This is a custom, open-ended question that requires a live LLM endpoint to generate an answer.
 
-#### 🛠️ Benchmark Recommendation
-- For interactive chat, optimize for $\\text{TPOT} \\le 30\\text{ms/tok}$ ($\\ge 33\\text{ tok/s}$).
-- For RAG or large document ingestion, optimize for low **TTFT** and enable **Prompt Prefix Caching**.
-- Add your **Groq API Key** in \`.env\` or the drawer key settings to ask unconstrained custom questions powered by **Llama 3.3 70B** on Groq LPUs!`,
-    topic: "Inference Guidance",
-    badge: "Copilot",
-    followups: [
-      "What is Goodput and why is it superior to Raw Throughput?",
-      "How to find the saturation cliff of a cluster?",
-      "Why is TTFT critical for RAG vs. Chat?",
-    ],
+**To answer custom questions in real time:**
+1. Add your **Groq API Key** in \`.env\` (\`GROQ_API_KEY=gsk_...\`) or click the **Key icon (🔑)** in the top right of this drawer.
+2. Ensure your model (e.g. \`gpt-oss-20b\`, \`llama-3.3-70b-versatile\`, \`llama-3.1-8b-instant\`) is supported.
+
+💡 **Curated Presaved Questions Available Offline**:
+You can click any of the verified suggested questions below to get instant architectural explanations without needing an API key.`,
+    topic: "Custom Question (Key Required)",
+    badge: "Key Required",
+    followups: fallbackFollowups,
   };
 }
 

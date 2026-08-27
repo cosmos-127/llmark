@@ -66,3 +66,19 @@ async def test_expert_ask_with_groq_mock(async_client: AsyncClient):
         assert "Groq LPU Accelerated Answer" in data["answer"]
         assert "How to size VRAM?" in data["suggested_followups"]
 
+
+@pytest.mark.asyncio
+async def test_expert_ask_custom_question_without_key(async_client: AsyncClient):
+    """Test that custom questions without an active API key return a clear key_required notice rather than generic filler."""
+    response = await async_client.post(
+        "/api/expert/ask",
+        json={
+            "query": "What is the capital of Mars and how many servers are there in 2099?",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["source"] == "key_required"
+    assert "Live AI Response Unavailable" in data["answer"]
+    assert len(data["suggested_followups"]) > 0
+

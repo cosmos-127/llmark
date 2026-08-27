@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Inference Copilot / Chatbot LLM (Groq)
     GROQ_API_KEY: str | None = None
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "llama-3.1-8b-instant"  # Cheapest & fastest ($0.05/1M tokens)
 
     # Built-in Authoritative Model Pricing per 1M tokens ($)
     # Format: [prompt_price_per_1m, completion_price_per_1m]
