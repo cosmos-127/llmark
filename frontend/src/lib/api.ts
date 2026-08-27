@@ -98,4 +98,23 @@ export const api = {
     }
     return res.json();
   },
+
+  async askExpert(payload: {
+    query: string;
+    context_topic?: string;
+    vendor?: string;
+    model?: string;
+    credential?: any;
+  }): Promise<{ answer: string; topic: string; suggested_followups: string[]; source: string }> {
+    const res = await fetch("/api/expert/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Failed to consult inference expert" }));
+      throw new Error(err.detail || "Failed to consult inference expert");
+    }
+    return res.json();
+  },
 };

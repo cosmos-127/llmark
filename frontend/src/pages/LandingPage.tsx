@@ -223,7 +223,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         {/* Supported Providers Marquee Strip */}
         <section className="space-y-3">
           <div className="text-center">
-            <span className="text-[11px] font-sans font-medium uppercase tracking-wider text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+            <span className="text-[11px] font-sans font-medium text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
               Compatible with Any OpenAI-Compliant or Frontier API
             </span>
           </div>
@@ -253,7 +253,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         {/* 3 Core Operation Spotlight Cards */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-[11px] font-semibold uppercase tracking-widest text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">
+            <h2 className="text-xs font-semibold text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
               Choose An Operation
             </h2>
             <span className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans font-medium">

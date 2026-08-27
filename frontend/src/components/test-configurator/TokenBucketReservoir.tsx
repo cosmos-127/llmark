@@ -35,7 +35,6 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
   providerRpmLimit = 500,   // Nominal Tier 2 RPM limit (500 requests/min)
 }) => {
   const [isSimulatingBurst, setIsSimulatingBurst] = useState(false);
-  const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
 
   const totalTokensPerTurn = Math.max(1, promptTokens + maxTokens);
 
@@ -269,7 +268,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
       {/* Telemetry 4-Card Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <Activity className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
             Concurrency Flow
           </span>
@@ -279,7 +278,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <Clock className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
             Request Rate (RPM)
           </span>
@@ -289,7 +288,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <Droplets className="h-3 w-3 text-blue-600 dark:text-blue-400" />
             Token Rate (TPM)
           </span>
@@ -299,7 +298,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
             Throttle Status
           </span>
@@ -307,127 +306,6 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
             {isThrottled ? "429 Backoff Alert" : "Zero Throttling"}
           </div>
         </div>
-      </div>
-
-      {/* Expandable Deep-Dive Knowledge Dropdown */}
-      <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 bg-[#F3F4F4]/40 dark:bg-[#1E1D1F]/60 overflow-hidden transition-all">
-        <button
-          type="button"
-          onClick={() => setIsKnowledgeOpen(!isKnowledgeOpen)}
-          className="w-full flex items-center justify-between p-3 px-3.5 text-left hover:bg-[#F3F4F4]/80 dark:hover:bg-[#2C2C2C]/50 transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
-            <div>
-              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                Understanding Rate Limiting: Token Bucket vs. Leaky Bucket Theory
-              </span>
-              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                Click to explore algorithmic mechanics, provider quota math, and 429 mitigation strategies.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] font-sans py-0 px-1.5 text-[#853953] dark:text-[#A74B6A] border-[#853953]/30">
-              {isKnowledgeOpen ? "Hide Guide" : "Expand Guide"}
-            </Badge>
-            <motion.div
-              animate={{ rotate: isKnowledgeOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronDown className="h-4 w-4 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60" />
-            </motion.div>
-          </div>
-        </button>
-
-        <AnimatePresence initial={false}>
-          {isKnowledgeOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5 space-y-3.5 text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
-            >
-              {/* Section 1: Comparison Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-[#853953] dark:text-[#A74B6A] font-semibold text-xs">
-                    <Droplets className="h-3.5 w-3.5" />
-                    <span>Token Bucket (LLM API Standard)</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                    Tokens are added to a bucket at a fixed refill rate (e.g. 60k TPM) up to a max capacity. Each API request consumes tokens (Prompt + Completion). <strong>Key feature:</strong> Allows instantaneous bursts as long as tokens are available in the bucket. When empty, requests are rejected with <strong>HTTP 429</strong>.
-                  </p>
-                  <div className="text-[10px] font-sans text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 p-1.5 rounded border border-emerald-200 dark:border-emerald-800/40">
-                    Used by: OpenAI, Anthropic, Azure OpenAI, Google Vertex AI
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400 font-semibold text-xs">
-                    <Layers className="h-3.5 w-3.5" />
-                    <span>Leaky Bucket (Traffic Shaping)</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                    Incoming requests enter a FIFO queue (the bucket) regardless of arrival bursts, and &quot;leak&quot; out at a smooth, constant rate. <strong>Key feature:</strong> Eliminates traffic spikes entirely by smoothing out outflow. Excess burst requests that overflow the queue buffer are dropped or delayed.
-                  </p>
-                  <div className="text-[10px] font-sans text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 p-1.5 rounded border border-blue-200 dark:border-blue-800/40">
-                    Used by: API Gateways, Network Traffic Shapers, Ingestion Queues
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 2: Mathematical Telemetry Breakdown */}
-              <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-2">
-                <span className="font-semibold text-xs text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-1.5">
-                  <Gauge className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
-                  How This Simulator Computes Your Load (Formal LaTeX Model)
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                  <div className="p-2.5 rounded bg-[#F3F4F4]/60 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-1">
-                    <strong className="block text-[#2C2C2C] dark:text-[#F3F4F4]">1. Turn Duration (T)</strong>
-                    <MathFormula math="T = \text{TTFT} + \frac{\text{maxTokens}}{\text{TPS}_{\text{gen}}}" block className="text-[11px] text-[#853953] dark:text-[#A74B6A]" />
-                    <span className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-center">
-                      ≈ 0.35s + (maxTokens / 50 tok/s)
-                    </span>
-                  </div>
-                  <div className="p-2.5 rounded bg-[#F3F4F4]/60 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-1">
-                    <strong className="block text-[#2C2C2C] dark:text-[#F3F4F4]">2. Effective RPS</strong>
-                    <MathFormula math="\text{RPS} = \left(\frac{N_{\text{workers}}}{T}\right) \times \gamma_{\text{curve}}" block className="text-[11px] text-[#853953] dark:text-[#A74B6A]" />
-                    <span className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 block text-center">
-                      γ = 2.5 (Spike), 1.4 (Knee), 0.8 (Ramp)
-                    </span>
-                  </div>
-                  <div className="p-2.5 rounded bg-[#F3F4F4]/60 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-1">
-                    <strong className="block text-[#2C2C2C] dark:text-[#F3F4F4]">3. Demand Quotas</strong>
-                    <MathFormula math="\text{TPM} = \text{RPS} \times (N_{\text{in}} + N_{\text{out}}) \times 60" block className="text-[11px] text-[#853953] dark:text-[#A74B6A]" />
-                    <MathFormula math="\text{RPM} = \text{RPS} \times 60" block className="text-[11px] text-[#612D53] dark:text-[#C57BB2]" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 3: Best Practices & 429 Prevention */}
-              <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-2">
-                <span className="font-semibold text-xs text-[#2C2C2C] dark:text-[#F3F4F4] flex items-center gap-1.5">
-                  <ShieldAlert className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                  Best Practices to Prevent HTTP 429 Throttling
-                </span>
-                <ul className="list-disc pl-4 space-y-1 text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                  <li>
-                    <strong>Right-Size Concurrency:</strong> If demand exceeds provider quota, reduce parallel worker streams or switch to a higher tier.
-                  </li>
-                  <li>
-                    <strong>Constrain Max Completion Tokens:</strong> Restricting output tokens lowers both total turnaround latency and per-minute token drain.
-                  </li>
-                  <li>
-                    <strong>Implement Exponential Backoff + Jitter:</strong> In production clients, use randomized exponential retry delays on 429 status codes to avoid thundering-herd retry storms.
-                  </li>
-                </ul>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );

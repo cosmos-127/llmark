@@ -232,7 +232,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           )}
 
           {!collapsed && (
-            <div className="px-2 pt-0.5 text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-semibold text-center tracking-wider uppercase">
+            <div className="px-2 pt-0.5 text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-medium text-center tracking-tight">
               LLMark Benchmark Engine
             </div>
           )}

@@ -77,6 +77,8 @@ export interface BenchmarkConfig {
   json_schema?: any;
   max_tokens: number;
   temperature: number;
+  top_p?: number;
+  stream?: boolean;
   load_curve: LoadCurveType;
   concurrency: number;
   target_rps?: number;

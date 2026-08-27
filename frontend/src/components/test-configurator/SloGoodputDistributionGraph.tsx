@@ -423,7 +423,7 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
       {/* Telemetry Summary Grid */}
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
             Passing Yield
           </span>
@@ -433,7 +433,7 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <Clock className="h-3 w-3 text-[#612D53] dark:text-[#C57BB2]" />
             Decode Smoothness
           </span>
@@ -443,7 +443,7 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
             Error Rate Ceiling
           </span>

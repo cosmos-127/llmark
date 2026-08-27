@@ -149,19 +149,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
           <Table>
             <TableHeader>
               <TableRow className="bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/5 hover:bg-[#2C2C2C]/5 dark:hover:bg-[#F3F4F4]/5 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableHead className="w-[34%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 pl-4">
+                <TableHead className="w-[34%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 pl-4">
                   Dimension & Metric
                 </TableHead>
-                <TableHead className="w-[18%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                <TableHead className="w-[18%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
                   P50 / Nominal
                 </TableHead>
-                <TableHead className="w-[22%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                <TableHead className="w-[22%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
                   Tail / Saturated Rate
                 </TableHead>
-                <TableHead className="w-[13%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
                   SLO Target
                 </TableHead>
-                <TableHead className="w-[13%] font-semibold text-[11px] uppercase tracking-wider text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 text-right pr-4">
+                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 text-right pr-4">
                   Compliance
                 </TableHead>
               </TableRow>
@@ -174,7 +174,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {preset === "rate_limit_probe" && (
                 <>
                   <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <ShieldCheck className="h-3.5 w-3.5" />
                         <span>1. Rate Limiting & Quota Saturation Probing</span>
@@ -294,7 +294,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {preset === "prefill_ttft" && (
                 <>
                   <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Layers className="h-3.5 w-3.5" />
                         <span>1. KV Cache Prefill & Time to First Token</span>
@@ -364,7 +364,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {preset === "reasoning_cot" && (
                 <>
                   <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>1. Reasoning & Chain-of-Thought Dynamics</span>
@@ -430,7 +430,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {(preset === "structured_json" || preset === "json_schema") && (
                 <>
                   <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Braces className="h-3.5 w-3.5" />
                         <span>1. Structured JSON & Guided Grammar Compliance</span>
@@ -473,7 +473,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {preset !== "rate_limit_probe" && preset !== "prefill_ttft" && preset !== "reasoning_cot" && (
                 <>
                   <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Gauge className="h-3.5 w-3.5" />
                         <span>1. Latency & Responsiveness Dynamics</span>
@@ -601,7 +601,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {preset !== "rate_limit_probe" && (
                 <>
                   <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Zap className="h-3.5 w-3.5" />
                         <span>2. Throughput & Cluster Capacity</span>
@@ -665,7 +665,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* COMMON SECTION: RELIABILITY & STRICT SLO YIELD                            */}
               {/* ========================================================================= */}
               <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     <span>3. Reliability & Strict SLO Compliance</span>
@@ -731,7 +731,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* COMMON SECTION: FINANCIAL SPEND & TOKEN ECONOMICS                         */}
               {/* ========================================================================= */}
               <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                   <div className="flex items-center gap-1.5">
                     <Coins className="h-3.5 w-3.5" />
                     <span>4. Financial Spend & Token Economics</span>
@@ -795,7 +795,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* SECTION 5: WORKLOAD-SPECIFIC DERIVED PERFORMANCE INDICATORS               */}
               {/* ========================================================================= */}
               <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] uppercase tracking-widest text-[11px] font-sans">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5" />
                     <span>5. Workload-Specific Derived Indicators</span>

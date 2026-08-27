@@ -36,7 +36,6 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
   maxTokens,
 }) => {
   const [hoveredToken, setHoveredToken] = useState<CandidateToken | null>(null);
-  const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
 
   // Candidate token sample vocabulary representing typical next-token distribution
   const rawLogits = useMemo(() => [
@@ -268,7 +267,7 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
       {/* Telemetry Footer Grid */}
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <Sparkles className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
             Sampling Strategy
           </span>
@@ -278,7 +277,7 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <Activity className="h-3 w-3 text-[#612D53] dark:text-[#C57BB2]" />
             Top-1 Confidence
           </span>
@@ -288,7 +287,7 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 uppercase tracking-wider font-sans font-medium flex items-center gap-1">
+          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
             <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
             Reproducibility
           </span>
@@ -296,76 +295,6 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
             {modeInfo.reproducibility}
           </div>
         </div>
-      </div>
-
-      {/* Expandable Deep-Dive Knowledge Dropdown */}
-      <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 bg-[#F3F4F4]/40 dark:bg-[#1E1D1F]/60 overflow-hidden transition-all">
-        <button
-          type="button"
-          onClick={() => setIsKnowledgeOpen(!isKnowledgeOpen)}
-          className="w-full flex items-center justify-between p-3 px-3.5 text-left hover:bg-[#F3F4F4]/80 dark:hover:bg-[#2C2C2C]/50 transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
-            <div>
-              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                Understanding Temperature, Logits & Shannon Entropy
-              </span>
-              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                Click to explore how temperature modifies the Softmax probability distribution and benchmark reproducibility.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] font-sans py-0 px-1.5 text-[#853953] dark:text-[#A74B6A] border-[#853953]/30">
-              {isKnowledgeOpen ? "Hide Guide" : "Expand Guide"}
-            </Badge>
-            <motion.div
-              animate={{ rotate: isKnowledgeOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronDown className="h-4 w-4 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60" />
-            </motion.div>
-          </div>
-        </button>
-
-        <AnimatePresence initial={false}>
-          {isKnowledgeOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5 space-y-3 text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-[#853953] dark:text-[#A74B6A] font-semibold text-xs">
-                    <Sliders className="h-3.5 w-3.5" />
-                    <span>Scaled Softmax Formulation</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                    The model outputs unnormalized logits <MathFormula math="z_i" />. Scaled by Temperature <MathFormula math="T" />, probabilities follow:
-                  </p>
-                  <MathFormula math="P(w_i) = \frac{\exp(z_i / T)}{\sum_{j=1}^{V} \exp(z_j / T)}" block className="text-[11px] text-[#853953] dark:text-[#A74B6A]" />
-                  <p className="text-[10px] leading-relaxed text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                    Shannon Entropy: <MathFormula math="H(X) = -\sum_{i=1}^{V} P(w_i) \log_2 P(w_i)" />
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold text-xs">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>Why Benchmarks Standardize on <MathFormula math="T = 0" /> (Greedy)</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                    For latency and throughput benchmarking, setting <MathFormula math="T=0" /> ensures <MathFormula math="\lim_{T \to 0} P(w_{\text{top}}) = 1.0" /> (100% deterministic output paths and repeatable sequence token lengths). Stochastic sampling (<MathFormula math="T > 0" />) introduces generation length variance that skews comparative benchmark percentiles (p50/p95).
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );

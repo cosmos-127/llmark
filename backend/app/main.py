@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import benchmark, diff, export, history
+from app.api.routes import benchmark, diff, export, history, expert
 from app.core.config import settings
 from app.db.session import init_db
 from app.observability.logging import logger, setup_logging
@@ -46,6 +46,7 @@ app.include_router(benchmark.router, prefix=settings.API_V1_STR)
 app.include_router(history.router, prefix=settings.API_V1_STR)
 app.include_router(diff.router, prefix=settings.API_V1_STR)
 app.include_router(export.router, prefix=settings.API_V1_STR)
+app.include_router(expert.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["health"])

@@ -220,7 +220,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                         <span className={`${stg.textColor} font-sans text-base font-semibold tabular-nums`}>
                           {formatMs(stg.time)}
                         </span>
-                        <span className="text-[10px] font-sans font-medium uppercase text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                        <span className="text-[10px] font-sans font-medium capitalize text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
                           {stg.category}
                         </span>
                       </div>

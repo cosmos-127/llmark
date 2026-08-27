@@ -31,8 +31,6 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
   maxErrorRatePct,
   maxE2eMs,
 }) => {
-  const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
-
   // Approximate yield filter drops per chamber
   const { ttftPassPct, tpotPassPct, errorPassPct, finalGoodputYield } = useMemo(() => {
     // TTFT pass rate (median ~380ms)
@@ -173,96 +171,6 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
             />
           </div>
         </div>
-      </div>
-
-      {/* Expandable Deep-Dive Knowledge Dropdown */}
-      <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 bg-[#F3F4F4]/40 dark:bg-[#1E1D1F]/60 overflow-hidden transition-all">
-        <button
-          type="button"
-          onClick={() => setIsKnowledgeOpen(!isKnowledgeOpen)}
-          className="w-full flex items-center justify-between p-3 px-3.5 text-left hover:bg-[#F3F4F4]/80 dark:hover:bg-[#2C2C2C]/50 transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
-            <div>
-              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                Understanding Goodput: Raw Throughput vs. SLA-Compliant Yield
-              </span>
-              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                Click to explore why raw requests per second (RPS) can be misleading without SLA compliance gates.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] font-sans py-0 px-1.5 text-emerald-700 dark:text-emerald-400 border-emerald-600/30">
-              {isKnowledgeOpen ? "Hide Guide" : "Expand Guide"}
-            </Badge>
-            <motion.div
-              animate={{ rotate: isKnowledgeOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronDown className="h-4 w-4 text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60" />
-            </motion.div>
-          </div>
-        </button>
-
-        <AnimatePresence initial={false}>
-          {isKnowledgeOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-3.5 space-y-3 text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-semibold text-xs">
-                    <TrendingUp className="h-3.5 w-3.5" />
-                    <span>Raw Throughput (The Vanity Metric)</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                    Counts every completed request, regardless of whether it took 15 seconds to respond, stuttered violently mid-stream, or returned empty truncated tokens. High raw RPS does not mean your users are having a good experience.
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold text-xs">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    <span>Goodput (The Production Reality Metric)</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
-                    The rate of successful requests delivered <em>strictly within your business Service Level Objectives (SLOs)</em>. A request only counts towards Goodput if it passes TTFT, TPOT, and error criteria simultaneously:
-                  </p>
-                  <div className="text-[10px] font-sans font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 p-1.5 rounded border border-emerald-200 dark:border-emerald-800/40">
-                    <MathFormula math="\text{Goodput} = \text{Raw RPS} \times Y_{\text{TTFT}} \times Y_{\text{TPOT}} \times (1 - \text{Err})" block className="text-[11px] text-emerald-800 dark:text-emerald-300" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                <div className="p-2 rounded bg-white dark:bg-[#252426] border border-[#2C2C2C]/10">
-                  <strong className="block text-[#853953] dark:text-[#A74B6A]">Gate 1: TTFT Sieve</strong>
-                  <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                    Catches queue buildup and prompt processing bottlenecks before the first token is sent.
-                  </span>
-                </div>
-                <div className="p-2 rounded bg-white dark:bg-[#252426] border border-[#2C2C2C]/10">
-                  <strong className="block text-[#612D53] dark:text-[#C57BB2]">Gate 2: TPOT Sieve</strong>
-                  <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                    Ensures streaming reading speed remains human-friendly (e.g. &lt; 30ms/tok) without stutter.
-                  </span>
-                </div>
-                <div className="p-2 rounded bg-white dark:bg-[#252426] border border-[#2C2C2C]/10">
-                  <strong className="block text-rose-700 dark:text-rose-400">Gate 3: Error Trap</strong>
-                  <span className="text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
-                    Eliminates HTTP 429 rate limit drops and 500/503 model worker timeouts.
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
