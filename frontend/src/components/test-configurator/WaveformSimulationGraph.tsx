@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LoadCurveType } from "@/lib/types";
+import { MathFormula } from "@/components/ui/math-formula";
 
 interface WaveformSimulationGraphProps {
   loadCurve: LoadCurveType;
@@ -25,9 +26,9 @@ interface WaveformSimulationGraphProps {
 }
 
 interface WaveformPoint {
-  x: number; // 0 to 500
-  y: number; // 0 to 140 (inverted SVG coords, 0 is top)
-  normalizedY: number; // 0 to 1
+  x: number;
+  y: number;
+  normalizedY: number;
   streams: number;
   timeLabel: string;
   phaseLabel: string;
@@ -46,50 +47,48 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 }) => {
   const [hoveredPoint, setHoveredPoint] = useState<WaveformPoint | null>(null);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
+  const [showTheoryDetails, setShowTheoryDetails] = useState<boolean>(true);
 
   const isRequestMode = testMode === "requests";
   const totalScopeLabel = isRequestMode
     ? `${totalRequests} requests`
     : `${durationSeconds}s duration`;
 
-  // Graph geometry constants
-  const SVG_WIDTH = 520;
-  const SVG_HEIGHT = 160;
-  const PADDING = { top: 24, right: 20, bottom: 28, left: 44 };
+  // Graph geometry constants (enlarged for spacious presentation)
+  const SVG_WIDTH = 540;
+  const SVG_HEIGHT = 180;
+  const PADDING = { top: 28, right: 24, bottom: 32, left: 48 };
   const PLOT_WIDTH = SVG_WIDTH - PADDING.left - PADDING.right;
   const PLOT_HEIGHT = SVG_HEIGHT - PADDING.top - PADDING.bottom;
 
-  // Warmup proportion of total test (visualized as first 8-15% of timeline if warmup > 0)
+  // Warmup proportion of total test
   const warmupFraction = warmupRequests > 0 ? Math.min(0.18, (warmupRequests / (isRequestMode ? totalRequests : 30)) * 0.4 + 0.06) : 0;
   const warmupWidth = warmupFraction * PLOT_WIDTH;
 
   // Generate realistic mathematical curve points
   const points = useMemo<WaveformPoint[]>(() => {
-    const NUM_SAMPLES = 50;
+    const NUM_SAMPLES = 60;
     const pts: WaveformPoint[] = [];
 
     for (let i = 0; i <= NUM_SAMPLES; i++) {
       const u = i / NUM_SAMPLES; // 0.0 to 1.0 progress
       const isWarmup = u < warmupFraction;
 
-      let normY = 0; // 0.0 to 1.0 (1.0 = peak concurrency)
+      let normY = 0;
       let phaseLabel = "Steady Load";
       let varLowNorm: number | undefined;
       let varHighNorm: number | undefined;
 
-      // Calculate time label
       const timeVal = isRequestMode
         ? Math.round(u * totalRequests)
         : Number((u * durationSeconds).toFixed(1));
       const timeLabel = isRequestMode ? `Req #${timeVal}` : `${timeVal}s`;
 
       if (isWarmup) {
-        // Warmup ramp
         const warmupProgress = u / (warmupFraction || 0.001);
         normY = 0.15 + 0.85 * Math.sin((warmupProgress * Math.PI) / 2);
         phaseLabel = "TCP/TLS Warmup (Prime)";
       } else {
-        // Execution phase progress (0 to 1)
         const execU = (u - warmupFraction) / (1 - warmupFraction);
 
         switch (loadCurve) {
@@ -107,7 +106,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           }
 
           case "saturation_knee": {
-            // 5 distinct stepped plateaus: 20% -> 40% -> 65% -> 85% (Knee) -> 100% (Saturation)
             if (execU < 0.2) {
               normY = 0.2;
               phaseLabel = "Step 1: Baseline Probe";
@@ -128,7 +126,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           }
 
           case "spike": {
-            // Baseline 25% with 3 distinct surge spikes at 20%, 55%, 85%
             const baseline = 0.25;
             const spike1 = 0.75 * Math.exp(-Math.pow((execU - 0.2) / 0.06, 2));
             const spike2 = 0.75 * Math.exp(-Math.pow((execU - 0.55) / 0.06, 2));
@@ -144,14 +141,12 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           }
 
           case "poisson": {
-            // Harmonic wave with stochastic fluctuations and confidence envelope
             const wave1 = 0.22 * Math.sin(execU * Math.PI * 5);
             const wave2 = 0.12 * Math.cos(execU * Math.PI * 9 + 0.8);
             const wave3 = 0.06 * Math.sin(execU * Math.PI * 15 + 1.5);
             const baseMean = 0.65;
             normY = Math.min(1.0, Math.max(0.2, baseMean + wave1 + wave2 + wave3));
 
-            // Variance envelope bounds (±15% Poisson arrival dispersion)
             varLowNorm = Math.max(0.1, normY - 0.15);
             varHighNorm = Math.min(1.0, normY + 0.15);
             phaseLabel = "Poisson Arrival Wave";
@@ -194,7 +189,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 
     let lPath = `M ${points[0].x} ${points[0].y}`;
     for (let i = 1; i < points.length; i++) {
-      // Smooth curve interpolation
       const prev = points[i - 1];
       const curr = points[i];
       const midX = (prev.x + curr.x) / 2;
@@ -204,7 +198,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
     const baselineY = PADDING.top + PLOT_HEIGHT;
     const aPath = `${lPath} L ${points[points.length - 1].x} ${baselineY} L ${points[0].x} ${baselineY} Z`;
 
-    // Poisson variance envelope
     let varArea = "";
     if (loadCurve === "poisson" && points[0].varianceHighY !== undefined) {
       let topPath = `M ${points[0].x} ${points[0].varianceHighY}`;
@@ -221,13 +214,11 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
     return { linePath: lPath, areaPath: aPath, varianceAreaPath: varArea };
   }, [points, loadCurve, PADDING.top, PLOT_HEIGHT]);
 
-  // Handle mouse move over graph for scrubbing
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const svgX = ((e.clientX - rect.left) / rect.width) * SVG_WIDTH;
     const svgY = ((e.clientY - rect.top) / rect.height) * SVG_HEIGHT;
 
-    // Find nearest point
     const clampedX = Math.max(PADDING.left, Math.min(PADDING.left + PLOT_WIDTH, svgX));
     const u = (clampedX - PADDING.left) / PLOT_WIDTH;
     const targetIdx = Math.round(u * (points.length - 1));
@@ -244,7 +235,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
     setMousePos(null);
   };
 
-  // Pattern metadata configuration
   const patternMetadata = useMemo(() => {
     switch (loadCurve) {
       case "constant":
@@ -254,6 +244,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           color: "text-[#853953] dark:text-[#A74B6A]",
           bg: "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/30",
           desc: "Maintains uninterrupted maximum concurrency to isolate steady-state streaming token throughput.",
+          formula: "c(t) = C",
           icon: Activity,
         };
       case "ramp_up":
@@ -263,6 +254,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           color: "text-blue-700 dark:text-blue-400",
           bg: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40",
           desc: "Gradually increases load from 1 worker up to peak capacity to reveal where latency begins degrading.",
+          formula: "c(t) = 1 + (C - 1) \\cdot \\frac{t}{T}",
           icon: TrendingUp,
         };
       case "saturation_knee":
@@ -272,6 +264,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           color: "text-amber-700 dark:text-amber-400",
           bg: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40",
           desc: "Executes discrete stepped plateaus (20% → 100%) to isolate the exact KV cache VRAM exhaustion point.",
+          formula: "c_k = \\lfloor \\alpha_k \\cdot C \\rfloor, \\quad \\alpha \\in \\{0.2, 0.4, 0.65, 0.85, 1.0\\}",
           icon: Gauge,
         };
       case "spike":
@@ -281,6 +274,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           color: "text-purple-700 dark:text-purple-400",
           bg: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/40",
           desc: "Generates high-magnitude sudden surges followed by recovery troughs to test autoscaler response and queue drain.",
+          formula: "c(t) = C_{\\text{base}} + \\sum_{i} A_i \\exp\\left(-\\frac{(t - t_i)^2}{2\\sigma^2}\\right)",
           icon: Zap,
         };
       case "poisson":
@@ -290,6 +284,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           color: "text-emerald-700 dark:text-emerald-400",
           bg: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40",
           desc: "Simulates organic user traffic with non-homogeneous Poisson arrival bursts and variance intervals.",
+          formula: "P(N(t) = k) = \\frac{(\\lambda t)^k e^{-\\lambda t}}{k!}, \\quad \\lambda(t) = \\bar{\\lambda} + \\Delta \\lambda(t)",
           icon: Radio,
         };
     }
@@ -297,7 +292,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 
   const Icon = patternMetadata.icon;
 
-  // Average in-flight concurrency calculation
   const avgConcurrency = useMemo(() => {
     if (points.length === 0) return concurrency;
     const sum = points.reduce((acc, p) => acc + p.streams, 0);
@@ -305,43 +299,43 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
   }, [points, concurrency]);
 
   return (
-    <div className="rounded-xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-4 space-y-3 shadow-xs">
+    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar with pattern badge and live streams */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg border ${patternMetadata.bg} ${patternMetadata.color}`}>
-            <Icon className="h-4 w-4" />
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-xl border ${patternMetadata.bg} ${patternMetadata.color} shadow-2xs`}>
+            <Icon className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                Waveform Simulation
+              <span className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                Traffic Dispatch Waveform Simulation
               </span>
-              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
-                Reference & Simulation Only
+              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
+                Dynamic Load Model
               </Badge>
-              <Badge variant="outline" className={`text-[10px] font-sans ${patternMetadata.color} py-0 px-1.5`}>
+              <Badge variant="outline" className={`text-[10px] font-sans ${patternMetadata.color} py-0 px-2`}>
                 {patternMetadata.title}
               </Badge>
             </div>
-            <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+            <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65 mt-0.5">
               {patternMetadata.desc}
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className="text-xs font-semibold font-sans tabular-nums text-[#853953] dark:text-[#A74B6A]">
-            {concurrency} Max Streams
+          <span className="text-sm font-bold font-sans tabular-nums text-[#853953] dark:text-[#A74B6A]">
+            {concurrency} Max In-Flight Streams
           </span>
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
-            ~{avgConcurrency} avg in-flight
+          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
+            ~{avgConcurrency} avg in-flight load
           </span>
         </div>
       </div>
 
       {/* Interactive Waveform SVG Canvas */}
-      <div className="relative w-full rounded-xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-1 overflow-hidden select-none">
+      <div className="relative w-full rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-2 overflow-hidden select-none">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto cursor-crosshair overflow-visible"
@@ -351,8 +345,8 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           <defs>
             {/* Primary Gradient Fill */}
             <linearGradient id="waveformGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#853953" stopOpacity="0.38" />
-              <stop offset="60%" stopColor="#853953" stopOpacity="0.12" />
+              <stop offset="0%" stopColor="#853953" stopOpacity="0.4" />
+              <stop offset="60%" stopColor="#853953" stopOpacity="0.14" />
               <stop offset="100%" stopColor="#853953" stopOpacity="0.0" />
             </linearGradient>
 
@@ -363,7 +357,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 
             {/* Poisson Confidence Interval Gradient */}
             <linearGradient id="poissonBand" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#059669" stopOpacity="0.18" />
+              <stop offset="0%" stopColor="#059669" stopOpacity="0.2" />
               <stop offset="100%" stopColor="#059669" stopOpacity="0.06" />
             </linearGradient>
 
@@ -374,7 +368,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           </defs>
 
           {/* Grid Background Lines */}
-          {/* Y = 100% (Top) */}
           <line
             x1={PADDING.left}
             y1={PADDING.top}
@@ -384,7 +377,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
             strokeOpacity="0.1"
             strokeDasharray="3 3"
           />
-          {/* Y = 50% (Mid) */}
           <line
             x1={PADDING.left}
             y1={PADDING.top + PLOT_HEIGHT / 2}
@@ -394,7 +386,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
             strokeOpacity="0.07"
             strokeDasharray="3 3"
           />
-          {/* Y = 0% (Baseline) */}
           <line
             x1={PADDING.left}
             y1={PADDING.top + PLOT_HEIGHT}
@@ -427,9 +418,9 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
               />
               <text
                 x={PADDING.left + warmupWidth / 2}
-                y={PADDING.top - 6}
+                y={PADDING.top - 8}
                 textAnchor="middle"
-                className="text-[9px] font-sans font-semibold fill-amber-700 dark:fill-amber-400"
+                className="text-[10px] font-sans font-semibold fill-amber-700 dark:fill-amber-400"
               >
                 Warmup ({warmupRequests} reqs)
               </text>
@@ -452,16 +443,16 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
               <circle
                 cx={PADDING.left + PLOT_WIDTH * 0.7}
                 cy={PADDING.top + PLOT_HEIGHT * 0.15}
-                r="3.5"
+                r="4"
                 fill="#D97706"
               />
               <text
                 x={PADDING.left + PLOT_WIDTH * 0.7}
-                y={PADDING.top - 6}
+                y={PADDING.top - 8}
                 textAnchor="middle"
-                className="text-[9px] font-sans font-semibold fill-amber-700 dark:fill-amber-400"
+                className="text-[10px] font-sans font-semibold fill-amber-700 dark:fill-amber-400"
               >
-                Knee Inflection Point
+                Knee Inflection Point (Little's Law)
               </text>
             </g>
           )}
@@ -471,25 +462,25 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
             <g>
               <text
                 x={PADDING.left + PLOT_WIDTH * 0.2}
-                y={PADDING.top - 6}
+                y={PADDING.top - 8}
                 textAnchor="middle"
-                className="text-[9px] font-sans font-semibold fill-purple-700 dark:fill-purple-400"
+                className="text-[10px] font-sans font-semibold fill-purple-700 dark:fill-purple-400"
               >
                 Surge 1
               </text>
               <text
                 x={PADDING.left + PLOT_WIDTH * 0.55}
-                y={PADDING.top - 6}
+                y={PADDING.top - 8}
                 textAnchor="middle"
-                className="text-[9px] font-sans font-semibold fill-purple-700 dark:fill-purple-400"
+                className="text-[10px] font-sans font-semibold fill-purple-700 dark:fill-purple-400"
               >
                 Surge 2
               </text>
               <text
                 x={PADDING.left + PLOT_WIDTH * 0.85}
-                y={PADDING.top - 6}
+                y={PADDING.top - 8}
                 textAnchor="middle"
-                className="text-[9px] font-sans font-semibold fill-purple-700 dark:fill-purple-400"
+                className="text-[10px] font-sans font-semibold fill-purple-700 dark:fill-purple-400"
               >
                 Surge 3
               </text>
@@ -509,7 +500,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
             d={linePath}
             fill="none"
             stroke="#853953"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
             filter="url(#lineGlow)"
@@ -518,26 +509,26 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 
           {/* Y-Axis Labels */}
           <text
-            x={PADDING.left - 6}
+            x={PADDING.left - 8}
             y={PADDING.top + 4}
             textAnchor="end"
-            className="text-[10px] font-sans tabular-nums font-medium fill-[#2C2C2C]/70 dark:fill-[#F3F4F4]/70"
+            className="text-[11px] font-sans tabular-nums font-bold fill-[#2C2C2C]/80 dark:fill-[#F3F4F4]/80"
           >
             {concurrency}
           </text>
           <text
-            x={PADDING.left - 6}
-            y={PADDING.top + PLOT_HEIGHT / 2 + 3}
+            x={PADDING.left - 8}
+            y={PADDING.top + PLOT_HEIGHT / 2 + 4}
             textAnchor="end"
-            className="text-[10px] font-sans tabular-nums font-normal fill-[#2C2C2C]/50 dark:fill-[#F3F4F4]/50"
+            className="text-[11px] font-sans tabular-nums font-normal fill-[#2C2C2C]/50 dark:fill-[#F3F4F4]/50"
           >
             {Math.max(1, Math.round(concurrency / 2))}
           </text>
           <text
-            x={PADDING.left - 6}
-            y={PADDING.top + PLOT_HEIGHT + 3}
+            x={PADDING.left - 8}
+            y={PADDING.top + PLOT_HEIGHT + 4}
             textAnchor="end"
-            className="text-[10px] font-sans tabular-nums font-normal fill-[#2C2C2C]/50 dark:fill-[#F3F4F4]/50"
+            className="text-[11px] font-sans tabular-nums font-normal fill-[#2C2C2C]/50 dark:fill-[#F3F4F4]/50"
           >
             0
           </text>
@@ -545,17 +536,17 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           {/* X-Axis Labels */}
           <text
             x={PADDING.left}
-            y={SVG_HEIGHT - 6}
+            y={SVG_HEIGHT - 8}
             textAnchor="start"
-            className="text-[10px] font-sans tabular-nums font-medium fill-[#2C2C2C]/60 dark:fill-[#F3F4F4]/60"
+            className="text-[11px] font-sans tabular-nums font-medium fill-[#2C2C2C]/65 dark:fill-[#F3F4F4]/65"
           >
             0
           </text>
           <text
             x={PADDING.left + PLOT_WIDTH / 2}
-            y={SVG_HEIGHT - 6}
+            y={SVG_HEIGHT - 8}
             textAnchor="middle"
-            className="text-[10px] font-sans tabular-nums font-medium fill-[#2C2C2C]/60 dark:fill-[#F3F4F4]/60"
+            className="text-[11px] font-sans tabular-nums font-medium fill-[#2C2C2C]/65 dark:fill-[#F3F4F4]/65"
           >
             {isRequestMode
               ? `${Math.round(totalRequests / 2)} reqs (50%)`
@@ -563,9 +554,9 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           </text>
           <text
             x={PADDING.left + PLOT_WIDTH}
-            y={SVG_HEIGHT - 6}
+            y={SVG_HEIGHT - 8}
             textAnchor="end"
-            className="text-[10px] font-sans tabular-nums font-semibold fill-[#853953] dark:fill-[#A74B6A]"
+            className="text-[11px] font-sans tabular-nums font-bold fill-[#853953] dark:fill-[#A74B6A]"
           >
             {totalScopeLabel}
           </text>
@@ -573,7 +564,6 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           {/* Interactive Scrubbing Cursor & Tooltip */}
           {hoveredPoint && (
             <g>
-              {/* Vertical Crosshair Line */}
               <line
                 x1={hoveredPoint.x}
                 y1={PADDING.top}
@@ -584,12 +574,10 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
                 strokeDasharray="2 2"
                 className="dark:stroke-[#A74B6A]"
               />
-
-              {/* Point Halo Circle */}
               <circle
                 cx={hoveredPoint.x}
                 cy={hoveredPoint.y}
-                r="6"
+                r="7"
                 fill="#853953"
                 fillOpacity="0.25"
                 className="animate-ping"
@@ -597,7 +585,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
               <circle
                 cx={hoveredPoint.x}
                 cy={hoveredPoint.y}
-                r="4.5"
+                r="5"
                 fill="#853953"
                 stroke="#ffffff"
                 strokeWidth="2"
@@ -618,20 +606,20 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
               style={{
                 position: "absolute",
                 left: `${Math.min(75, Math.max(25, (hoveredPoint.x / SVG_WIDTH) * 100))}%`,
-                top: "10px",
+                top: "12px",
                 transform: "translateX(-50%)",
               }}
-              className="pointer-events-none z-20 px-2.5 py-1.5 rounded-lg bg-[#2C2C2C]/95 dark:bg-black/95 text-white text-xs shadow-lg backdrop-blur-md border border-white/15 space-y-0.5"
+              className="pointer-events-none z-20 px-3 py-2 rounded-xl bg-[#2C2C2C]/95 dark:bg-black/95 text-white text-xs shadow-xl backdrop-blur-md border border-white/15 space-y-1"
             >
-              <div className="flex items-center justify-between gap-3 text-[11px]">
-                <span className="font-semibold text-[#F3F4F4]">{hoveredPoint.timeLabel}</span>
-                <span className="text-[#853953] dark:text-[#A74B6A] font-sans font-bold">
+              <div className="flex items-center justify-between gap-4 text-xs">
+                <span className="font-bold text-[#F3F4F4]">{hoveredPoint.timeLabel}</span>
+                <span className="text-[#A74B6A] font-sans font-extrabold text-sm">
                   {hoveredPoint.streams} / {concurrency} streams
                 </span>
               </div>
-              <div className="text-[10px] text-white/70 font-sans flex items-center justify-between gap-3">
+              <div className="text-[11px] text-white/75 font-sans flex items-center justify-between gap-4">
                 <span>Phase: {hoveredPoint.phaseLabel}</span>
-                <span className="font-medium text-emerald-400">
+                <span className="font-semibold text-emerald-400">
                   {Math.round(hoveredPoint.normalizedY * 100)}% load
                 </span>
               </div>
@@ -641,36 +629,84 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
       </div>
 
       {/* Telemetry Summary Bar */}
-      <div className="grid grid-cols-3 gap-2 text-xs">
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <Target className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
-            Peak Load
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <Target className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+            Peak Load Target
           </span>
-          <div className="font-sans tabular-nums font-bold text-[#853953] dark:text-[#A74B6A]">
-            {concurrency} streams (100%)
+          <div className="font-sans tabular-nums font-bold text-[#853953] dark:text-[#A74B6A] text-xs">
+            {concurrency} streams (100% capacity)
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <Clock className="h-3 w-3 text-[#612D53] dark:text-[#C57BB2]" />
-            Test Scope
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-[#612D53] dark:text-[#C57BB2]" />
+            Test Execution Scope
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs">
             {totalScopeLabel}
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <RotateCw className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <RotateCw className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             Socket Priming
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-            {warmupRequests > 0 ? `${warmupRequests} warmup reqs` : "0 (Immediate)"}
+          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs">
+            {warmupRequests > 0 ? `${warmupRequests} warmup reqs` : "0 (Immediate cold)"}
           </div>
         </div>
+      </div>
+
+      {/* Theoretical Foundations Collapsible Card */}
+      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-3">
+        <button
+          type="button"
+          onClick={() => setShowTheoryDetails(!showTheoryDetails)}
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] cursor-pointer hover:text-[#853953] dark:hover:text-[#A74B6A]"
+        >
+          <span className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <span>Queuing Theory & Load Curve Modeling Mechanics</span>
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence>
+          {showTheoryDetails && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                    Active Curve Mathematical Formulation:
+                  </span>
+                  <MathFormula math={patternMetadata.formula} block />
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                    Modulates dispatch worker allocation over the normalized test lifecycle.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#612D53] dark:text-[#C57BB2]">
+                    Little's Law & Saturation Knee Dynamics:
+                  </span>
+                  <MathFormula math="L = \lambda W, \quad W_{\text{queue}} \approx \frac{\rho}{\mu(1 - \rho)}" block />
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                    As GPU server utilization <MathFormula math="\rho \to 1" />, queuing delays explode asymptotically, causing severe tail TTFT degradation at the saturation knee.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

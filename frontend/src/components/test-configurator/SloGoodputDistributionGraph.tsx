@@ -9,8 +9,11 @@ import {
   ShieldAlert,
   Clock,
   Zap,
+  BookOpen,
+  ChevronDown,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MathFormula } from "@/components/ui/math-formula";
 
 interface SloGoodputDistributionGraphProps {
   maxTtftMs: number;
@@ -20,8 +23,8 @@ interface SloGoodputDistributionGraphProps {
 }
 
 interface LatencyPoint {
-  x: number; // 0 to 520 SVG coords
-  y: number; // 0 to 140 SVG coords
+  x: number;
+  y: number;
   latencyMs: number;
   pdfValue: number;
   cdfPct: number;
@@ -35,18 +38,19 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
   maxE2eMs,
 }) => {
   const [hoveredPoint, setHoveredPoint] = useState<LatencyPoint | null>(null);
+  const [showTheoryDetails, setShowTheoryDetails] = useState<boolean>(true);
 
-  // SVG Dimension Constants
-  const SVG_WIDTH = 520;
-  const SVG_HEIGHT = 160;
-  const PADDING = { top: 24, right: 24, bottom: 28, left: 44 };
+  // SVG Dimension Constants (enlarged for spacious rendering)
+  const SVG_WIDTH = 540;
+  const SVG_HEIGHT = 180;
+  const PADDING = { top: 28, right: 24, bottom: 32, left: 48 };
   const PLOT_WIDTH = SVG_WIDTH - PADDING.left - PADDING.right;
   const PLOT_HEIGHT = SVG_HEIGHT - PADDING.top - PADDING.bottom;
 
   // Max latency range on X-axis (up to 3000ms)
   const MAX_AXIS_MS = 2500;
 
-  // Standard LLM TTFT Distribution Parameters (Log-Normal: Median ~350ms, Sigma ~0.55)
+  // Standard LLM TTFT Distribution Parameters (Log-Normal: Median ~380ms, Sigma ~0.52)
   const MU = Math.log(380);
   const SIGMA = 0.52;
 
@@ -60,10 +64,9 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
 
   // Generate Log-Normal Probability Density Function points
   const points = useMemo<LatencyPoint[]>(() => {
-    const NUM_POINTS = 60;
+    const NUM_POINTS = 65;
     const pts: LatencyPoint[] = [];
 
-    // Find maximum PDF value for normalization
     const modeLatency = Math.exp(MU - SIGMA * SIGMA);
     const maxPdf = (1 / (modeLatency * SIGMA * Math.sqrt(2 * Math.PI))) *
       Math.exp(-Math.pow(Math.log(modeLatency) - MU, 2) / (2 * SIGMA * SIGMA));
@@ -72,7 +75,6 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
       const u = i / NUM_POINTS;
       const latencyMs = Math.max(20, u * MAX_AXIS_MS);
 
-      // Log-normal PDF: f(t) = 1 / (t * sigma * sqrt(2pi)) * exp(-(ln t - mu)^2 / 2sigma^2)
       const pdf = (1 / (latencyMs * SIGMA * Math.sqrt(2 * Math.PI))) *
         Math.exp(-Math.pow(Math.log(latencyMs) - MU, 2) / (2 * SIGMA * SIGMA));
 
@@ -154,7 +156,6 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
       fullLine += ` C ${midX} ${prev.y}, ${midX} ${curr.y}, ${curr.x} ${curr.y}`;
     }
 
-    // Split points into passing and breach sets
     const passingPts = points.filter((p) => p.latencyMs <= maxTtftMs);
     const breachPts = points.filter((p) => p.latencyMs >= maxTtftMs);
 
@@ -185,7 +186,6 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
     };
   }, [points, maxTtftMs, PLOT_HEIGHT, PADDING.top]);
 
-  // Handle Mouse Scrubbing
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const svgX = ((e.clientX - rect.left) / rect.width) * SVG_WIDTH;
@@ -207,43 +207,43 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
   const StrictnessIcon = strictnessInfo.icon;
 
   return (
-    <div className="rounded-xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-4 space-y-3.5 shadow-xs">
+    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg border ${strictnessInfo.badgeBg} ${strictnessInfo.color}`}>
-            <StrictnessIcon className="h-4 w-4" />
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-xl border ${strictnessInfo.badgeBg} ${strictnessInfo.color} shadow-2xs`}>
+            <StrictnessIcon className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                Latency Distribution & Goodput Yield Simulation
+              <span className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                Latency Probability Density & Goodput Yield (Log-Normal Model)
               </span>
-              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
-                Reference & Simulation Only
+              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
+                Statistical Physics
               </Badge>
-              <Badge variant="outline" className={`text-[10px] font-sans ${strictnessInfo.color} py-0 px-1.5`}>
+              <Badge variant="outline" className={`text-[10px] font-sans ${strictnessInfo.color} py-0 px-2`}>
                 {strictnessInfo.label}
               </Badge>
             </div>
-            <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+            <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65 mt-0.5">
               {strictnessInfo.desc}
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className="text-sm font-bold font-sans tabular-nums text-emerald-700 dark:text-emerald-400">
-            {goodputPct}% Goodput
+          <span className="text-base font-extrabold font-sans tabular-nums text-emerald-700 dark:text-emerald-400">
+            {goodputPct}% Goodput Yield
           </span>
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
-            Expected Production Yield
+          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
+            Expected Production SLA Pass Rate
           </span>
         </div>
       </div>
 
       {/* Latency Density Distribution SVG Canvas */}
-      <div className="relative w-full rounded-xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-1 select-none overflow-hidden">
+      <div className="relative w-full rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-2 select-none overflow-hidden">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto cursor-crosshair overflow-visible"
@@ -251,13 +251,11 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
           onMouseLeave={handleMouseLeave}
         >
           <defs>
-            {/* Passing Zone Gradient (Emerald) */}
             <linearGradient id="goodputGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#059669" stopOpacity="0.45" />
               <stop offset="100%" stopColor="#059669" stopOpacity="0.05" />
             </linearGradient>
 
-            {/* Breach Zone Gradient (Rose) */}
             <linearGradient id="breachGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#E11D48" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#E11D48" stopOpacity="0.05" />
@@ -283,8 +281,8 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
             d={fullLinePath}
             fill="none"
             stroke="#2C2C2C"
-            strokeWidth="2"
-            strokeOpacity="0.4"
+            strokeWidth="2.5"
+            strokeOpacity="0.5"
             className="dark:stroke-[#F3F4F4]"
           />
 
@@ -301,9 +299,9 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
             />
             <text
               x={PADDING.left + (380 / MAX_AXIS_MS) * PLOT_WIDTH}
-              y={PADDING.top - 4}
+              y={PADDING.top - 6}
               textAnchor="middle"
-              className="text-[9px] font-sans fill-[#2C2C2C]/50 dark:fill-[#F3F4F4]/50"
+              className="text-[10px] font-sans font-medium fill-[#2C2C2C]/50 dark:fill-[#F3F4F4]/50"
             >
               P50 (380ms)
             </text>
@@ -317,49 +315,49 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
               x2={sloX}
               y2={PADDING.top + PLOT_HEIGHT}
               stroke="#059669"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeDasharray="3 2"
               className="dark:stroke-emerald-400 transition-all"
             />
             <circle
               cx={sloX}
               cy={PADDING.top + 4}
-              r="4"
+              r="4.5"
               fill="#059669"
               className="dark:fill-emerald-400"
             />
             <text
               x={sloX}
-              y={PADDING.top - 6}
+              y={PADDING.top - 8}
               textAnchor="middle"
-              className="text-[10px] font-sans font-bold fill-emerald-700 dark:fill-emerald-400"
+              className="text-[11px] font-sans font-extrabold fill-emerald-700 dark:fill-emerald-400"
             >
-              SLO ≤ {maxTtftMs}ms
+              SLO Barrier: ≤ {maxTtftMs}ms
             </text>
           </g>
 
           {/* X-Axis Labels */}
           <text
             x={PADDING.left}
-            y={SVG_HEIGHT - 6}
+            y={SVG_HEIGHT - 8}
             textAnchor="start"
-            className="text-[10px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 fill-current"
+            className="text-[11px] font-sans tabular-nums font-medium fill-[#2C2C2C]/65 dark:fill-[#F3F4F4]/65"
           >
             0ms
           </text>
           <text
             x={PADDING.left + PLOT_WIDTH * 0.5}
-            y={SVG_HEIGHT - 6}
+            y={SVG_HEIGHT - 8}
             textAnchor="middle"
-            className="text-[10px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 fill-current"
+            className="text-[11px] font-sans tabular-nums font-medium fill-[#2C2C2C]/65 dark:fill-[#F3F4F4]/65"
           >
             1,250ms
           </text>
           <text
             x={PADDING.left + PLOT_WIDTH}
-            y={SVG_HEIGHT - 6}
+            y={SVG_HEIGHT - 8}
             textAnchor="end"
-            className="text-[10px] font-sans tabular-nums font-semibold text-[#853953] dark:text-[#A74B6A] fill-current"
+            className="text-[11px] font-sans tabular-nums font-bold fill-[#853953] dark:fill-[#A74B6A]"
           >
             {MAX_AXIS_MS}ms+
           </text>
@@ -373,14 +371,14 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
                 x2={hoveredPoint.x}
                 y2={PADDING.top + PLOT_HEIGHT}
                 stroke="#2C2C2C"
-                strokeWidth="1"
+                strokeWidth="1.5"
                 strokeDasharray="2 2"
                 className="dark:stroke-[#F3F4F4]"
               />
               <circle
                 cx={hoveredPoint.x}
                 cy={hoveredPoint.y}
-                r="4.5"
+                r="5"
                 fill={hoveredPoint.isPassing ? "#059669" : "#E11D48"}
                 stroke="#ffffff"
                 strokeWidth="2"
@@ -403,17 +401,17 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
                 top: "12px",
                 transform: "translateX(-50%)",
               }}
-              className="pointer-events-none z-20 px-2.5 py-1.5 rounded-lg bg-[#2C2C2C]/95 dark:bg-black/95 text-white text-xs shadow-lg backdrop-blur-md border border-white/15 space-y-0.5"
+              className="pointer-events-none z-20 px-3 py-2 rounded-xl bg-[#2C2C2C]/95 dark:bg-black/95 text-white text-xs shadow-xl backdrop-blur-md border border-white/15 space-y-1"
             >
-              <div className="flex items-center justify-between gap-3 text-[11px]">
-                <span className="font-semibold">TTFT: {hoveredPoint.latencyMs} ms</span>
-                <span className={`font-sans font-bold ${hoveredPoint.isPassing ? "text-emerald-400" : "text-rose-400"}`}>
-                  {hoveredPoint.isPassing ? "PASS (SLO Met)" : "FAIL (SLO Breached)"}
+              <div className="flex items-center justify-between gap-4 text-xs">
+                <span className="font-bold">TTFT: {hoveredPoint.latencyMs} ms</span>
+                <span className={`font-sans font-extrabold ${hoveredPoint.isPassing ? "text-emerald-400" : "text-rose-400"}`}>
+                  {hoveredPoint.isPassing ? "PASS (SLO Compliant)" : "FAIL (SLO Breached)"}
                 </span>
               </div>
-              <div className="text-[10px] text-white/70 font-sans flex items-center justify-between gap-3">
-                <span>Cumulative: {hoveredPoint.cdfPct}% of requests</span>
-                <span>Max SLO: {maxTtftMs}ms</span>
+              <div className="text-[11px] text-white/75 font-sans flex items-center justify-between gap-4">
+                <span>Cumulative Density: {hoveredPoint.cdfPct}% of calls</span>
+                <span>Max Target: {maxTtftMs}ms</span>
               </div>
             </motion.div>
           )}
@@ -421,36 +419,84 @@ export const SloGoodputDistributionGraph: React.FC<SloGoodputDistributionGraphPr
       </div>
 
       {/* Telemetry Summary Grid */}
-      <div className="grid grid-cols-3 gap-2 text-xs">
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-            Passing Yield
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            Certified Production Yield
           </span>
-          <div className="font-sans tabular-nums font-bold text-emerald-700 dark:text-emerald-400">
-            {goodputPct}% yield
+          <div className="font-sans tabular-nums font-bold text-emerald-700 dark:text-emerald-400 text-xs">
+            {goodputPct}% certified yield
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <Clock className="h-3 w-3 text-[#612D53] dark:text-[#C57BB2]" />
-            Decode Smoothness
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-[#612D53] dark:text-[#C57BB2]" />
+            Streaming Smoothness Limit
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs">
             TPOT ≤ {maxTpotMs} ms/tok
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
-            Error Rate Ceiling
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
+            Error Budget Ceiling
           </span>
-          <div className="font-sans tabular-nums font-semibold text-rose-700 dark:text-rose-400">
-            ≤ {maxErrorRatePct}% errors
+          <div className="font-sans tabular-nums font-semibold text-rose-700 dark:text-rose-400 text-xs">
+            ≤ {maxErrorRatePct}% failure rate
           </div>
         </div>
+      </div>
+
+      {/* Theoretical Foundations Collapsible Card */}
+      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-3">
+        <button
+          type="button"
+          onClick={() => setShowTheoryDetails(!showTheoryDetails)}
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] cursor-pointer hover:text-[#853953] dark:hover:text-[#A74B6A]"
+        >
+          <span className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <span>Statistical Log-Normal Latency Modeling in LLM Inference</span>
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence>
+          {showTheoryDetails && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                    Log-Normal Latency PDF:
+                  </span>
+                  <MathFormula math="f(t; \mu, \sigma) = \frac{1}{t \sigma \sqrt{2\pi}} \exp\left(-\frac{(\ln t - \mu)^2}{2\sigma^2}\right), \quad t > 0" block />
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                    LLM request latencies are strictly positive and multiplicative, exhibiting long right tails that standard Gaussian distributions fail to capture.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                    Cumulative SLO Compliance Integral:
+                  </span>
+                  <MathFormula math="\text{Yield} = \Phi\left(\frac{\ln(\text{SLO}_{\text{TTFT}}) - \mu}{\sigma}\right) \times (1 - \text{ErrorRate})" block />
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                    Calculates the integral probability that a random user request falls strictly below the SLO latency cutoff threshold.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

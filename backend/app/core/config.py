@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./llmark.db"
 
+    # Inference Copilot / Chatbot LLM (Groq)
+    GROQ_API_KEY: str | None = None
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+
     # Built-in Authoritative Model Pricing per 1M tokens ($)
     # Format: [prompt_price_per_1m, completion_price_per_1m]
     MODEL_PRICING: dict[str, tuple[float, float]] = {
@@ -142,7 +146,7 @@ class Settings(BaseSettings):
     }
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(".env", "../.env", "../../.env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",

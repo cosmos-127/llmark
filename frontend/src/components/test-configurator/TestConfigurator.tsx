@@ -2515,18 +2515,20 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           </div>
         </div>
 
-        {/* Floating "Ask Expert" Copilot Toggle Pill */}
-        <motion.button
-          type="button"
-          onClick={() => handleOpenExpert("workload-preset", "Inference Copilot", "How do I optimize my benchmark parameters?")}
-          className="fixed bottom-6 right-6 z-30 flex items-center gap-2 py-2.5 px-4 rounded-full bg-[#853953] hover:bg-[#743663] text-white shadow-xl hover:shadow-2xl border border-white/20 dark:border-white/10 backdrop-blur-md transition-all cursor-pointer group select-none"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          title="Open Inference Copilot"
-        >
-          <Sparkles className="h-4 w-4 animate-pulse" />
-          <span className="text-xs font-semibold tracking-wide">Ask Expert</span>
-        </motion.button>
+        {/* Floating "Ask Expert" Copilot Toggle Pill (Positioned comfortably above footer/dock, hidden when drawer is open) */}
+        {!isExpertDrawerOpen && (
+          <motion.button
+            type="button"
+            onClick={() => handleOpenExpert("workload-preset", "Inference Copilot", "How do I optimize my benchmark parameters?")}
+            className="fixed bottom-20 right-6 md:bottom-24 md:right-8 z-30 flex items-center gap-2 py-2.5 px-4 rounded-full bg-[#853953] hover:bg-[#743663] text-white shadow-xl hover:shadow-2xl border border-white/20 dark:border-white/10 backdrop-blur-md transition-all cursor-pointer group select-none"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            title="Open Inference Copilot"
+          >
+            <Sparkles className="h-4 w-4 animate-pulse" />
+            <span className="text-xs font-semibold tracking-wide">Ask Expert</span>
+          </motion.button>
+        )}
 
         {/* On-Demand Modals */}
         <PayloadDynamicsModal
@@ -2538,6 +2540,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           cacheBust={config.cache_bust}
           temperature={config.temperature}
           topP={config.top_p ?? 1.0}
+          onOpenExpert={handleOpenExpert}
         />
 
         <TrafficSimulationModal
@@ -2553,6 +2556,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           maxTokens={config.max_tokens}
           model={config.model}
           cacheBust={config.cache_bust}
+          onOpenExpert={handleOpenExpert}
         />
 
         <DiagnosticsPipelineModal
@@ -2573,6 +2577,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           durationSeconds={config.duration_seconds}
           totalRequests={config.total_requests}
           concurrency={config.concurrency}
+          onOpenExpert={handleOpenExpert}
         />
 
         {/* Ask the Expert Sliding Copilot Drawer */}
@@ -2582,6 +2587,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           context={expertContext}
           vendor={config.vendor}
           model={config.model}
+          credential={credential}
         />
       </TooltipProvider>
   );

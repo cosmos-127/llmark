@@ -216,6 +216,117 @@ $$\\text{Goodput (tok/s)} = \\frac{\\sum \\text{Tokens of Passing Requests}}{\\t
   },
 };
 
+export interface TopicPromptGroup {
+  title: string;
+  badge: string;
+  defaultQuestion: string;
+  questions: string[];
+}
+
+export const TOPIC_SUGGESTED_QUESTIONS: Record<string, TopicPromptGroup> = {
+  "workload-preset": {
+    title: "Workload Profiles & Token Ratios",
+    badge: "Step 2A • Workloads",
+    defaultQuestion: "How do token ratios (prefill vs. decode) affect benchmarking results?",
+    questions: [
+      "How do token ratios (prefill vs. decode) affect benchmarking results?",
+      "Why is TTFT critical for RAG vs. Chat?",
+      "How to benchmark reasoning (CoT) models?",
+      "What is the difference between TTFT and TTFA?",
+      "How does model parameter size influence prefill vs decode memory bandwidth?",
+    ],
+  },
+  "sampling-params": {
+    title: "Sampling Hyperparameters & Output Entropy",
+    badge: "Step 2B • Sampling",
+    defaultQuestion: "How do Temperature, Top-P, and Max Tokens impact benchmark accuracy?",
+    questions: [
+      "How do Temperature, Top-P, and Max Tokens impact benchmark accuracy?",
+      "Why use Temperature = 0 for throughput tests?",
+      "How does sampling affect token jitter & ITL?",
+      "What happens when Max Tokens is reached?",
+    ],
+  },
+  "traffic-concurrency": {
+    title: "Concurrency Workers & Queue Saturation",
+    badge: "Step 3A • Concurrency",
+    defaultQuestion: "How do I choose the right concurrency worker pool for stress testing?",
+    questions: [
+      "How do I choose the right concurrency worker pool for stress testing?",
+      "How to find the saturation cliff of a cluster?",
+      "What is the relationship between RPS and concurrency?",
+      "When does TTFT degrade exponentially?",
+    ],
+  },
+  "load-curve": {
+    title: "Traffic Load Curves & Saturation Knee",
+    badge: "Step 3B • Load Geometry",
+    defaultQuestion: "What is the Saturation Knee Probe and how does it detect cluster limits?",
+    questions: [
+      "What is the Saturation Knee Probe and how does it detect cluster limits?",
+      "Why is Constant load not enough for production testing?",
+      "How does Poisson arrival model human traffic?",
+      "How to simulate traffic spikes safely?",
+    ],
+  },
+  "caching-vram": {
+    title: "KV Cache Semantics & Hardware VRAM",
+    badge: "Step 3C • Hardware & Cache",
+    defaultQuestion: "Why should I bypass KV Cache (nonce injection) and how does it measure cold GPU prefill?",
+    questions: [
+      "Why should I bypass KV Cache (nonce injection) and how does it measure cold GPU prefill?",
+      "How much speedup does prompt prefix caching provide?",
+      "How is KV cache memory calculated per stream?",
+      "Why do warmup requests matter?",
+      "What is the VRAM footprint of 8B vs 70B models?",
+    ],
+  },
+  "slo-goodput": {
+    title: "SLO Reliability Sieve & Goodput Formula",
+    badge: "Step 4A • SLOs",
+    defaultQuestion: "What is Goodput and why is it superior to Raw Throughput?",
+    questions: [
+      "What is Goodput and why is it superior to Raw Throughput?",
+      "What are standard production SLO thresholds?",
+      "How does TPOT differ from ITL?",
+      "How does the 3-stage reliability sieve work?",
+    ],
+  },
+  "spend-guardrails": {
+    title: "Token Economics & Hard Spend Cap Circuit Breaker",
+    badge: "Step 4B • Budget",
+    defaultQuestion: "How does the zero bill-shock circuit breaker protect against runaway cloud costs?",
+    questions: [
+      "How does the zero bill-shock circuit breaker protect against runaway cloud costs?",
+      "How is benchmark cost calculated in real time?",
+      "What happens when the spend cap is hit?",
+      "How to input custom provider token pricing?",
+    ],
+  },
+  "provider-routing": {
+    title: "Wire Protocols & Connection Latency",
+    badge: "Step 1A • Wire Protocols",
+    defaultQuestion: "How do wire protocols like Anthropic vs OpenAI differ in streaming performance?",
+    questions: [
+      "How do wire protocols like Anthropic vs OpenAI differ in streaming performance?",
+      "What causes connection latency overhead in cloud endpoints?",
+      "Why is HTTP/2 or HTTP/3 connection reuse critical?",
+      "How to configure custom vLLM / Ollama endpoints?",
+    ],
+  },
+  "model-sizing": {
+    title: "Model Parameter Sizing & Quantization",
+    badge: "Step 1B • Model Sizing",
+    defaultQuestion: "How does quantization (FP8/INT4) affect TPS?",
+    questions: [
+      "How does quantization (FP8/INT4) affect TPS?",
+      "What is the VRAM footprint of 8B vs 70B models?",
+      "How do MoE (Mixture of Experts) models behave under load?",
+      "How does model parameter size influence prefill vs decode memory bandwidth?",
+    ],
+  },
+};
+
 /**
  * Dedicated Question-Answer mappings for every prefilled & suggested question.
  */
@@ -698,6 +809,270 @@ $$\\text{Speedup} \\approx \\frac{\\text{Original Precision (16-bit)}}{\\text{Qu
       "How does model parameter size influence prefill vs decode memory bandwidth?",
     ],
   },
+  {
+    question: "How do token ratios (prefill vs. decode) affect benchmarking results?",
+    keywords: ["token ratios", "prefill vs decode", "prompt ratio", "workload ratio", "prompt to generation"],
+    topic: "Token Ratios & Workload Archetypes",
+    badge: "Step 2A • Workload Ratio",
+    answer: `### ⚖️ Prefill vs. Decode Ratios in Benchmarking
+
+LLM inference comprises two distinct compute regimes:
+
+1. **Prefill Phase (FLOP-Bound)**:
+   - Ingests the entire prompt in parallel using Tensor Cores.
+   - Computational complexity scales with context length squared ($O(N^2)$ attention).
+   - Governs **TTFT** (Time to First Token).
+2. **Decode Phase (Memory-Bandwidth-Bound)**:
+   - Generates tokens autoregressively, loading all weights once per token.
+   - Governs **TPOT** and **ITL**.
+
+**Benchmark Sizing Strategy**:
+- **RAG**: 8,000 prompt / 200 gen $\\to$ Measures cold matrix prefill density.
+- **Chat**: 250 prompt / 150 gen $\\to$ Measures interactive human conversational responsiveness.
+- **Reasoning/Code**: 300 prompt / 2,000 gen $\\to$ Measures sustained autoregressive decode bandwidth.`,
+    followups: [
+      "Why is TTFT critical for RAG vs. Chat?",
+      "How to benchmark reasoning (CoT) models?",
+      "What is the difference between TTFT and TTFA?",
+    ],
+  },
+  {
+    question: "How do Temperature, Top-P, and Max Tokens impact benchmark accuracy?",
+    keywords: ["temperature top p max tokens impact", "sampling parameters accuracy", "sampling benchmark impact"],
+    topic: "Sampling Parameter Rigor in Benchmarks",
+    badge: "Step 2B • Sampling Settings",
+    answer: `### 🔬 Benchmark Calibration via Sampling Settings
+
+1. **Temperature = 0.0 (Argmax / Greedy)**:
+   - Guarantees 100% deterministic output paths across all runs and providers.
+   - Eliminates stochastic token variance, ensuring that throughput comparisons reflect pure hardware differences.
+2. **Top-P (Nucleus Sampling)**:
+   - Limits sampling to the cumulative probability mass $P$ (e.g. 0.9).
+   - Setting Top-P lower avoids rare token paths that cause early or late sequence termination.
+3. **Max Tokens**:
+   - Acts as a deterministic decode budget ceiling across all worker streams.`,
+    followups: [
+      "Why use Temperature = 0 for throughput tests?",
+      "How does sampling affect token jitter & ITL?",
+      "What happens when Max Tokens is reached?",
+    ],
+  },
+  {
+    question: "How do I choose the right concurrency worker pool for stress testing?",
+    keywords: ["choose concurrency worker pool", "right concurrency", "worker pool size", "how many workers"],
+    topic: "Concurrency Pool Sizing Strategy",
+    badge: "Step 3A • Pool Sizing",
+    answer: `### 👥 Concurrency Pool Sizing Guidelines
+
+1. **Baseline Single-Stream ($N = 1$)**:
+   - Captures minimal theoretical TTFT and maximum single-user token streaming speed.
+2. **Production Multi-Tenant ($N = 10\\text{--}32$)**:
+   - Saturated continuous batching sweet spot for standard 8x H100 or hosted enterprise endpoints.
+3. **Stress Testing / Saturation Knee Probe ($N = 50\\text{--}128$)**:
+   - Overloads the serving engine to identify where the KV cache fills up and queue delay spikes exponentially.`,
+    followups: [
+      "How to find the saturation cliff of a cluster?",
+      "What is the relationship between RPS and concurrency?",
+      "When does TTFT degrade exponentially?",
+    ],
+  },
+  {
+    question: "What is the Saturation Knee Probe and how does it detect cluster limits?",
+    keywords: ["saturation knee probe detect cluster limits", "knee probe explained", "detect cluster limits"],
+    topic: "Saturation Knee Probe Architecture",
+    badge: "Step 3B • Knee Probe",
+    answer: `### 🔍 Saturation Knee Probe Architecture
+
+The **Saturation Knee Probe** runs a geometric load progression ($1 \\to 3 \\to 8 \\to 16 \\to 32 \\to 64$):
+
+- At each step, it records **TTFT P95**, **Goodput Yield**, and **HTTP 429 Rate Limits**.
+- It automatically calculates the second derivative $\\frac{d^2 \\text{TTFT}}{dN^2}$ to pinpoint the **inflection knee** $N_{\\text{knee}}$ where GPU VRAM is exhausted and queueing begins.`,
+    followups: [
+      "How to find the saturation cliff of a cluster?",
+      "Why is Constant load not enough for production testing?",
+      "How does Poisson arrival model human traffic?",
+    ],
+  },
+  {
+    question: "Why should I bypass KV Cache (nonce injection) and how does it measure cold GPU prefill?",
+    keywords: ["bypass kv cache nonce injection", "cold gpu prefill", "nonce injection measure", "cache bust"],
+    topic: "Cold GPU Prefill Measurement via Nonce",
+    badge: "Step 3C • Nonce Injection",
+    answer: `### 🧊 Cold GPU Prefill via Nonce Injection
+
+Modern inference engines (vLLM, SGLang, OpenAI, Anthropic) reuse KV cache tensors across identical prompt prefixes.
+
+- When **Bypass KV Cache** is enabled, LLMark prefixes each prompt with a unique UUID timestamp \`[nonce:1724758920-a8f1]\`.
+- This forces the inference engine to compute full multi-head self-attention across every layer, measuring **cold hardware prefill latency and TFLOPS** rather than warm cache hits.`,
+    followups: [
+      "How much speedup does prompt prefix caching provide?",
+      "How is KV cache memory calculated per stream?",
+      "Why do warmup requests matter?",
+    ],
+  },
+  {
+    question: "How does model parameter size influence prefill vs decode memory bandwidth?",
+    keywords: ["model parameter size influence prefill decode", "model size memory bandwidth", "weights memory bandwidth"],
+    topic: "Model Parameter Sizing & Memory Physics",
+    badge: "Step 1B • Parameter Sizing",
+    answer: `### 🧠 Model Parameter Size & Memory Physics
+
+- **Prefill (Compute-Bound)**:
+  $$\\text{Prefill FLOPs} \\approx 2 \\times P \\times T_{\\text{prompt}}$$
+  Larger models scale proportionally with parameter count $P$.
+- **Decode (Memory Bandwidth-Bound)**:
+  $$\\text{Decode Latency per Token} \\approx \\frac{P \\times B_{\\text{prec}}}{\\text{GPU Memory Bandwidth (TB/s)}}$$
+  A 70B parameter model in FP16 requires transferring $140\\text{ GB}$ of weights across the bus for every single generated token!`,
+    followups: [
+      "How do MoE (Mixture of Experts) models behave under load?",
+      "What is the VRAM footprint of 8B vs 70B models?",
+      "How does quantization (FP8/INT4) affect TPS?",
+    ],
+  },
+  {
+    question: "How does the 3-stage reliability sieve work?",
+    keywords: ["3-stage reliability sieve", "reliability sieve work", "3 stage sieve", "goodput sieve"],
+    topic: "The 3-Stage Reliability Sieve",
+    badge: "Step 4A • Reliability Sieve",
+    answer: `### 🛡️ The 3-Stage Reliability Sieve
+
+LLMark filters every completed request through 3 cascading gates:
+
+1. **Stage 1 (Transport & Integrity)**: Confirms HTTP 200, valid SSE framing, and zero truncated JSON payloads.
+2. **Stage 2 (Latency Budgets)**: Validates that $\\text{TTFT} \\le \\text{Threshold}$ and $\\text{TPOT} \\le \\text{Threshold}$.
+3. **Stage 3 (Deadline Enforcement)**: Validates total $\\text{E2E Duration} \\le \\text{Max SLA Deadline}$.
+
+Tokens from requests failing any stage are discarded from **Goodput** calculations.`,
+    followups: [
+      "What is Goodput and why is it superior to Raw Throughput?",
+      "What are standard production SLO thresholds?",
+      "How does TPOT differ from ITL?",
+    ],
+  },
+  {
+    question: "What happens when the spend cap is hit?",
+    keywords: ["what happens when spend cap hit", "spend cap triggered", "budget cap exceeded"],
+    topic: "Spend Cap Trip Dynamics",
+    badge: "Step 4B • Budget Safety",
+    answer: `### 🛑 What Happens When the Spend Cap is Hit
+
+When accumulated token spend reaches your **Hard Spend Cap**:
+
+1. **Instant Reactive Abort**: Orchestrator sends an asynchronous cancellation signal to all active HTTP sockets within $\\le 50\\text{ms}$.
+2. **Clean Telemetry Flush**: All completed streams up to that millisecond are finalized and saved into benchmark history.
+3. **Report Flagging**: Benchmark run is marked as \`ABORTED_SPEND_CAP_REACHED\`, preventing accidental cloud billing.`,
+    followups: [
+      "How does the zero bill-shock circuit breaker protect against runaway cloud costs?",
+      "How is benchmark cost calculated in real time?",
+      "How to input custom provider token pricing?",
+    ],
+  },
+  {
+    question: "How to input custom provider token pricing?",
+    keywords: ["input custom provider token pricing", "custom pricing override", "enterprise rate pricing"],
+    topic: "Custom Token Pricing Configuration",
+    badge: "Step 4B • Pricing Overrides",
+    answer: `### 💲 Configuring Custom Token Pricing
+
+In Step 4B (Spend Guardrails):
+
+- Toggle **Custom Pricing Override** ON.
+- Enter your contract prompt rate ($P_{\\text{in}}$ per 1M tokens) and completion rate ($P_{\\text{out}}$ per 1M tokens).
+- Set both to \`$0.00\` for self-hosted vLLM/Ollama clusters or enter your amortized hourly GPU rate.`,
+    followups: [
+      "How is benchmark cost calculated in real time?",
+      "How does the zero bill-shock circuit breaker protect against runaway cloud costs?",
+      "What happens when the spend cap is hit?",
+    ],
+  },
+  {
+    question: "What causes connection latency overhead in cloud endpoints?",
+    keywords: ["causes connection latency overhead", "cloud endpoints latency overhead", "connection overhead"],
+    topic: "Cloud Endpoint Connection Overhead Breakdown",
+    badge: "Step 1A • Connection Latency",
+    answer: `### ⚡ Anatomy of Cloud Connection Overhead
+
+1. **DNS Resolution**: $10\\text{--}40\\text{ms}$ depending on resolver cache.
+2. **TCP Handshake**: $1\\text{ RTT}$ ($20\\text{--}50\\text{ms}$ based on cloud region distance).
+3. **TLS 1.3 Key Exchange**: $1\\text{ RTT}$ ($20\\text{--}50\\text{ms}$).
+4. **API Gateway & Auth Verification**: $15\\text{--}40\\text{ms}$ for token validation and rate limiter check.
+
+> Warmup requests eliminate 1-3 by maintaining persistent HTTP/2 keep-alive connections.`,
+    followups: [
+      "Why do warmup requests matter?",
+      "Why is HTTP/2 or HTTP/3 connection reuse critical?",
+      "How do wire protocols like Anthropic vs OpenAI differ in streaming performance?",
+    ],
+  },
+  {
+    question: "How to configure custom vLLM / Ollama endpoints?",
+    keywords: ["configure custom vllm ollama", "vllm endpoint setup", "ollama benchmark setup"],
+    topic: "Self-Hosted vLLM & Ollama Configuration",
+    badge: "Step 1A • Local Deployments",
+    answer: `### 🛠️ Connecting Self-Hosted vLLM / Ollama
+
+1. In Step 1, select **OpenAI Compatible** provider.
+2. Set **Base URL**:
+   - **vLLM**: \`http://localhost:8000/v1\`
+   - **Ollama**: \`http://localhost:11434/v1\`
+3. Enter API Key: \`EMPTY\` or \`ollama\`.
+4. Enter target Model ID (e.g. \`meta-llama/Llama-3.1-8B-Instruct\` or \`llama3.1:8b\`).`,
+    followups: [
+      "How do wire protocols like Anthropic vs OpenAI differ in streaming performance?",
+      "What is the VRAM footprint of 8B vs 70B models?",
+      "Why should I bypass KV Cache (nonce injection) and how does it measure cold GPU prefill?",
+    ],
+  },
+  {
+    question: "Why is HTTP/2 or HTTP/3 connection reuse critical?",
+    keywords: ["http2 http3 connection reuse", "multiplexing sse", "connection reuse critical"],
+    topic: "HTTP/2 & HTTP/3 Transport Multiplexing",
+    badge: "Step 1A • Transport",
+    answer: `### 🚀 HTTP/2 & Multiplexing in LLM Streaming
+
+- **Head-of-Line Blocking Elimination**: Multiplexes dozens of concurrent SSE token streams over a single TLS connection.
+- **Socket Exhaustion Prevention**: Prevents running out of ephemeral client OS ports when running 100+ concurrent workers.`,
+    followups: [
+      "What causes connection latency overhead in cloud endpoints?",
+      "Why do warmup requests matter?",
+      "How do wire protocols like Anthropic vs OpenAI differ in streaming performance?",
+    ],
+  },
+  {
+    question: "What is the VRAM footprint of 8B vs 70B models?",
+    keywords: ["vram footprint 8b vs 70b", "8b vs 70b vram", "gpu memory requirements 70b"],
+    topic: "VRAM Footprint Comparison (8B vs 70B)",
+    badge: "Step 1B • VRAM Footprint",
+    answer: `### 💾 VRAM Sizing: 8B vs 70B Models
+
+| Component | Llama-3-8B (FP16) | Llama-3-8B (FP8) | Llama-3-70B (FP16) | Llama-3-70B (FP8) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Model Weights** | $16\\text{ GB}$ | $8\\text{ GB}$ | $140\\text{ GB}$ | $70\\text{ GB}$ |
+| **KV Cache / 1K Tokens** | $0.25\\text{ MB}$ | $0.13\\text{ MB}$ | $1.25\\text{ MB}$ | $0.63\\text{ MB}$ |
+| **Min GPU Target** | 1x RTX 4090 (24GB) | 1x RTX 4070 (12GB) | 2x H100 (80GB) | 1x H100 (80GB) |`,
+    followups: [
+      "How is KV cache memory calculated per stream?",
+      "How does quantization (FP8/INT4) affect TPS?",
+      "How do MoE (Mixture of Experts) models behave under load?",
+    ],
+  },
+  {
+    question: "How do I optimize my benchmark parameters?",
+    keywords: ["optimize my benchmark parameters", "how do i optimize benchmark", "best benchmark configuration"],
+    topic: "End-to-End Benchmark Optimization Playbook",
+    badge: "Inference Copilot",
+    answer: `### ⚡ 4-Step Benchmark Optimization Playbook
+
+1. **Step 1 (Wire Protocol)**: Enable Warmup runs (1-3) to prime persistent TLS connections.
+2. **Step 2 (Workload & Sampling)**: Match input/output token ratio to your production scenario and set $\\text{Temperature} = 0.0$ for deterministic results.
+3. **Step 3 (Traffic & Knee)**: Use the Saturation Knee Probe to discover the cluster inflection limit $N_{\\text{knee}}$.
+4. **Step 4 (SLO & Safety)**: Set realistic Goodput latency thresholds (TTFT $\\le 800\\text{ms}$, TPOT $\\le 35\\text{ms}$) and a hard spend cap (e.g. $\$1.50$) for cost safety.`,
+    followups: [
+      "What is Goodput and why is it superior to Raw Throughput?",
+      "How to find the saturation cliff of a cluster?",
+      "Why is TTFT critical for RAG vs. Chat?",
+    ],
+  },
 ];
 
 /**
@@ -707,15 +1082,16 @@ export function getExpertAnswer(
   query: string,
   contextTopicId?: string
 ): { answer: string; topic: string; badge: string; followups: string[] } {
-  const qClean = query.trim().toLowerCase();
+  const normalize = (t: string) => t.toLowerCase().replace(/[^\w\s]/g, "").trim();
+  const qNorm = normalize(query);
+  const qWords = new Set(qNorm.split(/\s+/).filter(Boolean));
+  const stopwords = new Set(["what", "is", "the", "how", "do", "does", "why", "for", "and", "or", "in", "to", "of", "a", "an", "vs", "difference", "between"]);
+  const meaningfulWords = new Set([...qWords].filter((w) => !stopwords.has(w)));
 
-  // 1. Direct match on dedicated Q&A answers
+  // 1. Direct match on dedicated Q&A answers (exact or high Jaccard overlap)
   for (const qa of DEDICATED_QA_ANSWERS) {
-    if (
-      qa.question.toLowerCase() === qClean ||
-      qa.keywords.every((kw) => qClean.includes(kw)) ||
-      (qa.keywords.filter((kw) => qClean.includes(kw)).length >= 2)
-    ) {
+    const qaNorm = normalize(qa.question);
+    if (qaNorm === qNorm) {
       return {
         answer: qa.answer,
         topic: qa.topic,
@@ -723,20 +1099,34 @@ export function getExpertAnswer(
         followups: qa.followups,
       };
     }
+
+    const qaWords = new Set(qaNorm.split(/\s+/).filter((w) => !stopwords.has(w)));
+    if (meaningfulWords.size > 0 && qaWords.size > 0) {
+      const intersection = new Set([...meaningfulWords].filter((w) => qaWords.has(w)));
+      const union = new Set([...meaningfulWords, ...qaWords]);
+      const jaccard = intersection.size / union.size;
+      if (jaccard >= 0.6 || (intersection.size >= 3 && intersection.size === qaWords.size)) {
+        return {
+          answer: qa.answer,
+          topic: qa.topic,
+          badge: qa.badge,
+          followups: qa.followups,
+        };
+      }
+    }
   }
 
-  // 2. Fuzzy keyword match across all dedicated QA items
+  // 2. Exact keyword phrase matching across dedicated QA items
   let bestQAMatch: QuestionAnswer | null = null;
   let highestQAScore = 0;
 
   for (const qa of DEDICATED_QA_ANSWERS) {
     let score = 0;
     for (const kw of qa.keywords) {
-      if (qClean.includes(kw)) score += 3;
-    }
-    const words = qa.question.toLowerCase().split(/\s+/);
-    for (const w of words) {
-      if (w.length > 3 && qClean.includes(w)) score += 1;
+      const kwNorm = normalize(kw);
+      if (qNorm.includes(kwNorm)) {
+        score += kwNorm.split(/\s+/).length * 3;
+      }
     }
     if (score > highestQAScore) {
       highestQAScore = score;
@@ -744,7 +1134,7 @@ export function getExpertAnswer(
     }
   }
 
-  if (bestQAMatch && highestQAScore >= 3) {
+  if (bestQAMatch && highestQAScore >= 6) {
     return {
       answer: bestQAMatch.answer,
       topic: bestQAMatch.topic,
@@ -756,8 +1146,8 @@ export function getExpertAnswer(
   // 3. Match on general EXPERT_KNOWLEDGE articles
   for (const article of Object.values(EXPERT_KNOWLEDGE)) {
     if (
-      article.defaultQuestion.toLowerCase() === qClean ||
-      article.suggestedFollowups.some((f) => f.toLowerCase() === qClean)
+      normalize(article.defaultQuestion) === qNorm ||
+      article.suggestedFollowups.some((f) => normalize(f) === qNorm)
     ) {
       return {
         answer: article.markdown,
@@ -771,21 +1161,43 @@ export function getExpertAnswer(
   // 4. If query is very short or matches context topic exactly
   if (contextTopicId && EXPERT_KNOWLEDGE[contextTopicId]) {
     const article = EXPERT_KNOWLEDGE[contextTopicId];
-    return {
-      answer: article.markdown,
-      topic: article.topic,
-      badge: article.badge,
-      followups: article.suggestedFollowups,
-    };
+    if (meaningfulWords.size <= 2) {
+      return {
+        answer: article.markdown,
+        topic: article.topic,
+        badge: article.badge,
+        followups: article.suggestedFollowups,
+      };
+    }
   }
 
-  // 5. General intelligent fallback
-  const defaultArticle = EXPERT_KNOWLEDGE["workload-preset"];
+  // 5. Intelligent guidance fallback
   return {
-    answer: defaultArticle.markdown,
-    topic: defaultArticle.topic,
-    badge: defaultArticle.badge,
-    followups: defaultArticle.suggestedFollowups,
+    answer: `### 💡 Inference Architect Guidance
+
+#### 💡 In Simple Terms (TL;DR)
+When evaluating LLM endpoints, benchmark speed is determined by two separate steps: how fast the model reads your prompt (**TTFT**), and how fast it generates new words one by one (**TPOT**).
+
+#### 🔬 How It Works Under the Hood
+1. **Prefill vs. Decode Separation**:
+   - **TTFT (Time to First Token)** measures how fast the GPU processes your input prompt in parallel (compute-bound FLOPs).
+   - **TPOT (Time Per Output Token)** measures how fast the GPU transfers weights from memory to generate each next token (memory-bandwidth-bound GB/s).
+2. **Queuing & Concurrency Curves**:
+   - As you send more concurrent requests, continuous batching engines scale throughput linearly until hitting the **Saturation Knee**, where GPU memory runs out and requests queue up.
+3. **Production Goodput**:
+   - Rather than counting raw tokens, **Goodput** only counts responses that pass your real-world SLO gates (e.g. $\\text{TTFT} \\le 800\\text{ms}$, $\\text{TPOT} \\le 35\\text{ms}$).
+
+#### 🛠️ Benchmark Recommendation
+- For interactive chat, optimize for $\\text{TPOT} \\le 30\\text{ms/tok}$ ($\\ge 33\\text{ tok/s}$).
+- For RAG or large document ingestion, optimize for low **TTFT** and enable **Prompt Prefix Caching**.
+- Add your **Groq API Key** in \`.env\` or the drawer key settings to ask unconstrained custom questions powered by **Llama 3.3 70B** on Groq LPUs!`,
+    topic: "Inference Guidance",
+    badge: "Copilot",
+    followups: [
+      "What is Goodput and why is it superior to Raw Throughput?",
+      "How to find the saturation cliff of a cluster?",
+      "Why is TTFT critical for RAG vs. Chat?",
+    ],
   };
 }
 

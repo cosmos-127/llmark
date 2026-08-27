@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -13,11 +14,14 @@ import {
   Lightbulb,
   BookOpen,
   Zap,
-  MessageSquare,
+  Key,
+  Eye,
+  EyeOff,
   HelpCircle,
-  Sliders,
+  ArrowUpRight,
+  MessageSquare,
 } from "lucide-react";
-import { EXPERT_KNOWLEDGE, getExpertAnswer } from "@/lib/expertKnowledge";
+import { EXPERT_KNOWLEDGE, TOPIC_SUGGESTED_QUESTIONS, getExpertAnswer } from "@/lib/expertKnowledge";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +41,8 @@ interface Message {
   text: string;
   topic?: string;
   suggestedFollowups?: string[];
+  source?: string;
+  model?: string;
   timestamp: string;
 }
 
@@ -46,6 +52,7 @@ interface AskExpertDrawerProps {
   context?: AskExpertContext | null;
   vendor?: string;
   model?: string;
+  credential?: any;
 }
 
 export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
@@ -54,70 +61,122 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
   context,
   vendor = "openai_compatible",
   model = "gpt-4o-mini",
+  credential,
 }) => {
+  const [mounted, setMounted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputQuery, setInputQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeTopicId, setActiveTopicId] = useState<string>("workload-preset");
+
+  // Groq API Key state from client
+  const [groqApiKey, setGroqApiKey] = useState<string>(() => {
+    return localStorage.getItem("llmark_groq_api_key") || "";
+  });
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [showKeySecret, setShowKeySecret] = useState(false);
+  const [keySavedBadge, setKeySavedBadge] = useState(false);
+
+  // Backend status (checks if GROQ_API_KEY is present in backend .env)
+  const [backendGroqStatus, setBackendGroqStatus] = useState<{ has_groq_key: boolean; model: string }>({
+    has_groq_key: false,
+    model: "llama-3.3-70b-versatile",
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize or update conversation when context changes
   useEffect(() => {
-    if (context && isOpen) {
-      const initialQA = getExpertAnswer(context.defaultQuestion || context.title || "", context.topicId);
-      const article = EXPERT_KNOWLEDGE[context.topicId];
-      const initialTopic = article ? article.topic : initialQA.topic;
-      const initialAnswer = article ? article.markdown : initialQA.answer;
-      const initialFollowups = article ? article.suggestedFollowups : initialQA.followups;
+    setMounted(true);
+  }, []);
 
-      // Set initial welcome / context message
-      setMessages([
-        {
-          id: "msg-welcome",
-          sender: "expert",
-          text: initialAnswer,
-          topic: initialTopic,
-          suggestedFollowups: initialFollowups,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
+  // Determine effective Groq API key from client or credential
+  const effectiveClientGroqKey =
+    groqApiKey.trim() ||
+    (credential?.groq_api_key ? credential.groq_api_key.trim() : "") ||
+    (vendor === "groq" || String(credential?.base_url || "").includes("groq")
+      ? credential?.api_key || ""
+      : "");
 
-      if (context.defaultQuestion) {
-        setInputQuery(context.defaultQuestion);
+  const hasGroqKey = backendGroqStatus.has_groq_key || !!effectiveClientGroqKey;
+  const activeGroqModel = backendGroqStatus.model || "llama-3.3-70b-versatile";
+
+  // Query backend status when drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      api.getExpertStatus()
+        .then((res) => {
+          if (res) {
+            setBackendGroqStatus({
+              has_groq_key: res.has_groq_key,
+              model: res.model || "llama-3.3-70b-versatile",
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
+
+  // Lock body & document scroll when drawer is open to eliminate background jitter
+  useEffect(() => {
+    if (isOpen) {
+      const originalBodyOverflow = document.body.style.overflow;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalBodyOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  // Handle ESC key to close drawer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
       }
-    } else if (isOpen && messages.length === 0) {
-      // Default welcome message
-      const defaultArticle = EXPERT_KNOWLEDGE["workload-preset"];
-      setMessages([
-        {
-          id: "msg-default-welcome",
-          sender: "expert",
-          text: `### 🤖 Welcome to the LLMark Inference Copilot\n\nAsk me anything about LLM benchmarking theory, queuing models, GPU VRAM sizing, or setting production SLO thresholds.\n\nClick any topic chip below or type your question:`,
-          topic: "Benchmark Guidance",
-          suggestedFollowups: [
-            "Why is TTFT critical for RAG vs. Chat?",
-            "What is Goodput and why is it superior to Raw Throughput?",
-            "How to find the saturation cliff of a cluster?",
-            "Why use Temperature = 0 for throughput tests?",
-          ],
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // When context changes or drawer opens: prefill the question chatbot ready to fire (do NOT output wall of text)
+  useEffect(() => {
+    if (isOpen) {
+      const targetTopic = context?.topicId || "workload-preset";
+      setActiveTopicId(targetTopic);
+
+      const topicMeta = TOPIC_SUGGESTED_QUESTIONS[targetTopic] || TOPIC_SUGGESTED_QUESTIONS["workload-preset"];
+      const questionToPrefill = context?.defaultQuestion || topicMeta?.defaultQuestion || "";
+
+      if (questionToPrefill) {
+        setInputQuery(questionToPrefill);
+      }
+
+      setTimeout(() => {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }, 150);
     }
   }, [context, isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 200);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
+
+  const handleSaveGroqKey = (newKey: string) => {
+    setGroqApiKey(newKey);
+    if (newKey.trim()) {
+      localStorage.setItem("llmark_groq_api_key", newKey.trim());
+      setKeySavedBadge(true);
+      setTimeout(() => setKeySavedBadge(false), 2000);
+    } else {
+      localStorage.removeItem("llmark_groq_api_key");
+    }
+  };
 
   const handleSendMessage = async (queryText?: string) => {
     const textToSend = (queryText || inputQuery).trim();
@@ -135,32 +194,40 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
     setIsLoading(true);
 
     try {
-      // Check local dedicated QA resolution first for sub-millisecond precision
-      const localResolved = getExpertAnswer(textToSend, context?.topicId);
+      // Build conversation history for multi-turn chat
+      const historyPayload = messages.map((m) => ({
+        role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+        content: m.text,
+      }));
 
-      // Try backend API for potential live dynamic updates
+      // High-precision local matching fallback
+      const localResolved = getExpertAnswer(textToSend, activeTopicId);
       let resAnswer = localResolved.answer;
       let resTopic = localResolved.topic;
       let resFollowups = localResolved.followups;
+      let resSource = "knowledge_engine";
+      let resModel: string | undefined = undefined;
 
       try {
         const res = await api.askExpert({
           query: textToSend,
-          context_topic: context?.topicId,
+          context_topic: activeTopicId,
           vendor,
           model,
+          groq_api_key: effectiveClientGroqKey || undefined,
+          credential,
+          messages: historyPayload,
         });
         if (res && res.answer) {
           resAnswer = res.answer;
           resTopic = res.topic;
           resFollowups = res.suggested_followups;
+          resSource = res.source;
+          resModel = res.model;
         }
       } catch {
         // Fallback already prepared via localResolved
       }
-
-      // Small natural micro-delay for smooth animation feedback
-      await new Promise((r) => setTimeout(r, 180));
 
       const expertMsg: Message = {
         id: `expert-${Date.now()}`,
@@ -168,6 +235,8 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
         text: resAnswer,
         topic: resTopic,
         suggestedFollowups: resFollowups,
+        source: resSource,
+        model: resModel,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, expertMsg]);
@@ -184,261 +253,417 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
 
   const handleReset = () => {
     setMessages([]);
-    setInputQuery("");
-    if (context && EXPERT_KNOWLEDGE[context.topicId]) {
-      const article = EXPERT_KNOWLEDGE[context.topicId];
-      setMessages([
-        {
-          id: "msg-welcome-reset",
-          sender: "expert",
-          text: article.markdown,
-          topic: article.topic,
-          suggestedFollowups: article.suggestedFollowups,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
-    }
+    const topicMeta = TOPIC_SUGGESTED_QUESTIONS[activeTopicId] || TOPIC_SUGGESTED_QUESTIONS["workload-preset"];
+    setInputQuery(topicMeta.defaultQuestion);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
-  return (
+  const activeTopicGroup =
+    TOPIC_SUGGESTED_QUESTIONS[activeTopicId] || TOPIC_SUGGESTED_QUESTIONS["workload-preset"];
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[99999] pointer-events-none flex justify-end">
+          {/* Backdrop with High Z-Index & Clean Dimming to obscure all header/footer/body elements without distraction */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 z-[99998] pointer-events-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
+            aria-hidden="true"
           />
 
           {/* Slide-over Sheet Panel */}
-          <motion.div
-            initial={{ x: "100%", opacity: 0.8 }}
+          <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Inference Copilot"
+            initial={{ x: "100%", opacity: 0.9 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white dark:bg-[#1E1E20] border-l border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xl flex flex-col overflow-hidden"
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="pointer-events-auto relative z-[99999] h-full w-full max-w-lg md:max-w-xl bg-white dark:bg-[#18171A] border-l border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Header with Micro-Animations */}
-            <div className="p-4 px-5 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-[#F3F4F4]/70 dark:bg-[#252426]/90 backdrop-blur-md flex items-center justify-between">
+            {/* Header: Minimal yet Effective */}
+            <div className="p-3.5 px-4.5 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-[#F3F4F4]/80 dark:bg-[#201F22]/90 backdrop-blur-md flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <motion.div
-                  whileHover={{ scale: 1.08, rotate: 5 }}
-                  whileTap={{ scale: 0.92 }}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#853953]/15 dark:bg-[#A74B6A]/20 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/30 dark:border-[#A74B6A]/40 shadow-xs cursor-pointer"
-                >
-                  <Sparkles className="h-4 w-4 animate-pulse" />
-                </motion.div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#853953]/15 dark:bg-[#A74B6A]/20 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/30 dark:border-[#A74B6A]/40 shadow-xs">
+                  <Sparkles className="h-4.5 w-4.5" />
+                </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] font-sans">
-                      Ask the Inference Expert
+                      Inference Copilot
                     </h3>
-                    <motion.div
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.3 }}
+                    <button
+                      type="button"
+                      onClick={() => setShowKeyInput((prev) => !prev)}
+                      className="cursor-pointer"
+                      title={hasGroqKey ? "Groq LLM Active" : "Click to connect Groq API key"}
                     >
-                      <Badge variant="purple" className="text-[10px] py-0 px-1.5 font-medium shadow-2xs">
-                        AI Copilot
-                      </Badge>
-                    </motion.div>
+                      {hasGroqKey ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] py-0 px-1.5 font-medium border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center gap-1"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Groq LPU Active</span>
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="purple"
+                          className="text-[10px] py-0 px-1.5 font-medium shadow-2xs flex items-center gap-1"
+                        >
+                          <BookOpen className="h-2.5 w-2.5" />
+                          <span>Knowledge Base</span>
+                        </Badge>
+                      )}
+                    </button>
                   </div>
-                  <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate max-w-[240px]">
-                    {context?.title ? `Context: ${context.title}` : `Target: ${model}`}
+                  <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 truncate max-w-[260px]">
+                    {context?.title ? `Topic: ${context.title}` : `Target: ${model}`}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleReset}
-                    title="Reset conversation"
-                    className="h-8 w-8 text-[#2C2C2C]/60 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/60 dark:hover:text-[#F3F4F4] cursor-pointer"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                  </Button>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onClose}
-                    className="h-8 w-8 text-[#2C2C2C]/60 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/60 dark:hover:text-[#F3F4F4] cursor-pointer"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </motion.div>
+              {/* Action Buttons */}
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowKeyInput((prev) => !prev)}
+                  title="Configure Groq API Key for live AI responses"
+                  className={`h-8 w-8 cursor-pointer relative ${
+                    showKeyInput || hasGroqKey
+                      ? "text-[#853953] dark:text-[#A74B6A] bg-[#853953]/10 dark:bg-[#A74B6A]/15"
+                      : "text-[#2C2C2C]/60 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/60 dark:hover:text-[#F3F4F4]"
+                  }`}
+                >
+                  <Key className="h-3.5 w-3.5" />
+                  {hasGroqKey && (
+                    <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  )}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleReset}
+                  title="Reset conversation"
+                  className="h-8 w-8 text-[#2C2C2C]/60 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/60 dark:hover:text-[#F3F4F4] cursor-pointer"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  title="Close expert panel (Esc)"
+                  className="h-8 w-8 text-[#2C2C2C]/60 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/60 dark:hover:text-[#F3F4F4] cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
-            {/* Quick Context Topic Ribbon */}
-            <div className="px-4 py-2 bg-[#853953]/5 dark:bg-[#A74B6A]/5 border-b border-[#853953]/10 dark:border-[#A74B6A]/10 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px]">
+            {/* Groq API Key Configuration Drawer Bar */}
+            <AnimatePresence>
+              {showKeyInput && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-amber-500/5 dark:bg-amber-500/10 border-b border-amber-500/20 p-3 px-4 overflow-hidden text-xs"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-semibold text-[11px]">
+                      <Zap className="h-3.5 w-3.5" />
+                      <span>Groq API Key (Live LLM Endpoint)</span>
+                    </div>
+                    {keySavedBadge && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 animate-in fade-in">
+                        <Check className="h-3 w-3" /> Saved
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type={showKeySecret ? "text" : "password"}
+                        value={groqApiKey}
+                        onChange={(e) => handleSaveGroqKey(e.target.value)}
+                        placeholder={
+                          backendGroqStatus.has_groq_key
+                            ? "Active via backend .env (or override here: gsk_...)"
+                            : "gsk_..."
+                        }
+                        className="pr-8 h-8 text-xs font-mono bg-white dark:bg-[#1E1E20] border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 focus:border-[#853953]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowKeySecret((prev) => !prev)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/40 cursor-pointer"
+                      >
+                        {showKeySecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                      </button>
+                    </div>
+                    {groqApiKey && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSaveGroqKey("")}
+                        className="h-8 px-2 text-[10px] text-red-500 hover:text-red-600 hover:bg-red-500/10 cursor-pointer"
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 mt-1.5 leading-tight flex items-center justify-between">
+                    <span>
+                      {backendGroqStatus.has_groq_key
+                        ? "✨ Key loaded from .env. Powered by Llama 3.3 70B at 500+ tok/s."
+                        : "Key is stored in browser. You can also add GROQ_API_KEY in .env."}
+                    </span>
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Quick Context Topic Selector Ribbon */}
+            <div className="px-3.5 py-2 bg-[#853953]/5 dark:bg-[#A74B6A]/5 border-b border-[#853953]/10 dark:border-[#A74B6A]/10 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px]">
               <span className="text-[#853953] dark:text-[#A74B6A] font-semibold shrink-0 flex items-center gap-1">
-                <BookOpen className="h-3 w-3" /> Topics:
+                <BookOpen className="h-3 w-3" /> Domains:
               </span>
-              {Object.entries(EXPERT_KNOWLEDGE).map(([key, item]) => {
-                const isActive = context?.topicId === key;
+              {Object.entries(TOPIC_SUGGESTED_QUESTIONS).map(([key, item]) => {
+                const isActive = activeTopicId === key;
                 return (
-                  <motion.button
+                  <button
                     key={key}
                     type="button"
-                    whileHover={{ scale: 1.04, y: -1 }}
-                    whileTap={{ scale: 0.96 }}
                     onClick={() => {
-                      setMessages([
-                        {
-                          id: `topic-${key}-${Date.now()}`,
-                          sender: "expert",
-                          text: item.markdown,
-                          topic: item.topic,
-                          suggestedFollowups: item.suggestedFollowups,
-                          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-                        },
-                      ]);
+                      setActiveTopicId(key);
                       setInputQuery(item.defaultQuestion);
+                      setTimeout(() => {
+                        inputRef.current?.focus();
+                      }, 100);
                     }}
-                    className={`px-2.5 py-1 rounded-md shrink-0 transition-all font-medium text-[11px] cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg shrink-0 transition-all font-medium text-[11px] cursor-pointer select-none ${
                       isActive
                         ? "bg-[#853953] text-white dark:bg-[#A74B6A] shadow-xs"
                         : "bg-white dark:bg-[#252426] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:bg-[#853953]/15 hover:text-[#853953] dark:hover:text-[#A74B6A] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
                     }`}
                   >
-                    {item.topic.split(" ")[0]}
-                  </motion.button>
+                    {item.title.split(" ")[0]}
+                  </button>
                 );
               })}
             </div>
 
-            {/* Chat Body / Messages */}
+            {/* Chat Body */}
             <div className="flex-1 p-4 overflow-y-auto space-y-4">
-              <AnimatePresence mode="popLayout">
-                {messages.map((msg, idx) => {
-                  const isUser = msg.sender === "user";
-                  return (
-                    <motion.div
-                      key={msg.id || idx}
-                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ type: "spring", damping: 26, stiffness: 340 }}
-                      className={`flex flex-col ${isUser ? "items-end" : "items-start"} space-y-1.5`}
-                    >
-                      <div className="flex items-center gap-1.5 text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 px-1">
-                        {isUser ? (
-                          <>
-                            <span>You</span>
-                            <span>•</span>
-                            <span>{msg.timestamp}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Bot className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
-                            <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
-                              {msg.topic || "Inference Expert"}
+              {/* If no messages yet, show Clean Copilot Welcome with Topic Relevant Suggested Questions */}
+              {messages.length === 0 ? (
+                <div className="py-2 space-y-4 animate-in fade-in duration-200">
+                  {/* Hero Prompt Card */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-[#853953]/10 via-[#853953]/5 to-transparent dark:from-[#A74B6A]/15 dark:via-[#A74B6A]/5 dark:to-transparent border border-[#853953]/20 dark:border-[#A74B6A]/25 shadow-2xs">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="purple" className="text-[10px] font-sans py-0.5 px-2">
+                        {activeTopicGroup.badge}
+                      </Badge>
+                      {hasGroqKey && (
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                          <Zap className="h-3 w-3 fill-current" /> Llama 3.3 70B
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4] mb-1">
+                      {activeTopicGroup.title}
+                    </h4>
+                    <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed">
+                      Ask any question below, or select a suggested topic inquiry to get an instant, in-depth architectural breakdown.
+                    </p>
+                  </div>
+
+                  {/* Detailed Topic Relevant Suggested Questions */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-[11px] font-bold text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 flex items-center gap-1.5 uppercase tracking-wider">
+                        <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                        <span>Topic Suggested Questions</span>
+                      </span>
+                      <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                        Click to ask
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2">
+                      {activeTopicGroup.questions.map((qText, qIdx) => (
+                        <button
+                          key={qIdx}
+                          type="button"
+                          onClick={() => handleSendMessage(qText)}
+                          className="text-left p-3 rounded-xl bg-white dark:bg-[#242327] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/50 dark:hover:border-[#A74B6A]/50 hover:bg-[#853953]/5 dark:hover:bg-[#A74B6A]/5 shadow-2xs hover:shadow-xs transition-all group flex items-start justify-between gap-3 cursor-pointer"
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] text-[10px] font-bold mt-0.5">
+                              {qIdx + 1}
                             </span>
-                            <span>•</span>
-                            <span>{msg.timestamp}</span>
-                          </>
-                        )}
-                      </div>
+                            <span className="text-xs font-medium text-[#2C2C2C]/85 dark:text-[#F3F4F4]/85 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] transition-colors leading-snug">
+                              {qText}
+                            </span>
+                          </div>
+                          <ArrowUpRight className="h-3.5 w-3.5 text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-0.5" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
+                  {/* Ready to Fire Tip */}
+                  <div className="px-1 py-1 flex items-center justify-between text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
+                      Question prefilled in input below & ready to fire.
+                    </span>
+                    <span className="font-mono text-[10px] bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/10 px-1.5 py-0.5 rounded">
+                      ↵ Enter to send
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                /* Chat Conversation Stream */
+                <AnimatePresence mode="popLayout">
+                  {messages.map((msg, idx) => {
+                    const isUser = msg.sender === "user";
+                    return (
                       <motion.div
-                        layout
-                        className={`relative group max-w-[94%] p-3.5 rounded-2xl text-xs leading-relaxed ${
-                          isUser
-                            ? "bg-[#853953] dark:bg-[#A74B6A] text-white rounded-tr-xs shadow-xs"
-                            : "bg-[#F3F4F4] dark:bg-[#252426] text-[#2C2C2C] dark:text-[#F3F4F4] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 rounded-tl-xs shadow-2xs"
-                        }`}
+                        key={msg.id || idx}
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.18 }}
+                        className={`flex flex-col ${isUser ? "items-end" : "items-start"} space-y-1.5`}
                       >
-                        {/* Formatted Markdown Content */}
-                        {isUser ? (
-                          <div className="font-sans whitespace-pre-wrap">{msg.text}</div>
-                        ) : (
-                          <MarkdownRenderer content={msg.text} />
-                        )}
+                        <div className="flex items-center gap-1.5 text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 px-1">
+                          {isUser ? (
+                            <>
+                              <span>You</span>
+                              <span>•</span>
+                              <span>{msg.timestamp}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Bot className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
+                              <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                                {msg.topic || "Inference Copilot"}
+                              </span>
+                              {msg.source === "groq_llm" ? (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[9px] py-0 px-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                                >
+                                  ⚡ Groq LLM
+                                </Badge>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[9px] py-0 px-1 border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/10"
+                                >
+                                  📚 Curated Guide
+                                </Badge>
+                              )}
+                              <span>•</span>
+                              <span>{msg.timestamp}</span>
+                            </>
+                          )}
+                        </div>
 
-                        {/* Copy action for expert answers */}
-                        {!isUser && (
-                          <motion.button
-                            type="button"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleCopy(msg.id, msg.text)}
-                            className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md bg-white/80 dark:bg-[#1E1E20]/80 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#853953] dark:hover:text-[#A74B6A] shadow-2xs cursor-pointer"
-                            title="Copy response"
-                          >
-                            {copiedId === msg.id ? (
-                              <Check className="h-3 w-3 text-emerald-600 animate-in zoom-in-50 duration-200" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </motion.button>
+                        <div
+                          className={`relative group max-w-[94%] p-3.5 rounded-2xl text-xs leading-relaxed ${
+                            isUser
+                              ? "bg-[#853953] dark:bg-[#A74B6A] text-white rounded-tr-xs shadow-xs"
+                              : "bg-[#F3F4F4] dark:bg-[#242327] text-[#2C2C2C] dark:text-[#F3F4F4] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 rounded-tl-xs shadow-2xs"
+                          }`}
+                        >
+                          {/* Markdown Rendered Content */}
+                          {isUser ? (
+                            <div className="font-sans whitespace-pre-wrap">{msg.text}</div>
+                          ) : (
+                            <MarkdownRenderer content={msg.text} />
+                          )}
+
+                          {/* Copy button for Expert answers */}
+                          {!isUser && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(msg.id, msg.text)}
+                              className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md bg-white/80 dark:bg-[#1E1E20]/80 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#853953] dark:hover:text-[#A74B6A] shadow-2xs cursor-pointer"
+                              title="Copy response"
+                            >
+                              {copiedId === msg.id ? (
+                                <Check className="h-3 w-3 text-emerald-600 animate-in zoom-in-50 duration-200" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Suggested Follow-up Prompt Chips */}
+                        {!isUser && msg.suggestedFollowups && msg.suggestedFollowups.length > 0 && (
+                          <div className="pt-1.5 space-y-1.5 w-full pl-1">
+                            <span className="text-[10px] font-semibold text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 flex items-center gap-1">
+                              <Lightbulb className="h-3 w-3 text-amber-500" /> Follow-up inquiries:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {msg.suggestedFollowups.map((followup, fIdx) => (
+                                <button
+                                  key={fIdx}
+                                  type="button"
+                                  onClick={() => handleSendMessage(followup)}
+                                  className="text-[11px] text-left py-1 px-2.5 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/50 dark:hover:border-[#A74B6A]/50 text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 hover:text-[#853953] dark:hover:text-[#A74B6A] hover:bg-[#853953]/5 dark:hover:bg-[#A74B6A]/5 shadow-2xs transition-all flex items-center gap-1.5 group cursor-pointer"
+                                >
+                                  <span>{followup}</span>
+                                  <ChevronRight className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform text-[#853953] dark:text-[#A74B6A]" />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              )}
 
-                      {/* Suggested Follow-up Prompts with Micro-Animations */}
-                      {!isUser && msg.suggestedFollowups && msg.suggestedFollowups.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.15 }}
-                          className="pt-1.5 space-y-1.5 w-full pl-1"
-                        >
-                          <span className="text-[10px] font-semibold text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 flex items-center gap-1">
-                            <Lightbulb className="h-3 w-3 text-amber-500" /> Suggested questions:
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {msg.suggestedFollowups.map((followup, idx) => (
-                              <motion.button
-                                key={idx}
-                                type="button"
-                                whileHover={{ scale: 1.025, x: 2 }}
-                                whileTap={{ scale: 0.975 }}
-                                onClick={() => handleSendMessage(followup)}
-                                className="text-[11px] text-left py-1 px-2.5 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/50 dark:hover:border-[#A74B6A]/50 text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 hover:text-[#853953] dark:hover:text-[#A74B6A] hover:bg-[#853953]/5 dark:hover:bg-[#A74B6A]/5 shadow-2xs transition-all flex items-center gap-1.5 group cursor-pointer"
-                              >
-                                <span>{followup}</span>
-                                <ChevronRight className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform text-[#853953] dark:text-[#A74B6A]" />
-                              </motion.button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-
-              {/* Pulsing AI Wave Micro-Animation */}
+              {/* Pulsing AI Typing indicator */}
               {isLoading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F3F4F4] dark:bg-[#252426] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 w-fit shadow-2xs"
-                >
+                <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-[#F3F4F4] dark:bg-[#242327] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 w-fit shadow-2xs">
                   <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A] animate-spin" />
-                  <span className="font-medium">Synthesizing inference analysis</span>
+                  <span className="font-medium">
+                    {hasGroqKey ? "Querying Groq LPU Copilot..." : "Synthesizing inference analysis..."}
+                  </span>
                   <div className="flex items-center gap-1 pl-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A] animate-bounce [animation-delay:-0.3s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A] animate-bounce [animation-delay:-0.15s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A] animate-bounce" />
                   </div>
-                </motion.div>
+                </div>
               )}
 
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar with Accent Glow */}
-            <div className="p-3.5 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#1E1E20]">
+            {/* Input Bar */}
+            <div className="p-3 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#18171A]">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -446,44 +671,47 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                 }}
                 className="flex items-center gap-2"
               >
-                <div className="relative flex-1 group">
+                <div className="relative flex-1">
                   <Input
                     ref={inputRef}
                     type="text"
                     value={inputQuery}
                     onChange={(e) => setInputQuery(e.target.value)}
-                    placeholder="Ask about TTFT, Goodput, VRAM sizing, or load curves..."
-                    className="pr-9 text-xs h-9.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#252426] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 focus:border-[#853953] dark:focus:border-[#A74B6A] transition-all focus:ring-1 focus:ring-[#853953]/20"
+                    placeholder={
+                      hasGroqKey
+                        ? "Ask anything about LLMs, GPU architectures, or load curves..."
+                        : "Ask about TTFT, Goodput, VRAM sizing, or connect Groq..."
+                    }
+                    className="pr-9 text-xs h-9.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#242327] border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 focus:border-[#853953] dark:focus:border-[#A74B6A] transition-all focus:ring-1 focus:ring-[#853953]/20"
                   />
                   {inputQuery && (
-                    <motion.button
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
+                    <button
                       type="button"
                       onClick={() => setInputQuery("")}
                       className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#2C2C2C]/40 hover:text-[#2C2C2C] dark:text-[#F3F4F4]/40 dark:hover:text-[#F3F4F4] cursor-pointer"
                     >
                       <X className="h-3 w-3" />
-                    </motion.button>
+                    </button>
                   )}
                 </div>
 
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    type="submit"
-                    disabled={!inputQuery.trim() || isLoading}
-                    size="sm"
-                    className="h-9.5 px-3.5 rounded-xl bg-[#853953] hover:bg-[#722f46] text-white dark:bg-[#A74B6A] dark:hover:bg-[#913f5b] shadow-xs cursor-pointer transition-transform"
-                  >
-                    <Send className="h-3.5 w-3.5" />
-                  </Button>
-                </motion.div>
+                <Button
+                  type="submit"
+                  disabled={!inputQuery.trim() || isLoading}
+                  size="sm"
+                  className="h-9.5 px-3.5 rounded-xl bg-[#853953] hover:bg-[#722f46] text-white dark:bg-[#A74B6A] dark:hover:bg-[#913f5b] shadow-xs cursor-pointer flex items-center gap-1.5 font-medium text-xs"
+                >
+                  <span>Send</span>
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
               </form>
             </div>
-          </motion.div>
-        </>
+          </motion.aside>
+        </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
+
+

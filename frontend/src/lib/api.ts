@@ -99,13 +99,23 @@ export const api = {
     return res.json();
   },
 
+  async getExpertStatus(): Promise<{ has_groq_key: boolean; model: string; source: string }> {
+    const res = await fetch("/api/expert/status");
+    if (!res.ok) {
+      return { has_groq_key: false, model: "llama-3.3-70b-versatile", source: "none" };
+    }
+    return res.json();
+  },
+
   async askExpert(payload: {
     query: string;
     context_topic?: string;
     vendor?: string;
     model?: string;
+    groq_api_key?: string;
     credential?: any;
-  }): Promise<{ answer: string; topic: string; suggested_followups: string[]; source: string }> {
+    messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
+  }): Promise<{ answer: string; topic: string; suggested_followups: string[]; source: string; model?: string }> {
     const res = await fetch("/api/expert/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

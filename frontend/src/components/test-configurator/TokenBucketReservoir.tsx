@@ -35,6 +35,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
   providerRpmLimit = 500,   // Nominal Tier 2 RPM limit (500 requests/min)
 }) => {
   const [isSimulatingBurst, setIsSimulatingBurst] = useState(false);
+  const [showTheoryDetails, setShowTheoryDetails] = useState<boolean>(true);
 
   const totalTokensPerTurn = Math.max(1, promptTokens + maxTokens);
 
@@ -140,26 +141,26 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
   ]);
 
   return (
-    <div className="rounded-xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-4 space-y-3.5 shadow-xs">
+    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg border ${rateStatus.badgeBg} ${rateStatus.color}`}>
-            <Droplets className="h-4 w-4" />
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-xl border ${rateStatus.badgeBg} ${rateStatus.color} shadow-2xs`}>
+            <Droplets className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
-                Token Bucket Rate Limiter Simulator
+              <span className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+                Token Bucket Rate Limiter & Headroom Simulator
               </span>
-              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-1.5">
-                Pre-Flight Physics
+              <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
+                Quota Safety
               </Badge>
-              <Badge variant="outline" className={`text-[10px] font-sans ${rateStatus.color} py-0 px-1.5`}>
+              <Badge variant="outline" className={`text-[10px] font-sans ${rateStatus.color} py-0 px-2`}>
                 {rateStatus.label}
               </Badge>
             </div>
-            <p className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+            <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65 mt-0.5">
               {rateStatus.desc}
             </p>
           </div>
@@ -171,25 +172,25 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
               isThrottled ? "text-rose-700 dark:text-rose-400" : "text-[#853953] dark:text-[#A74B6A]"
             }`}
           >
-            ~{demandTpm.toLocaleString()} TPM
+            ~{demandTpm.toLocaleString()} TPM Demand
           </span>
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
+          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
             Quota Ceiling: {providerTpmLimit.toLocaleString()} TPM ({providerRpmLimit.toLocaleString()} RPM)
           </span>
         </div>
       </div>
 
       {/* Visual Reservoir Beaker & Physics Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center p-3.5 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 select-none">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center p-4 sm:p-5 rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 select-none">
         {/* Left: Animated Glass Reservoir Beaker */}
-        <div className="md:col-span-4 flex flex-col items-center justify-center">
-          <div className="relative w-28 h-32 rounded-b-2xl rounded-t-sm border-2 border-[#2C2C2C]/30 dark:border-[#F3F4F4]/30 bg-white/50 dark:bg-black/30 overflow-hidden flex flex-col justify-end p-1 shadow-inner">
+        <div className="lg:col-span-4 flex flex-col items-center justify-center">
+          <div className="relative w-32 h-36 rounded-b-3xl rounded-t-md border-2 border-[#2C2C2C]/30 dark:border-[#F3F4F4]/30 bg-white/60 dark:bg-black/40 overflow-hidden flex flex-col justify-end p-1.5 shadow-inner">
             {/* Top Refill Inflow Indicator */}
-            <div className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-70">
-              <span className="text-[8px] font-sans font-semibold text-blue-600 dark:text-blue-400">
+            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
+              <span className="text-[9px] font-sans font-bold text-blue-600 dark:text-blue-400">
                 Refill ({providerTpmLimit.toLocaleString()} TPM)
               </span>
-              <ArrowDown className="h-3 w-3 text-blue-500 animate-bounce" />
+              <ArrowDown className="h-3.5 w-3.5 text-blue-500 animate-bounce" />
             </div>
 
             {/* Dynamic Liquid Level */}
@@ -197,7 +198,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
               initial={false}
               animate={{ height: `${bucketFillPct}%` }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className={`w-full rounded-b-xl transition-colors relative overflow-hidden ${
+              className={`w-full rounded-b-2xl transition-colors relative overflow-hidden ${
                 isThrottled
                   ? "bg-gradient-to-t from-rose-600 to-rose-400 shadow-rose-500/50 shadow-md"
                   : bucketFillPct < 30
@@ -206,58 +207,58 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
               }`}
             >
               {/* Fluid Surface Wave Animation */}
-              <div className="absolute top-0 left-0 right-0 h-2 bg-white/30 animate-pulse" />
-              <div className="h-full flex items-center justify-center text-[10px] font-sans font-bold text-white drop-shadow">
+              <div className="absolute top-0 left-0 right-0 h-2.5 bg-white/35 animate-pulse" />
+              <div className="h-full flex items-center justify-center text-xs font-sans font-bold text-white drop-shadow">
                 {bucketFillPct}% Headroom
               </div>
             </motion.div>
           </div>
 
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 mt-1 font-sans font-medium">
-            Token Reservoir Buffer
+          <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 mt-1.5 font-sans font-semibold">
+            Token Bucket Reservoir Buffer
           </span>
         </div>
 
         {/* Right: Physics Breakdown & Test Surge Toggle */}
-        <div className="md:col-span-8 space-y-2.5 text-xs">
+        <div className="lg:col-span-8 space-y-3 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4]">
+            <span className="font-bold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs">
               Rate Limit Mechanics & Demand Physics
             </span>
             <button
               type="button"
               onClick={() => setIsSimulatingBurst(!isSimulatingBurst)}
-              className={`text-[11px] font-sans px-2.5 py-1 rounded-md border transition-all cursor-pointer flex items-center gap-1.5 shadow-xs ${
+              className={`text-xs font-sans px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs hover:shadow-xs ${
                 isSimulatingBurst
                   ? "bg-rose-100 dark:bg-rose-950/60 border-rose-300 text-rose-800 dark:text-rose-300 font-bold"
                   : "bg-white dark:bg-[#252426] border-[#2C2C2C]/20 text-[#2C2C2C] dark:text-[#F3F4F4] hover:bg-[#F3F4F4] dark:hover:bg-[#2C2C2C]"
               }`}
             >
               <Zap className="h-3.5 w-3.5 text-amber-500" />
-              <span>{isSimulatingBurst ? "Burst Surge Active (2.5x)" : "Simulate 2.5x Burst"}</span>
+              <span>{isSimulatingBurst ? "Surge Active (2.5x Load)" : "Simulate 2.5x Burst Surge"}</span>
             </button>
           </div>
 
-          <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed font-normal">
+          <p className="text-xs text-[#2C2C2C]/75 dark:text-[#F3F4F4]/75 leading-relaxed font-normal">
             Providers enforce rate limits via a <strong className="text-[#2C2C2C] dark:text-[#F3F4F4]">Token Bucket</strong>. When your active worker streams consume tokens faster than the refill rate, the reservoir buffer empties and responds with <strong className="text-rose-700 dark:text-rose-400">HTTP 429 (Too Many Requests)</strong>.
           </p>
 
-          <div className="grid grid-cols-2 gap-2 pt-0.5">
-            <div className="p-2 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-0.5">
-              <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
-                Instantaneous Drain:
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1">
+              <span className="text-[10px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1">
+                <TrendingUp className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                Instantaneous Consumption Drain:
               </span>
-              <div className="font-sans tabular-nums font-bold text-[#853953] dark:text-[#A74B6A]">
+              <div className="font-sans tabular-nums font-bold text-[#853953] dark:text-[#A74B6A] text-xs">
                 ~{demandTpm.toLocaleString()} TPM / ~{demandRpm.toLocaleString()} RPM
               </div>
             </div>
-            <div className="p-2 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-0.5">
-              <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 flex items-center gap-1">
-                <Gauge className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                Refill Capacity:
+            <div className="p-2.5 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1">
+              <span className="text-[10px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1">
+                <Gauge className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                Continuous Refill Capacity:
               </span>
-              <div className="font-sans tabular-nums font-bold text-emerald-700 dark:text-emerald-400">
+              <div className="font-sans tabular-nums font-bold text-emerald-700 dark:text-emerald-400 text-xs">
                 {providerTpmLimit.toLocaleString()} TPM / {providerRpmLimit.toLocaleString()} RPM
               </div>
             </div>
@@ -266,46 +267,94 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
       </div>
 
       {/* Telemetry 4-Card Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <Activity className="h-3 w-3 text-[#853953] dark:text-[#A74B6A]" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <Activity className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
             Concurrency Flow
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#853953] dark:text-[#A74B6A] truncate">
+          <div className="font-sans tabular-nums font-bold text-[#853953] dark:text-[#A74B6A] text-xs truncate">
             {concurrency} streams (~{estimatedTurnDurationSec}s/turn)
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <Clock className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
             Request Rate (RPM)
           </span>
-          <div className={`font-sans tabular-nums font-semibold ${rpmUtilizationPct > 100 ? "text-rose-700 dark:text-rose-400" : "text-[#2C2C2C] dark:text-[#F3F4F4]"}`}>
+          <div className={`font-sans tabular-nums font-bold text-xs ${rpmUtilizationPct > 100 ? "text-rose-700 dark:text-rose-400" : "text-[#2C2C2C] dark:text-[#F3F4F4]"}`}>
             {demandRpm.toLocaleString()} / {providerRpmLimit.toLocaleString()} ({rpmUtilizationPct}%)
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <Droplets className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <Droplets className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
             Token Rate (TPM)
           </span>
-          <div className={`font-sans tabular-nums font-bold ${tpmUtilizationPct > 100 ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400"}`}>
+          <div className={`font-sans tabular-nums font-bold text-xs ${tpmUtilizationPct > 100 ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400"}`}>
             {demandTpm.toLocaleString()} / {providerTpmLimit.toLocaleString()} ({tpmUtilizationPct}%)
           </div>
         </div>
 
-        <div className="p-2.5 rounded-lg bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-0.5">
-          <span className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 tracking-wider font-sans font-medium flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3 text-rose-600 dark:text-rose-400" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
             Throttle Status
           </span>
-          <div className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] truncate">
-            {isThrottled ? "429 Backoff Alert" : "Zero Throttling"}
+          <div className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs truncate">
+            {isThrottled ? "429 Backoff Alert" : "Zero Throttling Safe"}
           </div>
         </div>
+      </div>
+
+      {/* Theoretical Foundations Collapsible Card */}
+      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-3">
+        <button
+          type="button"
+          onClick={() => setShowTheoryDetails(!showTheoryDetails)}
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] cursor-pointer hover:text-[#853953] dark:hover:text-[#A74B6A]"
+        >
+          <span className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <span>Token Bucket Algorithms & Rate Limiting Mechanics</span>
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence>
+          {showTheoryDetails && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                    Token Bucket State Equation:
+                  </span>
+                  <MathFormula math="B(t) = \min\left(B_{\max}, B(t - \Delta t) + r \cdot \Delta t\right) - \Delta \text{Tokens}" block />
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                    Where <MathFormula math="r" /> is the token refill rate (TPM/60). If <MathFormula math="B(t) < \text{Tokens}_{\text{req}}" />, provider responds with HTTP 429.
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#612D53] dark:text-[#C57BB2]">
+                    Backoff Delay with Jitter Formulation:
+                  </span>
+                  <MathFormula math="t_{\text{backoff}} = \min\left(t_{\max}, t_0 \cdot 2^{\text{attempt}}\right) + \text{Uniform}(0, J)" block />
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                    Full jitter randomized backoff prevents thundering herd synchronization when recovering from provider quota saturation.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
