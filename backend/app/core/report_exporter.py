@@ -190,9 +190,7 @@ class ReportExporter:
             derived_section = (
                 "## 🎯 Workload-Specific Derived Indicators\n\n"
                 "| Indicator | Value | Production Significance |\n"
-                "|---|---|---|\n"
-                + "\n".join(derived_rows)
-                + "\n\n---\n\n"
+                "|---|---|---|\n" + "\n".join(derived_rows) + "\n\n---\n\n"
             )
 
         md = f"""# ⚡ LLMark Benchmark Report: {run.name or "Benchmark Run"}
@@ -461,12 +459,10 @@ class ReportExporter:
         )
 
         ttft_p50 = run.ttft_p50 if run.ttft_p50 is not None else 0.0
-        ttft_p75 = run.ttft_p75 if run.ttft_p75 is not None else 0.0
         ttft_p95 = run.ttft_p95 if run.ttft_p95 is not None else 0.0
         ttft_p99 = run.ttft_p99 if run.ttft_p99 is not None else 0.0
 
         itl_p50 = run.itl_p50 if run.itl_p50 is not None else 0.0
-        itl_p75 = run.itl_p75 if run.itl_p75 is not None else 0.0
         itl_p95 = run.itl_p95 if run.itl_p95 is not None else 0.0
         max_itl = run.max_itl if run.max_itl is not None else 0.0
         tpot = run.tpot_mean if run.tpot_mean is not None else 0.0
@@ -510,9 +506,7 @@ class ReportExporter:
                 if est_rpm_lim
                 else f"{req_rate:.1f} req/s active"
             )
-            tpm_sub = (
-                f"Ceiling: ~{est_tpm_lim:.0f} TPM" if est_tpm_lim else "Active token rate"
-            )
+            tpm_sub = f"Ceiling: ~{est_tpm_lim:.0f} TPM" if est_tpm_lim else "Active token rate"
             row1 = [
                 card(
                     "GOODPUT (NON-THROTTLED)",
@@ -648,11 +642,7 @@ class ReportExporter:
         if preset == "reasoning_cot":
             ttfa_p50 = run.ttfa_p50 if run.ttfa_p50 is not None else ttft_p50
             ttfa_p95 = run.ttfa_p95 if run.ttfa_p95 is not None else ttft_p95
-            mult_val = (
-                f"{wait_mult:.2f}x"
-                if wait_mult
-                else f"{(ttfa_p50 / max(1, ttft_p50)):.2f}x"
-            )
+            mult_val = f"{wait_mult:.2f}x" if wait_mult else f"{(ttfa_p50 / max(1, ttft_p50)):.2f}x"
             share_val = (
                 f"{thinking_cost_share:.1f}%"
                 if thinking_cost_share is not None
@@ -846,9 +836,9 @@ class ReportExporter:
         preset_tagline = profile.get("tagline", "Standardized LLM Inference Benchmark Telemetry")
 
         # Safe extraction of all metrics
-        goodput = run.goodput_pct if run.goodput_pct is not None else 0.0
         tps_decode = run.tps_decode if run.tps_decode is not None else 0.0
         completed = run.completed_requests if run.completed_requests is not None else 0
+
         failed = run.failed_requests if run.failed_requests is not None else 0
         total_reqs = run.total_requests if run.total_requests else (completed + failed)
         cost = run.total_cost_usd if run.total_cost_usd is not None else 0.0
@@ -1074,9 +1064,7 @@ class ReportExporter:
         itl_p95_pass = "✓ PASS" if (not target_tpot or itl_p95 <= target_tpot) else "⚠ BREACH"
 
         if preset_key == "rate_limit_probe":
-            story.append(
-                Paragraph("2. Rate Limiting & Probing Latency Metrics", section_style)
-            )
+            story.append(Paragraph("2. Rate Limiting & Probing Latency Metrics", section_style))
             rl_latency_data = [
                 [
                     Paragraph("<b>Probing Metric</b>", cell_bold),

@@ -97,18 +97,18 @@ class StatisticsEngine:
         # 2. Dynamic Rolling Window for Live Streaming Telemetry
         window_sec = 2.0
         cutoff = max(0.0, elapsed_seconds - window_sec)
-        rolling_reqs = [
-            m for m in metrics if getattr(m, "completed_at_elapsed", 0.0) >= cutoff
-        ]
+        rolling_reqs = [m for m in metrics if getattr(m, "completed_at_elapsed", 0.0) >= cutoff]
         rolling_completed = [
-            m for m in rolling_reqs if not m.is_error and not m.is_rate_limit and m.status_code == 200
+            m
+            for m in rolling_reqs
+            if not m.is_error and not m.is_rate_limit and m.status_code == 200
         ]
         effective_win = max(0.2, min(elapsed_seconds, window_sec))
 
         if status == "running" and rolling_reqs and effective_win >= 0.2:
             rolling_gen_tokens = sum(m.completion_tokens for m in rolling_completed)
             rolling_all_tokens = sum(m.prompt_tokens + m.completion_tokens for m in rolling_reqs)
-            
+
             # Dynamic streaming pulse between request discrete landing intervals
             pulse_jitter = 1.0 + float(np.sin(elapsed_seconds * 3.5) * 0.03)
             current_tps = round((rolling_gen_tokens / effective_win) * pulse_jitter, 2)

@@ -73,8 +73,8 @@ const SpotlightCard: React.FC<{
       transition={{ duration: 0.18, ease: "easeOut" }}
       className={`relative overflow-hidden rounded-2xl transition-all duration-200 ${
         isHovered
-          ? "shadow-md shadow-[#853953]/5 dark:shadow-[#A74B6A]/10 border-[#853953]/40 dark:border-[#A74B6A]/40"
-          : "shadow-2xs border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+          ? "shadow-md shadow-[#853953]/5 dark:shadow-[#E05284]/15 border-[#853953]/40 dark:border-[#E05284]/50"
+          : "shadow-2xs border-[#2C2C2C]/10 dark:border-white/[0.08]"
       } ${className}`}
     >
       {/* Subtle ambient radial cursor spotlight */}
@@ -103,17 +103,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       description:
         "Execute high-concurrency token load tests across OpenAI, Anthropic, Gemini, DeepSeek, and local vLLM/Ollama endpoints. Measure TTFT, ITL, TPOT, and Goodput SLO yield with 100Hz live charts.",
       icon: Zap,
-      gradient: "from-[#853953] to-[#612D53]",
+      gradient: "from-[#853953] to-[#612D53] dark:from-[#D84577] dark:to-[#9E3577]",
       badgeText: "Real-Time 100Hz",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.35)",
+      glowColor: "rgba(224, 82, 132, 0.25)",
       features: [
         "Interactive Waterfall: DNS + TCP + TLS + Prefill + Decode",
         "Deterministic Cost Guard & Financial Spend Cap Protection",
         "Simulated DeepSeek-R1 TTFA Thinking Trace Isolation",
       ],
       buttonLabel: "Launch Benchmark Studio",
-      buttonClass: "btn-brand-glow text-white shadow-md shadow-[#853953]/25",
+      buttonClass: "btn-brand-glow text-white shadow-md shadow-[#853953]/25 dark:shadow-[#D84577]/30",
       buttonIcon: Play,
     },
     {
@@ -124,17 +124,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       description:
         "Select any two benchmark executions to calculate exact tail latency differentials, token speedup multipliers, and cost efficiency variations. Export clean markdown summaries or executive PDFs.",
       icon: GitCompare,
-      gradient: "from-[#853953] to-[#612D53]",
+      gradient: "from-[#853953] to-[#612D53] dark:from-[#D84577] dark:to-[#9E3577]",
       badgeText: "Statistical Deltas",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.35)",
+      glowColor: "rgba(224, 82, 132, 0.25)",
       features: [
         "Unaggregated tail latency delta distribution matrix",
         "Side-by-side token economics & prompt/completion spread",
         "1-Click Markdown summary & executive PDF delta reports",
       ],
       buttonLabel: "Open Diff Matrix",
-      buttonClass: "btn-brand-glow text-white shadow-md shadow-[#853953]/25",
+      buttonClass: "btn-brand-glow text-white shadow-md shadow-[#853953]/25 dark:shadow-[#D84577]/30",
       buttonIcon: GitCompare,
     },
     {
@@ -145,17 +145,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       description:
         "Browse all historical test sessions stored locally in SQLite. Model prompt caching ROI from actual run telemetry, inspect unaggregated tail percentiles, and download standardized PDF reports.",
       icon: History,
-      gradient: "from-[#853953] to-[#612D53]",
+      gradient: "from-[#853953] to-[#612D53] dark:from-[#D84577] dark:to-[#9E3577]",
       badgeText: "Local SQLite WAL",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.35)",
+      glowColor: "rgba(224, 82, 132, 0.25)",
       features: [
         "Complete historical timeline with client-side sort & search",
         "Granular percentile inspectors (P50 / P95 / P99 / Max ITL)",
         "Integrated Prompt Cache ROI Modeler & multi-format exports",
       ],
       buttonLabel: "Explore Run History",
-      buttonClass: "btn-brand-glow text-white shadow-md shadow-[#853953]/25",
+      buttonClass: "btn-brand-glow text-white shadow-md shadow-[#853953]/25 dark:shadow-[#D84577]/30",
       buttonIcon: History,
     },
   ];
@@ -172,7 +172,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="flex-1 w-full flex flex-col justify-between selection:bg-[#853953]/20 selection:text-[#853953]">
+    <div className="flex-1 w-full flex flex-col justify-between selection:bg-[#853953]/20 selection:text-[#853953] dark:selection:bg-[#E05284]/30 dark:selection:text-[#F06A9A]">
       {/* Main Landing Canvas */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-14 sm:space-y-16">
         {/* Hero Section */}
@@ -184,16 +184,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             className="space-y-4"
           >
             {/* Ambient Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#853953]/10 dark:bg-[#A74B6A]/15 border border-[#853953]/25 dark:border-[#A74B6A]/35 text-[#853953] dark:text-[#A74B6A] text-xs font-medium shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#853953]/10 dark:bg-[#E05284]/15 border border-[#853953]/25 dark:border-[#E05284]/35 text-[#853953] dark:text-[#F06A9A] text-xs font-medium shadow-xs">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Microsecond-Accurate LLM Inference Telemetry</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#FAFAFA] font-sans leading-tight">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#2C2C2C] dark:text-white font-sans leading-tight">
               Enterprise LLM <span className="text-gradient-brand">Inference Telemetry</span> & Benchmarking
             </h1>
 
-            <p className="text-sm sm:text-base text-[#2C2C2C]/70 dark:text-[#FAFAFA]/80 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base text-[#2C2C2C]/70 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
               Stress-test model APIs with sub-millisecond socket waterfall profiling, deterministic cost limits, unaggregated tail latencies, and Goodput SLO tracking.
             </p>
           </motion.div>
@@ -203,18 +203,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, delay: 0.05, ease: "easeOut" }}
-            className="flex flex-wrap items-center justify-center gap-3 text-xs font-sans text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-2"
+            className="flex flex-wrap items-center justify-center gap-3 text-xs font-sans text-[#2C2C2C]/70 dark:text-slate-300 pt-2"
           >
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#252426]/80 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#0F0F13]/90 border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
               <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               <span>Zero-Persistence Ephemeral Vault</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#252426]/80 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
-              <Cpu className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#0F0F13]/90 border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
+              <Cpu className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
               <span>100% Free Local Mock Engine</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#252426]/80 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-2xs">
-              <Scale className="h-4 w-4 text-[#612D53] dark:text-[#C57BB2]" />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 dark:bg-[#0F0F13]/90 border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
+              <Scale className="h-4 w-4 text-[#612D53] dark:text-[#E270BB]" />
               <span>Tail Latency Percentiles (P50/P95/P99)</span>
             </div>
           </motion.div>
@@ -223,7 +223,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         {/* Supported Providers Marquee Strip */}
         <section className="space-y-3">
           <div className="text-center">
-            <span className="text-[11px] font-sans font-medium text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+            <span className="text-[11px] font-sans font-medium text-[#2C2C2C]/60 dark:text-slate-400">
               Compatible with Any OpenAI-Compliant or Frontier API
             </span>
           </div>
@@ -232,16 +232,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <motion.div
                 key={i}
                 whileHover={{ y: -2, scale: 1.02 }}
-                className="p-3 rounded-xl bg-white/70 dark:bg-[#212022]/70 border border-[#2C2C2C]/8 dark:border-[#F3F4F4]/8 hover:border-[#853953]/30 dark:hover:border-[#A74B6A]/30 text-center cursor-default transition-all flex flex-col items-center justify-between gap-2 shadow-2xs group"
+                className="p-3 rounded-xl bg-white/70 dark:bg-[#0F0F13]/90 border border-[#2C2C2C]/8 dark:border-white/[0.08] hover:border-[#853953]/30 dark:hover:border-[#E05284]/40 text-center cursor-default transition-all flex flex-col items-center justify-between gap-2 shadow-2xs group"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 group-hover:text-[#853953] dark:group-hover:text-[#A74B6A] transition-colors">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F3F4F4] dark:bg-[#0B0B0E] text-[#2C2C2C]/80 dark:text-slate-200 group-hover:text-[#853953] dark:group-hover:text-[#F06A9A] transition-colors">
                   <ProviderLogo vendor={pr.vendor} className="h-4.5 w-4.5" />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] truncate">
+                  <div className="text-xs font-semibold text-[#2C2C2C] dark:text-white truncate">
                     {pr.name}
                   </div>
-                  <div className="text-[10px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 truncate font-sans font-medium">
+                  <div className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 truncate font-sans font-medium">
                     {pr.sub}
                   </div>
                 </div>
@@ -253,10 +253,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         {/* 3 Core Operation Spotlight Cards */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
+            <h2 className="text-xs font-semibold text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
               Choose An Operation
             </h2>
-            <span className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans font-medium">
+            <span className="text-xs text-[#2C2C2C]/50 dark:text-slate-500 font-sans font-medium">
               3 Primary Capabilities
             </span>
           </div>
@@ -269,7 +269,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <SpotlightCard
                   key={op.id}
                   glowColor={op.glowColor}
-                  className="bg-white/90 dark:bg-[#212022]/90 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 hover:border-[#853953]/35 dark:hover:border-[#A74B6A]/35 flex flex-col justify-between p-6 sm:p-7 relative group transition-colors"
+                  className="bg-white/90 dark:bg-[#0F0F13]/90 border border-[#2C2C2C]/10 dark:border-white/[0.08] hover:border-[#853953]/35 dark:hover:border-[#E05284]/40 flex flex-col justify-between p-6 sm:p-7 relative group transition-colors"
                 >
                   <div className="space-y-5">
                     {/* Header: Icon + Badge */}
@@ -284,23 +284,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
                     {/* Titles */}
                     <div className="space-y-1">
-                      <h3 className="text-xl font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-tight">
+                      <h3 className="text-xl font-semibold text-[#2C2C2C] dark:text-white tracking-tight">
                         {op.title}
                       </h3>
-                      <p className="text-xs font-medium text-[#853953] dark:text-[#A74B6A]">
+                      <p className="text-xs font-medium text-[#853953] dark:text-[#F06A9A]">
                         {op.tagline}
                       </p>
                     </div>
 
                     {/* Description */}
-                    <p className="text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 leading-relaxed min-h-[48px]">
+                    <p className="text-xs text-[#2C2C2C]/70 dark:text-slate-400 leading-relaxed min-h-[48px]">
                       {op.description}
                     </p>
 
                     {/* Feature bullet list */}
-                    <div className="space-y-2.5 pt-3 border-t border-[#2C2C2C]/8 dark:border-[#F3F4F4]/8">
+                    <div className="space-y-2.5 pt-3 border-t border-[#2C2C2C]/8 dark:border-white/[0.06]">
                       {op.features.map((f, i) => (
-                        <div key={i} className="flex items-start gap-2 text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                        <div key={i} className="flex items-start gap-2 text-xs text-[#2C2C2C]/80 dark:text-slate-300">
                           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                           <span className="leading-snug">{f}</span>
                         </div>

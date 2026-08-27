@@ -63,20 +63,32 @@ async def get_cost_estimate(
     custom_completion_price_per_1m: float | None = Query(None, ge=0.0),
 ) -> CostEstimate:
     """Get pre-flight cost and token bounds calculation before launching a benchmark."""
-    config = BenchmarkConfig(
-        vendor=VendorType(vendor),
-        model=model,
-        workload_preset=WorkloadPreset(workload_preset),
-        concurrency=concurrency,
-        duration_seconds=duration_seconds,
-        hard_spend_cap=hard_spend_cap,
-        test_mode=TestMode(test_mode),
-        total_requests=total_requests,
-        max_tokens=max_tokens,
-        custom_prompt_price_per_1m=custom_prompt_price_per_1m,
-        custom_completion_price_per_1m=custom_completion_price_per_1m,
-    )
-    return CostGuard.estimate_benchmark_cost(config)
+    try:
+        config = BenchmarkConfig(
+            vendor=VendorType(vendor),
+            model=model,
+            workload_preset=WorkloadPreset(workload_preset),
+            concurrency=concurrency,
+            duration_seconds=duration_seconds,
+            hard_spend_cap=hard_spend_cap,
+            test_mode=TestMode(test_mode),
+            total_requests=total_requests,
+            max_tokens=max_tokens,
+            custom_prompt_price_per_1m=custom_prompt_price_per_1m,
+            custom_completion_price_per_1m=custom_completion_price_per_1m,
+        )
+        return CostGuard.estimate_benchmark_cost(config)
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid parameter for cost estimation: {str(val_err)}",
+        )
+    except Exception as exc:
+        logger.error("Failed to estimate benchmark cost", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate cost estimate: {str(exc)}",
+        )
 
 
 @router.get("/stream")

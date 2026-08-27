@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { BenchmarkConfig, MetricsSnapshot } from "@/lib/types";
 import { formatMs, formatPct, formatUsd, downloadFile } from "@/lib/utils";
+import { getApiUrl } from "@/lib/api";
 import { MetricCards } from "./MetricCards";
 import { KpiSummaryTable } from "./KpiSummaryTable";
 import { WaterfallBar } from "./WaterfallBar";
@@ -73,15 +74,15 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
     <TooltipProvider>
       <div className="space-y-6 font-sans">
         {/* Top Control Bar & Run Status */}
-        <Card className="border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs">
+        <Card className="border-[#2C2C2C]/10 dark:border-white/[0.08] shadow-xs">
           <CardContent className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-xs p-1.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-[#14141B] border border-[#2C2C2C]/10 dark:border-white/10 shadow-xs p-1.5">
                 <ProviderLogo vendor={config.vendor} className="h-6 w-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-tight">
+                  <h3 className="text-base font-semibold text-[#2C2C2C] dark:text-white tracking-tight">
                     {config.model}
                   </h3>
                   <Badge variant="outline" className="text-[11px] font-sans capitalize">
@@ -103,7 +104,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans mt-0.5">
+                <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans mt-0.5">
                   Concurrency: {config.concurrency} streams • Preset: {config.workload_preset} • Run: <span className="font-sans font-medium">{benchmarkId.slice(0, 16)}...</span>
                 </p>
               </div>
@@ -111,8 +112,8 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
 
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <div className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans">Elapsed Time</div>
-                <div className="text-sm font-semibold font-sans text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
+                <div className="text-xs text-[#2C2C2C]/50 dark:text-slate-400 font-sans">Elapsed Time</div>
+                <div className="text-sm font-semibold font-sans text-[#2C2C2C] dark:text-white tabular-nums">
                   {snapshot?.elapsed_seconds ? `${snapshot.elapsed_seconds.toFixed(1)}s` : "0.0s"}
                 </div>
               </div>
@@ -153,9 +154,9 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
             >
-              <Card className="border-[#853953]/30 dark:border-[#A74B6A]/40 bg-[#853953]/10 dark:bg-[#A74B6A]/15">
-                <CardContent className="p-4 flex items-center gap-3 text-[#853953] dark:text-[#A74B6A] text-xs">
-                  <AlertTriangle className="h-5 w-5 text-[#853953] dark:text-[#A74B6A] shrink-0" />
+              <Card className="border-[#853953]/30 dark:border-[#E05284]/40 bg-[#853953]/10 dark:bg-[#E05284]/15">
+                <CardContent className="p-4 flex items-center gap-3 text-[#853953] dark:text-[#F06A9A] text-xs">
+                  <AlertTriangle className="h-5 w-5 text-[#853953] dark:text-[#F06A9A] shrink-0" />
                   <div>
                     <p className="font-semibold">Hard spend cap breached</p>
                     <p>{budgetWarning}</p>
@@ -174,7 +175,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
             >
-              <Card className="border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/30 shadow-xs">
+              <Card className="border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-xs">
                 <CardContent className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
@@ -194,7 +195,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer bg-white dark:bg-[#252426]"
+                      className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer bg-white dark:bg-[#0F0F13]"
                       onClick={() => setActiveTab("cost")}
                     >
                       <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -205,9 +206,9 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                       variant="outline"
                       size="sm"
                       className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer"
-                      onClick={() => downloadFile(`/api/export/pdf/${benchmarkId}`, `llmark_report_${benchmarkId}.pdf`)}
+                      onClick={() => downloadFile(getApiUrl(`/api/export/pdf/${benchmarkId}`), `llmark_report_${benchmarkId}.pdf`)}
                     >
-                      <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                      <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
                       Download PDF
                     </Button>
 
@@ -234,7 +235,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                               initial={{ scale: 0.6, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               exit={{ scale: 0.6, opacity: 0 }}
-                              className="flex items-center gap-1 text-[#853953] dark:text-[#A74B6A] font-medium"
+                              className="flex items-center gap-1 text-[#853953] dark:text-[#F06A9A] font-medium"
                             >
                               <Copy className="h-3.5 w-3.5" /> Copy Summary
                             </motion.span>
@@ -273,7 +274,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
               </TabsTrigger>
             </TabsList>
 
-            <span className="text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 hidden sm:inline-block font-sans font-medium">
+            <span className="text-xs text-[#2C2C2C]/50 dark:text-slate-400 hidden sm:inline-block font-sans font-medium">
               Live updates every 100ms
             </span>
           </div>

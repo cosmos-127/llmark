@@ -53,78 +53,78 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
   }, [maxTtftMs, maxTpotMs, maxErrorRatePct]);
 
   return (
-    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 bg-white dark:bg-[#0F0F13] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl border bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 shadow-2xs">
+          <div className="p-2 rounded-xl border bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/25 dark:border-[#E05284]/35 text-[#853953] dark:text-[#F06A9A] shadow-2xs">
             <Filter className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+              <span className="text-sm font-bold text-[#2C2C2C] dark:text-white">
                 Multi-Stage Goodput Filtration Sieve
               </span>
               <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
                 SLO Sieve Pipeline
               </Badge>
-              <Badge variant="outline" className="text-[10px] font-sans py-0 px-2 text-emerald-700 dark:text-emerald-400">
+              <Badge variant="outline" className="text-[10px] font-sans py-0 px-2 text-[#853953] dark:text-[#F06A9A] border-[#853953]/30 dark:border-[#E05284]/40">
                 3-Gate Reliability Guarantee
               </Badge>
             </div>
-            <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65 mt-0.5">
+            <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65 mt-0.5">
               Visualizes how raw benchmark requests must survive 3 simultaneous SLA gates to qualify as certified Goodput.
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className="text-base font-extrabold font-sans tabular-nums text-emerald-700 dark:text-emerald-400">
+          <span className="text-base font-extrabold font-sans tabular-nums text-[#853953] dark:text-[#F06A9A]">
             {finalGoodputYield}% Goodput
           </span>
-          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
+          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans tabular-nums">
             Compound Production SLA Yield
           </span>
         </div>
       </div>
 
       {/* 3-Chamber Sieve Pipeline Visualization */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-center p-4 sm:p-5 rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 select-none">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-center p-4 sm:p-5 rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#14141B] border border-[#2C2C2C]/10 select-none">
         {/* Gate 1: TTFT Sieve */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-2 relative shadow-xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-2 relative shadow-xs">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
+            <span className="font-bold text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5">
               <Radio className="h-4 w-4" /> Gate 1: TTFT
             </span>
-            <span className="font-sans font-extrabold text-sm text-[#853953] dark:text-[#A74B6A]">
+            <span className="font-sans font-extrabold text-sm text-[#853953] dark:text-[#F06A9A]">
               {ttftPassPct}%
             </span>
           </div>
-          <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+          <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65">
             Filters TTFT ≤ {maxTtftMs}ms. Eliminates cold-start queue spikes.
           </p>
-          <div className="h-2 w-full rounded-full bg-[#F3F4F4] dark:bg-[#1E1D1F] overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-[#F3F4F4] dark:bg-[#14141B] overflow-hidden">
             <motion.div
-              className="h-full bg-[#853953] dark:bg-[#A74B6A]"
+              className="h-full bg-[#853953] dark:bg-[#D84577]"
               style={{ width: `${ttftPassPct}%` }}
             />
           </div>
         </div>
 
         {/* Gate 2: TPOT Decode Sieve */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-2 shadow-xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-[#612D53] dark:text-[#C57BB2] flex items-center gap-1.5">
+            <span className="font-bold text-[#612D53] dark:text-[#E270BB] flex items-center gap-1.5">
               <Zap className="h-4 w-4" /> Gate 2: TPOT
             </span>
-            <span className="font-sans font-extrabold text-sm text-[#612D53] dark:text-[#C57BB2]">
+            <span className="font-sans font-extrabold text-sm text-[#612D53] dark:text-[#E270BB]">
               {tpotPassPct}%
             </span>
           </div>
-          <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+          <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65">
             Filters TPOT ≤ {maxTpotMs}ms. Eliminates memory bandwidth token freezes.
           </p>
-          <div className="h-2 w-full rounded-full bg-[#F3F4F4] dark:bg-[#1E1D1F] overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-[#F3F4F4] dark:bg-[#14141B] overflow-hidden">
             <motion.div
               className="h-full bg-[#612D53] dark:bg-[#C57BB2]"
               style={{ width: `${tpotPassPct}%` }}
@@ -133,7 +133,7 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
         </div>
 
         {/* Gate 3: Error Trap */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-2 shadow-xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
               <AlertTriangle className="h-4 w-4" /> Gate 3: Errors
@@ -142,10 +142,10 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
               {errorPassPct}%
             </span>
           </div>
-          <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+          <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65">
             Filters Error Rate ≤ {maxErrorRatePct}%. Drops HTTP 429/5xx faults.
           </p>
-          <div className="h-2 w-full rounded-full bg-[#F3F4F4] dark:bg-[#1E1D1F] overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-[#F3F4F4] dark:bg-[#14141B] overflow-hidden">
             <motion.div
               className="h-full bg-rose-600 dark:bg-rose-500"
               style={{ width: `${errorPassPct}%` }}
@@ -176,14 +176,14 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#14141B] border border-[#2C2C2C]/10 space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] cursor-pointer hover:text-[#853953] dark:hover:text-[#A74B6A]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-white cursor-pointer hover:text-[#853953] dark:hover:text-[#F06A9A]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
             <span>Goodput Sieve Mathematical Definition & Reliability Theory</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -195,25 +195,25 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-white/10"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
                   <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                     Compound Goodput Formulation:
                   </span>
                   <MathFormula math="\text{Goodput} = \text{Total RPS} \times \mathbb{P}\left(\text{TTFT} \le T_{\max} \land \text{TPOT} \le t_{\max} \land \text{Status} = 200\right)" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     Raw RPS can be misleading if requests suffer from token stutter or high queue latency. Goodput certifies strictly usable throughput.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#853953] dark:text-[#F06A9A]">
                     Multi-Stage SLA Filter Chain:
                   </span>
                   <MathFormula math="\text{Yield}_{\text{compound}} = \text{Pass}_{\text{TTFT}} \times \text{Pass}_{\text{TPOT}} \times (1 - \text{Rate}_{\text{error}})" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     Each stage acts as an independent reliability filter, providing defense-in-depth against edge-case degraded responses.
                   </p>
                 </div>

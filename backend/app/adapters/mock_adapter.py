@@ -172,15 +172,33 @@ class MockVendorAdapter(VendorAdapter):
         generated_tokens = 0
         prompt_tokens = max(10, int(len(prompt.split()) * 1.3))
 
-
-
         # 3. Simulate Thinking Phase (if reasoning mode)
         if is_reasoning_mode:
             thinking_pool = [
-                "Deconstructing", "prompt", "parameters", "and", "identifying", "computational",
-                "constraints...", "Verifying", "mathematical", "invariants", "across", "tensor",
-                "dimensions...", "Analyzing", "edge-case", "boundary", "conditions...",
-                "Synthesizing", "optimal", "execution", "pathway", "for", "final", "output."
+                "Deconstructing",
+                "prompt",
+                "parameters",
+                "and",
+                "identifying",
+                "computational",
+                "constraints...",
+                "Verifying",
+                "mathematical",
+                "invariants",
+                "across",
+                "tensor",
+                "dimensions...",
+                "Analyzing",
+                "edge-case",
+                "boundary",
+                "conditions...",
+                "Synthesizing",
+                "optimal",
+                "execution",
+                "pathway",
+                "for",
+                "final",
+                "output.",
             ]
             think_count = random.randint(10, 18)
             selected_thinking = (thinking_pool * 2)[:think_count]
@@ -197,10 +215,20 @@ class MockVendorAdapter(VendorAdapter):
         # 4. Stream Tokens According to Workload Profile
         if is_fewshot_mode:
             classification_tokens = [
-                '{"category":', '"incident_response",', '"severity":', '"SEV-1",',
-                '"tier":', '"tier_1_mission_critical",', '"requires_human_pager":', 'true,',
-                '"target_cluster":', '"k8s-gpu-prod-04",', '"confidence":', f"{random.uniform(0.95, 0.99):.3f}",
-                '"recommended_action":', '"scale_worker_pool"}',
+                '{"category":',
+                '"incident_response",',
+                '"severity":',
+                '"SEV-1",',
+                '"tier":',
+                '"tier_1_mission_critical",',
+                '"requires_human_pager":',
+                "true,",
+                '"target_cluster":',
+                '"k8s-gpu-prod-04",',
+                '"confidence":',
+                f"{random.uniform(0.95, 0.99):.3f}",
+                '"recommended_action":',
+                '"scale_worker_pool"}',
             ]
             for tok in classification_tokens:
                 t_now = time.perf_counter()
@@ -210,14 +238,27 @@ class MockVendorAdapter(VendorAdapter):
 
         elif is_tool_mode:
             tool_tokens = [
-                '{"name":', '"trigger_remediation_playbook",', '"arguments":', '{',
-                '"playbook_id":', f'"PB-AUTOSCALE-KV-0{random.randint(1, 9)}",',
-                '"cluster_id":', '"k8s-gpu-cluster-04",',
-                '"target_service":', '"inference-gateway-prod",',
-                '"action":', '"scale_replicas",',
-                '"parameters":', '{', '"replica_delta":', f"{random.randint(2, 6)},",
-                '"evict_stale_kv":', 'true,', '"warmup_models":', '["gpt-4o", "llama-70b"]',
-                '}}}',
+                '{"name":',
+                '"trigger_remediation_playbook",',
+                '"arguments":',
+                "{",
+                '"playbook_id":',
+                f'"PB-AUTOSCALE-KV-0{random.randint(1, 9)}",',
+                '"cluster_id":',
+                '"k8s-gpu-cluster-04",',
+                '"target_service":',
+                '"inference-gateway-prod",',
+                '"action":',
+                '"scale_replicas",',
+                '"parameters":',
+                "{",
+                '"replica_delta":',
+                f"{random.randint(2, 6)},",
+                '"evict_stale_kv":',
+                "true,",
+                '"warmup_models":',
+                '["gpt-4o", "llama-70b"]',
+                "}}}",
             ]
             for tok in tool_tokens:
                 t_now = time.perf_counter()
@@ -369,7 +410,9 @@ class MockVendorAdapter(VendorAdapter):
                 # Realistic inter-token gap (8ms - 16ms, with 3% chance of a 45ms batch/network jitter spike)
                 is_jitter_spike = random.random() < 0.03
                 inter_token_delay = (
-                    random.uniform(0.035, 0.055) if is_jitter_spike else random.uniform(0.008, 0.016)
+                    random.uniform(0.035, 0.055)
+                    if is_jitter_spike
+                    else random.uniform(0.008, 0.016)
                 )
                 await asyncio.sleep(inter_token_delay)
 

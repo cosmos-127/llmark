@@ -241,8 +241,8 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
         return {
           title: "Constant Flat",
           badge: "Baseline Profiling",
-          color: "text-[#853953] dark:text-[#A74B6A]",
-          bg: "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/30",
+          color: "text-[#853953] dark:text-[#F06A9A]",
+          bg: "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/30",
           desc: "Maintains uninterrupted maximum concurrency to isolate steady-state streaming token throughput.",
           formula: "c(t) = C",
           icon: Activity,
@@ -299,7 +299,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
   }, [points, concurrency]);
 
   return (
-    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 bg-white dark:bg-[#0F0F13] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar with pattern badge and live streams */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -308,7 +308,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+              <span className="text-sm font-bold text-[#2C2C2C] dark:text-white">
                 Traffic Dispatch Waveform Simulation
               </span>
               <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
@@ -318,24 +318,24 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
                 {patternMetadata.title}
               </Badge>
             </div>
-            <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65 mt-0.5">
+            <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65 mt-0.5">
               {patternMetadata.desc}
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className="text-sm font-bold font-sans tabular-nums text-[#853953] dark:text-[#A74B6A]">
+          <span className="text-sm font-bold font-sans tabular-nums text-[#853953] dark:text-[#F06A9A]">
             {concurrency} Max In-Flight Streams
           </span>
-          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
+          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans tabular-nums">
             ~{avgConcurrency} avg in-flight load
           </span>
         </div>
       </div>
 
       {/* Interactive Waveform SVG Canvas */}
-      <div className="relative w-full rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 p-2 overflow-hidden select-none">
+      <div className="relative w-full rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#14141B] border border-[#2C2C2C]/10 dark:border-white/10 p-2 overflow-hidden select-none">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto cursor-crosshair overflow-visible"
@@ -589,7 +589,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
                 fill="#853953"
                 stroke="#ffffff"
                 strokeWidth="2"
-                className="dark:fill-[#A74B6A] dark:stroke-[#252426]"
+                className="dark:fill-[#A74B6A] dark:stroke-[#0F0F13]"
               />
             </g>
           )}
@@ -630,46 +630,46 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 
       {/* Telemetry Summary Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
-            <Target className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Target className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
             Peak Load Target
           </span>
-          <div className="font-sans tabular-nums font-bold text-[#853953] dark:text-[#A74B6A] text-xs">
+          <div className="font-sans tabular-nums font-bold text-[#853953] dark:text-[#F06A9A] text-xs">
             {concurrency} streams (100% capacity)
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-[#612D53] dark:text-[#C57BB2]" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-[#612D53] dark:text-[#E270BB]" />
             Test Execution Scope
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs">
+          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-white text-xs">
             {totalScopeLabel}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <RotateCw className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             Socket Priming
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs">
+          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-white text-xs">
             {warmupRequests > 0 ? `${warmupRequests} warmup reqs` : "0 (Immediate cold)"}
           </div>
         </div>
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#14141B] border border-[#2C2C2C]/10 space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] cursor-pointer hover:text-[#853953] dark:hover:text-[#A74B6A]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-white cursor-pointer hover:text-[#853953] dark:hover:text-[#F06A9A]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
             <span>Queuing Theory & Load Curve Modeling Mechanics</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -681,25 +681,25 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-white/10"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#853953] dark:text-[#F06A9A]">
                     Active Curve Mathematical Formulation:
                   </span>
                   <MathFormula math={patternMetadata.formula} block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     Modulates dispatch worker allocation over the normalized test lifecycle.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#612D53] dark:text-[#C57BB2]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#612D53] dark:text-[#E270BB]">
                     Little's Law & Saturation Knee Dynamics:
                   </span>
                   <MathFormula math="L = \lambda W, \quad W_{\text{queue}} \approx \frac{\rho}{\mu(1 - \rho)}" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     As GPU server utilization <MathFormula math="\rho \to 1" />, queuing delays explode asymptotically, causing severe tail TTFT degradation at the saturation knee.
                   </p>
                 </div>

@@ -39,7 +39,7 @@ export function App() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={200}>
-          <div className="min-h-screen bg-[#F3F4F4] dark:bg-[#111012] text-[#2C2C2C] dark:text-[#FAFAFA] flex flex-col font-sans relative overflow-x-hidden transition-colors duration-200">
+          <div className="min-h-screen bg-[#F3F4F4] dark:bg-[#08080A] text-[#2C2C2C] dark:text-white flex flex-col font-sans relative overflow-x-hidden transition-colors duration-200">
             {/* Ambient Grid & Palette Glows */}
             <div className="fixed inset-0 bg-grid-pattern opacity-40 pointer-events-none z-0" />
             <div className="fixed -top-28 left-1/2 -translate-x-1/2 w-[900px] max-w-[100vw] h-[450px] ambient-glow-plum pointer-events-none z-0" />
@@ -90,19 +90,19 @@ export function App() {
             </div>
 
             {/* Unified Clean Minimalist Footer */}
-            <footer className="z-10 border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white/70 dark:bg-[#1A191C]/80 backdrop-blur-xs py-4 px-6 text-xs text-[#2C2C2C]/60 dark:text-[#FAFAFA]/70 font-sans transition-colors duration-200">
+            <footer className="z-10 border-t border-[#2C2C2C]/10 dark:border-white/[0.08] bg-white/70 dark:bg-[#08080A]/90 backdrop-blur-xs py-4 px-6 text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans transition-colors duration-200">
               <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActiveTab("landing")}
-                    className="font-semibold text-[#2C2C2C] dark:text-[#FAFAFA] hover:text-[#853953] dark:hover:text-[#B8557A] cursor-pointer transition-colors"
+                    className="font-semibold text-[#2C2C2C] dark:text-white hover:text-[#853953] dark:hover:text-[#F06A9A] cursor-pointer transition-colors"
                   >
                     LLMark
                   </button>
-                  <span className="text-[#2C2C2C]/30 dark:text-[#F3F4F4]/30">•</span>
+                  <span className="text-[#2C2C2C]/30 dark:text-white/20">•</span>
                   <span className="font-normal">Microsecond Inference Telemetry & Benchmarking Studio</span>
                 </div>
-                <div className="flex items-center gap-3 text-[11px] font-sans text-[#2C2C2C]/50 dark:text-[#FAFAFA]/60">
+                <div className="flex items-center gap-3 text-[11px] font-sans text-[#2C2C2C]/50 dark:text-slate-400">
                   <span>FastAPI + React 19</span>
                   <span>•</span>
                   <span>v0.1.0</span>

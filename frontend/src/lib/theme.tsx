@@ -117,11 +117,11 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
     return (
       <div className={cn("flex items-center justify-between p-1.5 font-sans text-xs", className)}>
-        <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 px-2 font-medium">
-          {isDark ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5 text-amber-500" />}
+        <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-slate-300 px-2 font-medium">
+          {isDark ? <Moon className="h-3.5 w-3.5 text-[#F06A9A]" /> : <Sun className="h-3.5 w-3.5 text-amber-500" />}
           <span>{isDark ? "Dark theme" : "Light theme"}</span>
         </div>
-        <div className="flex items-center bg-[#2C2C2C]/10 dark:bg-[#111012] rounded-lg p-0.5 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+        <div className="flex items-center bg-[#2C2C2C]/10 dark:bg-[#08080A] rounded-lg p-0.5 border border-[#2C2C2C]/10 dark:border-white/10">
           <button
             type="button"
             onClick={() => setTheme("light")}
@@ -129,7 +129,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
               "p-1 rounded-md transition-all cursor-pointer",
               theme === "light"
                 ? "bg-white text-amber-600 shadow-xs font-medium"
-                : "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                : "text-[#2C2C2C]/60 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
             )}
             title="Light mode"
           >
@@ -141,8 +141,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
             className={cn(
               "p-1 rounded-md transition-all cursor-pointer",
               theme === "dark"
-                ? "bg-[#853953] text-white shadow-xs font-medium"
-                : "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs font-medium"
+                : "text-[#2C2C2C]/60 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
             )}
             title="Dark mode"
           >
@@ -154,12 +154,12 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   }
 
   return (
-    <div className={cn("inline-flex items-center gap-1 bg-[#F3F4F4] dark:bg-[#2C2C2C] p-1 rounded-xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10", className)}>
+    <div className={cn("inline-flex items-center gap-1 bg-[#F3F4F4] dark:bg-[#0F0F13] p-1 rounded-xl border border-[#2C2C2C]/10 dark:border-white/10", className)}>
       <button
         onClick={() => setTheme("light")}
         className={cn(
           "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-          theme === "light" ? "bg-white text-[#2C2C2C] shadow-xs" : "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60"
+          theme === "light" ? "bg-white text-[#2C2C2C] shadow-xs" : "text-[#2C2C2C]/60 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
         )}
       >
         <Sun className="h-3.5 w-3.5" />
@@ -169,7 +169,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         onClick={() => setTheme("dark")}
         className={cn(
           "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-          theme === "dark" ? "bg-[#853953] text-white shadow-xs" : "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60"
+          theme === "dark" ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs" : "text-[#2C2C2C]/60 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
         )}
       >
         <Moon className="h-3.5 w-3.5" />
@@ -179,7 +179,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         onClick={() => setTheme("system")}
         className={cn(
           "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-          theme === "system" ? "bg-white dark:bg-[#353337] text-[#2C2C2C] dark:text-[#F3F4F4] shadow-xs" : "text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60"
+          theme === "system" ? "bg-white dark:bg-[#1A1A24] text-[#2C2C2C] dark:text-white shadow-xs" : "text-[#2C2C2C]/60 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
         )}
       >
         <Monitor className="h-3.5 w-3.5" />

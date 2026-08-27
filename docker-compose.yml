@@ -1,22 +1,44 @@
 services:
-  llmark:
+  # ==========================================
+  # LLMark Python FastAPI Backend Service
+  # ==========================================
+  backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: llmark
+    container_name: llmark_backend
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
       - PORT=8000
       - DEBUG=false
+      - BACKEND_CORS_ORIGINS=*
+      - DATABASE_URL=sqlite+aiosqlite:///data/llmark.db
     volumes:
-      - llmark_data:/app/backend/data
+      - llmark_data:/app/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # ==========================================
+  # LLMark React 19 High-Performance Nginx Frontend
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
+    container_name: llmark_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   llmark_data:

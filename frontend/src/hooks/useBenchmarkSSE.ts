@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { MetricsSnapshot, WaterfallTiming } from "../lib/types";
-import { api } from "../lib/api";
+import { api, getApiUrl } from "../lib/api";
 
 export interface TimeSeriesPoint {
   timestamp: number;
@@ -45,7 +45,7 @@ export function useBenchmarkSSE(benchmarkId: string | null, onComplete?: (finalS
       return;
     }
 
-    const url = `/api/benchmark/stream?benchmark_id=${encodeURIComponent(benchmarkId)}`;
+    const url = getApiUrl(`/api/benchmark/stream?benchmark_id=${encodeURIComponent(benchmarkId)}`);
     const es = new EventSource(url);
     eventSourceRef.current = es;
 

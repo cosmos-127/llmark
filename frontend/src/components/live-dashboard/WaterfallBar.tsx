@@ -72,8 +72,8 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: tlsPct,
       bgBar: "bg-[#73275B] dark:bg-[#8F3372]",
       dotColor: "bg-[#73275B] dark:bg-[#8F3372]",
-      badgeBg: "bg-[#73275B]/10 dark:bg-[#8F3372]/40 text-[#73275B] dark:text-[#C57BB2] border-[#73275B]/20 dark:border-[#C57BB2]/30",
-      textColor: "text-[#73275B] dark:text-[#C57BB2]",
+      badgeBg: "bg-[#73275B]/10 dark:bg-[#8F3372]/40 text-[#73275B] dark:text-[#E270BB] border-[#73275B]/20 dark:border-[#C57BB2]/30",
+      textColor: "text-[#73275B] dark:text-[#E270BB]",
       icon: Shield,
       desc: "TLS 1.3 session crypto",
       category: "Transport",
@@ -86,8 +86,8 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: prefillPct,
       bgBar: "bg-[#9A3579] dark:bg-[#B34590]",
       dotColor: "bg-[#9A3579] dark:bg-[#B34590]",
-      badgeBg: "bg-[#9A3579]/10 dark:bg-[#B34590]/40 text-[#9A3579] dark:text-[#A74B6A] border-[#9A3579]/20 dark:border-[#A74B6A]/30",
-      textColor: "text-[#9A3579] dark:text-[#A74B6A]",
+      badgeBg: "bg-[#9A3579]/10 dark:bg-[#B34590]/40 text-[#9A3579] dark:text-[#F06A9A] border-[#9A3579]/20 dark:border-[#E05284]/30",
+      textColor: "text-[#9A3579] dark:text-[#F06A9A]",
       icon: Cpu,
       desc: "Prompt encode & KV init",
       category: "GPU Compute",
@@ -100,8 +100,8 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       pct: decodePct,
       bgBar: "bg-[#C4559E] dark:bg-[#D972B5]",
       dotColor: "bg-[#C4559E] dark:bg-[#D972B5]",
-      badgeBg: "bg-[#C4559E]/10 dark:bg-[#D972B5]/40 text-[#853953] dark:text-[#F3F4F4] border-[#C4559E]/20 dark:border-[#F3F4F4]/20",
-      textColor: "text-[#853953] dark:text-[#F3F4F4]",
+      badgeBg: "bg-[#C4559E]/10 dark:bg-[#D972B5]/40 text-[#853953] dark:text-white border-[#C4559E]/20 dark:border-white/15",
+      textColor: "text-[#853953] dark:text-white",
       icon: Zap,
       desc: "Autoregressive token decode",
       category: "GPU Compute",
@@ -110,131 +110,122 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
 
   return (
     <TooltipProvider>
-      <Card className="w-full flex flex-col justify-between overflow-hidden shadow-xs border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+      <Card className="w-full flex flex-col justify-between overflow-hidden shadow-xs border-[#2C2C2C]/10 dark:border-white/10">
         <CardHeader className="p-5 pb-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#D84577]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35">
                 <NetworkPulseSvg className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] font-sans">
+                <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-white font-sans">
                   Latency Waterfall Profiler
                 </CardTitle>
-                <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
+                <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
                   Microsecond socket connection latency isolated from remote GPU inference prefill & token decode
                 </CardDescription>
               </div>
             </div>
 
-            <div className="flex items-center flex-wrap gap-2 text-xs font-sans">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">Transport:</span>
-                <span className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">{formatMs(handshakeTotal)}</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10">
+                <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans">Transport:</span>
+                <span className="font-semibold text-[#2C2C2C] dark:text-white tabular-nums">{formatMs(handshakeTotal)}</span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">GPU Inference:</span>
-                <span className="font-semibold text-[#853953] dark:text-[#A74B6A] tabular-nums">{formatMs(inferenceTotal)}</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10">
+                <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans">GPU Inference:</span>
+                <span className="font-semibold text-[#853953] dark:text-[#F06A9A] tabular-nums">{formatMs(inferenceTotal)}</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#853953]/10 dark:bg-[#A74B6A]/15 border border-[#853953]/30 dark:border-[#A74B6A]/35">
-                <span className="text-[11px] text-[#853953] dark:text-[#A74B6A] font-sans font-medium">Total E2E:</span>
-                <span className="font-semibold text-[#853953] dark:text-[#A74B6A] tabular-nums">{formatMs(waterfall?.total_e2e_ms || total)}</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#853953]/10 dark:bg-[#E05284]/15 border border-[#853953]/20 dark:border-[#E05284]/30 text-[#853953] dark:text-[#F06A9A]">
+                <span className="text-[11px] font-sans">End-to-End:</span>
+                <span className="font-bold tabular-nums">{formatMs(total)}</span>
               </div>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-5 pt-2 space-y-5">
-          {/* Spacious Segmented Waterfall Trace Bar */}
+        <CardContent className="p-5 pt-3 space-y-6">
+          {/* Continuous Proportional Waterfall Segment Bar */}
           <div className="space-y-2">
-            <div className="h-8 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] flex overflow-hidden border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-inner p-1 gap-1">
-              {stages.map((stg, idx) => (
-                <Tooltip key={stg.id}>
-                  <TooltipTrigger asChild>
-                    <motion.div
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: `${stg.pct}%`, opacity: 1 }}
-                      transition={{
-                        duration: 0.5,
-                        delay: idx * 0.08,
-                        ease: [0.16, 1, 0.3, 1],
-                      }}
-                      className={`h-full ${stg.bgBar} hover:brightness-110 cursor-pointer flex items-center justify-between px-2 transition-all ${
-                        idx === 0 ? "rounded-l-lg" : ""
-                      } ${idx === stages.length - 1 ? "rounded-r-lg" : ""}`}
-                    >
-                      {stg.pct >= 8 && (
-                        <>
-                          <span className="text-[11px] font-medium text-white/85 truncate select-none hidden sm:inline-block">
-                            {stg.label}
+            <div className="h-8 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] flex overflow-hidden border border-[#2C2C2C]/10 dark:border-white/10 shadow-inner p-1 gap-1">
+              {stages.map((stage, idx) => {
+                const StageIcon = stage.icon;
+                return (
+                  <Tooltip key={stage.id}>
+                    <TooltipTrigger asChild>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${stage.pct}%` }}
+                        transition={{ duration: 0.45, ease: "easeOut" }}
+                        className={`h-full ${stage.bgBar} rounded-lg flex items-center justify-between px-2 text-white font-sans text-xs select-none cursor-pointer hover:brightness-110 transition-all overflow-hidden`}
+                      >
+                        <div className="flex items-center gap-1 min-w-0">
+                          <StageIcon className="h-3.5 w-3.5 shrink-0 opacity-85" />
+                          <span className="truncate text-[11px] font-medium hidden sm:inline">
+                            {stage.label}
                           </span>
-                          <span className="text-[11px] font-sans font-medium tabular-nums text-white/95 truncate select-none">
-                            {stg.pct}%
-                          </span>
-                        </>
-                      )}
-                    </motion.div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="font-semibold">{stg.label}: {formatMs(stg.time)} ({stg.pct}%)</p>
-                    <p className="text-xs opacity-80">{stg.desc}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+                        </div>
+                        <span className="font-mono text-[10px] font-semibold opacity-90 shrink-0 ml-1">
+                          {stage.pct}%
+                        </span>
+                      </motion.div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="font-sans text-xs">
+                      <p className="font-semibold">{stage.label} — {formatMs(stage.time)} ({stage.pct}%)</p>
+                      <p className="text-[#2C2C2C]/70 dark:text-slate-300 text-[11px]">{stage.desc}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
             </div>
 
-            {/* Timeline markers */}
-            <div className="flex items-center justify-between text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans tabular-nums px-1">
-              <span>0 ms (Send)</span>
-              <span>Client Handshake ~{(handshakeTotal).toFixed(1)}ms</span>
-              <span>TTFT ~{Math.round(handshakeTotal + serverPrefill)}ms</span>
-              <span>E2E ~{Math.round(total)}ms</span>
+            {/* Scale timeline labels */}
+            <div className="flex items-center justify-between text-[11px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans tabular-nums px-1">
+              <span>0 ms (Client TCP open)</span>
+              <span>Handshake edge: ~{formatMs(handshakeTotal)}</span>
+              <span>TTFT: ~{formatMs(rawTtft)}</span>
+              <span>Stream complete: ~{formatMs(total)}</span>
             </div>
           </div>
 
-          {/* 5-Stage Metrics Grid across full width */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
-            {stages.map((stg) => {
-              const Icon = stg.icon;
+          {/* 5 Distinct Granular Stage Breakdown Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {stages.map((st) => {
+              const Icon = st.icon;
               return (
-                <Tooltip key={stg.id}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className="rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/70 p-3.5 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 flex flex-col justify-between gap-2.5 cursor-pointer hover:bg-white dark:hover:bg-[#353337] hover:border-[#853953]/35 dark:hover:border-[#A74B6A]/35 transition-all font-sans shadow-2xs hover:shadow-xs"
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <div className="flex items-center gap-2 truncate">
-                          <div className={`p-1 rounded-lg ${stg.badgeBg}`}>
-                            <Icon className="h-3.5 w-3.5" />
-                          </div>
-                          <span className="text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 font-medium text-xs truncate">
-                            {stg.label}
-                          </span>
-                        </div>
-                        <span className="text-[11px] font-sans font-medium tabular-nums text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-                          {stg.pct}%
+                <motion.div
+                  key={st.id}
+                  whileHover={{ y: -2 }}
+                  transition={{ duration: 0.15 }}
+                  className="rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] p-3.5 border border-[#2C2C2C]/10 dark:border-white/10 flex flex-col justify-between gap-2.5 cursor-pointer hover:bg-white dark:hover:bg-[#14141B] hover:border-[#853953]/35 dark:hover:border-[#E05284]/40 transition-all font-sans shadow-2xs hover:shadow-xs"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className={`h-2 w-2 rounded-full ${st.dotColor} shrink-0`} />
+                        <span className="text-[#2C2C2C]/80 dark:text-slate-200 font-medium text-xs truncate">
+                          {st.label}
                         </span>
                       </div>
-
-                      <div className="flex items-baseline justify-between pt-1">
-                        <span className={`${stg.textColor} font-sans text-base font-semibold tabular-nums`}>
-                          {formatMs(stg.time)}
-                        </span>
-                        <span className="text-[10px] font-sans font-medium capitalize text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-                          {stg.category}
-                        </span>
-                      </div>
-
-                      <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 line-clamp-1 border-t border-[#2C2C2C]/5 dark:border-[#F3F4F4]/5 pt-1.5">
-                        {stg.desc}
-                      </p>
+                      <span className="text-[11px] font-sans font-medium tabular-nums text-[#2C2C2C]/50 dark:text-slate-400">
+                        #{st.step}
+                      </span>
                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="font-semibold">{stg.label}</p>
-                    <p className="text-xs">{stg.desc} • {formatMs(stg.time)} ({stg.pct}% of total E2E)</p>
-                  </TooltipContent>
-                </Tooltip>
+
+                    <div className="flex items-baseline justify-between pt-1">
+                      <div className="text-base font-bold font-sans tabular-nums tracking-tight text-[#2C2C2C] dark:text-white">
+                        {formatMs(st.time)}
+                      </div>
+                      <span className="text-[10px] font-sans font-medium capitalize text-[#2C2C2C]/50 dark:text-slate-400">
+                        {st.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 line-clamp-1 border-t border-[#2C2C2C]/5 dark:border-white/[0.06] pt-1.5">
+                    {st.desc}
+                  </p>
+                </motion.div>
               );
             })}
           </div>

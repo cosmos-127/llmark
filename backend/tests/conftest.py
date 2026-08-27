@@ -3,8 +3,9 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import delete
 
-from app.db.session import engine
+from app.db.session import engine, init_db
 from app.main import app
 from app.models.db.models import Base
 
@@ -19,13 +20,15 @@ def event_loop():
 
 @pytest.fixture(autouse=True)
 async def setup_test_db():
-    """Set up and tear down test database tables."""
+    """Set up clean database tables for each test."""
+    await init_db()
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+        for table in reversed(Base.metadata.sorted_tables):
+            await conn.execute(delete(table))
     yield
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        for table in reversed(Base.metadata.sorted_tables):
+            await conn.execute(delete(table))
 
 
 @pytest.fixture

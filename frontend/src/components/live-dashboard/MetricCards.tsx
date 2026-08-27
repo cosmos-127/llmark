@@ -36,16 +36,16 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
           <Gauge className="h-4 w-4" />
         </div>
         <div>
-          <div className="text-xs font-bold text-[#853953] dark:text-[#A74B6A] flex items-center gap-1.5">
+          <div className="text-xs font-bold text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5">
             Saturation Knee Inflection Discovered
             <Badge variant="destructive" className="text-[10px] py-0 h-4">Inflection Point</Badge>
           </div>
-          <p className="text-[11px] text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 pt-0.5">
+          <p className="text-[11px] text-[#2C2C2C]/70 dark:text-slate-300 pt-0.5">
             Optimal concurrency ceiling identified at <strong>{snapshot.saturation_knee_concurrency || 16} parallel streams</strong>. Concurrency beyond this causes TTFT degradation &gt;50% or upstream queue backpressure.
           </p>
         </div>
       </div>
-      <Badge variant="outline" className="text-xs font-semibold border-[#853953]/50 text-[#853953] dark:text-[#A74B6A] tabular-nums whitespace-nowrap">
+      <Badge variant="outline" className="text-xs font-semibold border-[#853953]/50 text-[#853953] dark:text-[#F06A9A] tabular-nums whitespace-nowrap">
         Max Stable: {snapshot.saturation_knee_concurrency || 16} streams
       </Badge>
     </div>

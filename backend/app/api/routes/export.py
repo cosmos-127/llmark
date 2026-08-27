@@ -10,17 +10,25 @@ from app.core.orchestrator import BenchmarkOrchestrator
 from app.core.report_exporter import ReportExporter
 from app.core.statistics_engine import StatisticsEngine
 from app.models.db.models import BenchmarkRun
+from app.observability.logging import logger
 
 router = APIRouter(prefix="/export", tags=["export"])
 
 
 async def _get_run_or_active(run_id: str, db: AsyncSession) -> BenchmarkRun:
     """Retrieve benchmark run from SQLite database or active in-memory execution."""
-    query = select(BenchmarkRun).where(BenchmarkRun.id == run_id)
-    result = await db.execute(query)
-    run = result.scalar_one_or_none()
-    if run:
-        return run
+    try:
+        query = select(BenchmarkRun).where(BenchmarkRun.id == run_id)
+        result = await db.execute(query)
+        run = result.scalar_one_or_none()
+        if run:
+            return run
+    except Exception as exc:
+        logger.warning(
+            "Failed to query database in export route, checking in-memory active runs",
+            run_id=run_id,
+            error=str(exc),
+        )
 
     # Fallback to active in-memory benchmark session if available
     execution = BenchmarkOrchestrator._active_runs.get(run_id)

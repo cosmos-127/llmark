@@ -1,6 +1,7 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import AsyncMock, patch
 
 
 @pytest.mark.asyncio
@@ -42,16 +43,19 @@ async def test_expert_ask_dedicated_qa(async_client: AsyncClient):
 async def test_expert_ask_with_groq_mock(async_client: AsyncClient):
     """Test asking expert with simulated Groq LLM response."""
     from unittest.mock import MagicMock
+
     mock_choice = MagicMock()
     mock_choice.message.content = (
         "### ⚡ Groq LPU Accelerated Answer\n\n"
         "Continuous batching with chunked prefill delivers optimal Goodput.\n\n"
-        "FOLLOWUP_QUESTIONS: [\"How to size VRAM?\", \"What is TPOT?\", \"How to measure ITL?\"]"
+        'FOLLOWUP_QUESTIONS: ["How to size VRAM?", "What is TPOT?", "How to measure ITL?"]'
     )
     mock_response = MagicMock()
     mock_response.choices = [mock_choice]
 
-    with patch("openai.resources.chat.completions.AsyncCompletions.create", new_callable=AsyncMock) as mock_create:
+    with patch(
+        "openai.resources.chat.completions.AsyncCompletions.create", new_callable=AsyncMock
+    ) as mock_create:
         mock_create.return_value = mock_response
         response = await async_client.post(
             "/api/expert/ask",
@@ -81,4 +85,3 @@ async def test_expert_ask_custom_question_without_key(async_client: AsyncClient)
     assert data["source"] == "key_required"
     assert "Live AI Response Unavailable" in data["answer"]
     assert len(data["suggested_followups"]) > 0
-

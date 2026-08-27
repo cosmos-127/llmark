@@ -61,8 +61,8 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                 transition={{ duration: 0.3 }}
                 className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
                   hasKey
-                    ? "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/30 dark:border-[#A74B6A]/35 text-[#853953] dark:text-[#A74B6A] shadow-xs"
-                    : "bg-[#F3F4F4] dark:bg-[#2C2C2C] border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50"
+                    ? "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/30 dark:border-[#E05284]/35 text-[#853953] dark:text-[#F06A9A] shadow-xs"
+                    : "bg-[#F3F4F4] dark:bg-[#0B0B0E] border-[#2C2C2C]/10 dark:border-white/10 text-[#2C2C2C]/50 dark:text-slate-400"
                 }`}
               >
                 {hasKey ? <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Lock className="h-4 w-4" />}
@@ -77,9 +77,9 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#2C2C2C] border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 font-sans">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 font-sans">
                 <ProviderLogo vendor={vendor} className="h-3.5 w-3.5" />
-                <span className="text-[11px] font-sans font-medium capitalize text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                <span className="text-[11px] font-sans font-medium capitalize text-[#2C2C2C]/80 dark:text-slate-200">
                   {vendor.replace("_", " ")}
                 </span>
               </div>
@@ -108,7 +108,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
               <Label htmlFor="vault-api-key">
                 {vendor === "anthropic" ? "Anthropic API key" : "Provider API key"}
               </Label>
-              <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
+              <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-slate-400">
                 {hasKey ? "Key loaded" : "Required for live test"}
               </span>
             </div>
@@ -126,7 +126,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowKey(!showKey)}
-                className="absolute right-1 top-0.5 h-8 w-8 text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                className="absolute right-1 top-0.5 h-8 w-8 text-[#2C2C2C]/50 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
               >
                 {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               </Button>
@@ -138,9 +138,9 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="vault-base-url">
-                  Endpoint base URL <span className="text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-normal lowercase">(optional)</span>
+                  Endpoint base URL <span className="text-[#2C2C2C]/50 dark:text-slate-400 font-normal lowercase">(optional)</span>
                 </Label>
-                <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">vLLM / Ollama / Groq</span>
+                <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-slate-400">vLLM / Ollama / Groq</span>
               </div>
               <div className="relative">
                 <Input
@@ -151,7 +151,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                   placeholder="e.g. http://localhost:8000/v1 or https://api.groq.com/openai/v1"
                   className="pr-9"
                 />
-                <Server className="absolute right-3 top-2.5 h-4 w-4 text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 pointer-events-none" />
+                <Server className="absolute right-3 top-2.5 h-4 w-4 text-[#2C2C2C]/40 dark:text-slate-500 pointer-events-none" />
               </div>
             </div>
           )}
@@ -159,8 +159,8 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
           <Separator className="my-2" />
 
           {/* Security Footnote */}
-          <div className="flex items-center gap-2 text-xs text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50">
-            <Info className="h-3.5 w-3.5 text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-[#2C2C2C]/50 dark:text-slate-400">
+            <Info className="h-3.5 w-3.5 text-[#2C2C2C]/40 dark:text-slate-500 shrink-0" />
             <span>Keys are never saved to SQLite, disk storage, or telemetry bundles.</span>
           </div>
         </CardContent>

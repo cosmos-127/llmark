@@ -2,7 +2,8 @@ import json
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from fastapi import APIRouter
 from openai import AsyncOpenAI
 from pydantic import BaseModel, Field
@@ -21,20 +22,24 @@ class ChatMessage(BaseModel):
 
 class ExpertQueryRequest(BaseModel):
     query: str = Field(..., description="User question or prompt")
-    context_topic: Optional[str] = Field(None, description="Context card or topic")
-    vendor: Optional[str] = Field(None, description="Current vendor being benchmarked")
-    model: Optional[str] = Field(None, description="Current model being benchmarked")
-    groq_api_key: Optional[str] = Field(None, description="Groq API key for live LLM answers")
-    credential: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Ephemeral credential if available")
-    messages: Optional[List[ChatMessage]] = Field(default=None, description="Recent conversation history for multi-turn context")
+    context_topic: str | None = Field(None, description="Context card or topic")
+    vendor: str | None = Field(None, description="Current vendor being benchmarked")
+    model: str | None = Field(None, description="Current model being benchmarked")
+    groq_api_key: str | None = Field(None, description="Groq API key for live LLM answers")
+    credential: dict[str, Any] | None = Field(
+        default_factory=dict, description="Ephemeral credential if available"
+    )
+    messages: list[ChatMessage] | None = Field(
+        default=None, description="Recent conversation history for multi-turn context"
+    )
 
 
 class ExpertQueryResponse(BaseModel):
     answer: str
     topic: str
-    suggested_followups: List[str]
+    suggested_followups: list[str]
     source: str  # "groq_llm" or "knowledge_engine"
-    model: Optional[str] = None
+    model: str | None = None
 
 
 class ExpertStatusResponse(BaseModel):
@@ -47,7 +52,7 @@ class ExpertStatusResponse(BaseModel):
 # Comprehensive Benchmark Knowledge Base (37 Dedicated Q&A + Foundation Articles)
 # ==============================================================================
 
-DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
+DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
     {
         "question": "Why is TTFT critical for RAG vs. Chat?",
         "keywords": ["ttft", "rag", "chat", "prefill", "retrieval", "context", "first token"],
@@ -71,7 +76,16 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How to benchmark reasoning (CoT) models?",
-        "keywords": ["reasoning", "cot", "chain of thought", "deepseek-r1", "o1", "o3", "thinking", "reasoner"],
+        "keywords": [
+            "reasoning",
+            "cot",
+            "chain of thought",
+            "deepseek-r1",
+            "o1",
+            "o3",
+            "thinking",
+            "reasoner",
+        ],
         "topic": "Reasoning (Chain-of-Thought) Benchmarking",
         "answer": (
             "### 🧠 Benchmarking Chain-of-Thought (CoT) & Reasoning Models\n\n"
@@ -92,7 +106,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What is the difference between TTFT and TTFA?",
-        "keywords": ["difference between ttft and ttfa", "ttft vs ttfa", "ttfa", "first answer", "first token"],
+        "keywords": [
+            "difference between ttft and ttfa",
+            "ttft vs ttfa",
+            "ttfa",
+            "first answer",
+            "first token",
+        ],
         "topic": "TTFT vs. TTFA Metric Dissection",
         "answer": (
             "### ⏱️ TTFT vs. TTFA Explained\n\n"
@@ -110,7 +130,15 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "Why use Temperature = 0 for throughput tests?",
-        "keywords": ["temperature = 0", "temp 0", "temperature 0", "deterministic", "reproducible", "greedy decoding", "greedy"],
+        "keywords": [
+            "temperature = 0",
+            "temp 0",
+            "temperature 0",
+            "deterministic",
+            "reproducible",
+            "greedy decoding",
+            "greedy",
+        ],
         "topic": "Deterministic Decoding at Temperature = 0",
         "answer": (
             "### 🎯 Why Temperature = 0.0 is the Gold Standard for Benchmarks\n\n"
@@ -130,7 +158,14 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How does sampling affect token jitter & ITL?",
-        "keywords": ["token jitter", "itl jitter", "jitter", "inter-token latency", "sampling entropy", "entropy jitter"],
+        "keywords": [
+            "token jitter",
+            "itl jitter",
+            "jitter",
+            "inter-token latency",
+            "sampling entropy",
+            "entropy jitter",
+        ],
         "topic": "Sampling Entropy & Inter-Token Latency Jitter",
         "answer": (
             "### 📊 Token Jitter & Inter-Token Latency (ITL)\n\n"
@@ -151,12 +186,18 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What happens when Max Tokens is reached?",
-        "keywords": ["max tokens reached", "max_tokens", "finish_reason length", "generation bound", "cut off"],
+        "keywords": [
+            "max tokens reached",
+            "max_tokens",
+            "finish_reason length",
+            "generation bound",
+            "cut off",
+        ],
         "topic": "Generation Bounds & Finish Reasons",
         "answer": (
             "### 🛑 Max Tokens & Generation Bounds\n\n"
             "When an autoregressive generation reaches the configured `max_tokens` bound:\n\n"
-            "1. The inference engine halts decoding immediately and returns `finish_reason: \"length\"` instead of `\"stop\"`.\n"
+            '1. The inference engine halts decoding immediately and returns `finish_reason: "length"` instead of `"stop"`.\n'
             "2. **Benchmarking Impact**:\n"
             "   - Setting a fixed `max_tokens` guarantees exact decode turn length across all concurrent worker threads.\n"
             "   - Prevents runaway generation loops when testing uncalibrated prompts."
@@ -169,7 +210,14 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How to find the saturation cliff of a cluster?",
-        "keywords": ["saturation cliff", "saturation knee", "cluster limits", "knee probe", "overload cliff", "capacity limit"],
+        "keywords": [
+            "saturation cliff",
+            "saturation knee",
+            "cluster limits",
+            "knee probe",
+            "overload cliff",
+            "capacity limit",
+        ],
         "topic": "Identifying the Saturation Cliff",
         "answer": (
             "### 📉 Finding the Saturation Cliff ($N_{\\text{knee}}$)\n\n"
@@ -190,7 +238,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What is the relationship between RPS and concurrency?",
-        "keywords": ["relationship between rps and concurrency", "rps vs concurrency", "littles law", "concurrency to rps"],
+        "keywords": [
+            "relationship between rps and concurrency",
+            "rps vs concurrency",
+            "littles law",
+            "concurrency to rps",
+        ],
         "topic": "Little's Law & Concurrency-to-RPS Conversion",
         "answer": (
             "### 📐 Little's Law in LLM Queuing\n\n"
@@ -207,7 +260,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "When does TTFT degrade exponentially?",
-        "keywords": ["ttft degrade exponentially", "ttft spike", "exponential latency", "queue delay", "mm1 queue"],
+        "keywords": [
+            "ttft degrade exponentially",
+            "ttft spike",
+            "exponential latency",
+            "queue delay",
+            "mm1 queue",
+        ],
         "topic": "Exponential TTFT Queue Degradation",
         "answer": (
             "### ⚡ Why TTFT Spikes Exponentially\n\n"
@@ -228,7 +287,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "Why is Constant load not enough for production testing?",
-        "keywords": ["constant load not enough", "constant vs poisson", "constant load blind spot", "realistic load"],
+        "keywords": [
+            "constant load not enough",
+            "constant vs poisson",
+            "constant load blind spot",
+            "realistic load",
+        ],
         "topic": "Why Constant Load Masks Production Bottlenecks",
         "answer": (
             "### ⚠️ The Blind Spot of Constant Load Benchmarks\n\n"
@@ -247,7 +311,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How does Poisson arrival model human traffic?",
-        "keywords": ["poisson arrival", "poisson human traffic", "stochastic arrival", "exponential inter-arrival"],
+        "keywords": [
+            "poisson arrival",
+            "poisson human traffic",
+            "stochastic arrival",
+            "exponential inter-arrival",
+        ],
         "topic": "Poisson Arrival Process Dynamics",
         "answer": (
             "### 🌊 Poisson Arrival Process in LLM Benchmarking\n\n"
@@ -267,7 +336,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How to simulate traffic spikes safely?",
-        "keywords": ["simulate traffic spikes safely", "spike safely", "traffic spike", "surge testing", "stress wave"],
+        "keywords": [
+            "simulate traffic spikes safely",
+            "spike safely",
+            "traffic spike",
+            "surge testing",
+            "stress wave",
+        ],
         "topic": "Safe Traffic Spike Simulation",
         "answer": (
             "### ⚡ Safely Simulating Concurrency Spikes\n\n"
@@ -286,7 +361,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How much speedup does prompt prefix caching provide?",
-        "keywords": ["prompt prefix caching speedup", "prefix caching speedup", "cache hit latency", "radix attention speedup"],
+        "keywords": [
+            "prompt prefix caching speedup",
+            "prefix caching speedup",
+            "cache hit latency",
+            "radix attention speedup",
+        ],
         "topic": "Prompt Prefix Caching Speedup Metrics",
         "answer": (
             "### 🚀 Prompt Prefix Caching Speedup\n\n"
@@ -307,7 +387,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How is KV cache memory calculated per stream?",
-        "keywords": ["kv cache memory calculated", "kv cache formula", "vram formula", "kv cache sizing", "gqa vram"],
+        "keywords": [
+            "kv cache memory calculated",
+            "kv cache formula",
+            "vram formula",
+            "kv cache sizing",
+            "gqa vram",
+        ],
         "topic": "KV Cache VRAM Memory Sizing Formula",
         "answer": (
             "### 💾 KV Cache VRAM Formula\n\n"
@@ -328,7 +414,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "Why do warmup requests matter?",
-        "keywords": ["warmup requests matter", "why warmup", "tcp handshake latency", "tls priming", "connection warmup"],
+        "keywords": [
+            "warmup requests matter",
+            "why warmup",
+            "tcp handshake latency",
+            "tls priming",
+            "connection warmup",
+        ],
         "topic": "Warmup Request Rationale & Connection Priming",
         "answer": (
             "### 🔌 Why Warmup Requests are Essential\n\n"
@@ -347,7 +439,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What is Goodput and why is it superior to Raw Throughput?",
-        "keywords": ["goodput vs raw throughput", "what is goodput", "goodput superior", "goodput formula", "sla goodput"],
+        "keywords": [
+            "goodput vs raw throughput",
+            "what is goodput",
+            "goodput superior",
+            "goodput formula",
+            "sla goodput",
+        ],
         "topic": "Goodput vs. Raw Throughput Deep Dive",
         "answer": (
             "### 🏆 Goodput: The True Metric of Production LLM Performance\n\n"
@@ -371,7 +469,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What are standard production SLO thresholds?",
-        "keywords": ["standard production slo thresholds", "production slo", "standard slo", "slo targets", "latency budgets"],
+        "keywords": [
+            "standard production slo thresholds",
+            "production slo",
+            "standard slo",
+            "slo targets",
+            "latency budgets",
+        ],
         "topic": "Production LLM SLO Threshold Guidelines",
         "answer": (
             "### 🎯 Standard Production SLO Thresholds\n\n"
@@ -390,7 +494,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How does TPOT differ from ITL?",
-        "keywords": ["tpot differ from itl", "tpot vs itl", "tpot and itl difference", "time per output token", "inter-token latency"],
+        "keywords": [
+            "tpot differ from itl",
+            "tpot vs itl",
+            "tpot and itl difference",
+            "time per output token",
+            "inter-token latency",
+        ],
         "topic": "TPOT vs. ITL Distinction",
         "answer": (
             "### ⏱️ TPOT vs. ITL Dissection\n\n"
@@ -411,7 +521,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How does the zero bill-shock circuit breaker protect against runaway cloud costs?",
-        "keywords": ["zero bill-shock circuit breaker", "bill-shock", "spend cap circuit breaker", "hard spend cap protect", "abort cost"],
+        "keywords": [
+            "zero bill-shock circuit breaker",
+            "bill-shock",
+            "spend cap circuit breaker",
+            "hard spend cap protect",
+            "abort cost",
+        ],
         "topic": "Zero Bill-Shock Circuit Breaker Architecture",
         "answer": (
             "### 🛡️ Zero Bill-Shock Protection\n\n"
@@ -430,7 +546,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How is benchmark cost calculated in real time?",
-        "keywords": ["benchmark cost calculated", "cost formula", "real-time cost calculation", "token cost math"],
+        "keywords": [
+            "benchmark cost calculated",
+            "cost formula",
+            "real-time cost calculation",
+            "token cost math",
+        ],
         "topic": "Real-Time Benchmark Cost Model",
         "answer": (
             "### 💵 Real-Time Cost Formula\n\n"
@@ -447,15 +568,20 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How do wire protocols like Anthropic vs OpenAI differ in streaming performance?",
-        "keywords": ["anthropic vs openai wire protocols", "wire protocols streaming", "sse format differences", "anthropic stream parsing"],
+        "keywords": [
+            "anthropic vs openai wire protocols",
+            "wire protocols streaming",
+            "sse format differences",
+            "anthropic stream parsing",
+        ],
         "topic": "OpenAI vs. Anthropic Wire Protocol Differences",
         "answer": (
             "### 🌐 OpenAI vs. Anthropic Wire Protocols\n\n"
             "| Dimension | OpenAI (`/v1/chat/completions`) | Anthropic (`/v1/messages`) |\n"
             "| :--- | :--- | :--- |\n"
-            "| **Framing** | `data: {\"choices\": [{\"delta\": {\"content\": \"...\"}}]}` | `event: content_block_delta`<br>`data: {\"delta\": {\"text\": \"...\"}}` |\n"
-            "| **Usage Telemetry** | Streamed in final chunk with `stream_options: {\"include_usage\": true}` | Streamed across `message_start` and `message_delta` events |\n"
-            "| **System Prompt** | Passed as `{\"role\": \"system\"}` in messages array | Passed as dedicated top-level `system` parameter |\n"
+            '| **Framing** | `data: {"choices": [{"delta": {"content": "..."}}]}` | `event: content_block_delta`<br>`data: {"delta": {"text": "..."}}` |\n'
+            '| **Usage Telemetry** | Streamed in final chunk with `stream_options: {"include_usage": true}` | Streamed across `message_start` and `message_delta` events |\n'
+            '| **System Prompt** | Passed as `{"role": "system"}` in messages array | Passed as dedicated top-level `system` parameter |\n'
             "| **Streaming Overhead** | Standard JSON chunk parsing | Event-type header parsing prior to JSON extraction |"
         ),
         "followups": [
@@ -466,7 +592,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How do MoE (Mixture of Experts) models behave under load?",
-        "keywords": ["moe models behave under load", "mixture of experts load", "moe vs dense inference", "deepseek v3 moe"],
+        "keywords": [
+            "moe models behave under load",
+            "mixture of experts load",
+            "moe vs dense inference",
+            "deepseek v3 moe",
+        ],
         "topic": "Mixture-of-Experts (MoE) Inference Dynamics",
         "answer": (
             "### 🧩 Mixture of Experts (MoE) Performance Dynamics\n\n"
@@ -486,7 +617,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How does quantization (FP8/INT4) affect TPS?",
-        "keywords": ["quantization fp8 int4 tps", "quantization speedup", "fp8 vs int4 throughput", "quantized decode speed"],
+        "keywords": [
+            "quantization fp8 int4 tps",
+            "quantization speedup",
+            "fp8 vs int4 throughput",
+            "quantized decode speed",
+        ],
         "topic": "Quantization & Memory Bandwidth Scaling",
         "answer": (
             "### ⚡ Quantization Impact on Inference Speed\n\n"
@@ -506,7 +642,13 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How do token ratios (prefill vs. decode) affect benchmarking results?",
-        "keywords": ["token ratios", "prefill vs decode", "prompt ratio", "workload ratio", "prompt to generation"],
+        "keywords": [
+            "token ratios",
+            "prefill vs decode",
+            "prompt ratio",
+            "workload ratio",
+            "prompt to generation",
+        ],
         "topic": "Token Ratios & Workload Archetypes",
         "answer": (
             "### ⚖️ Prefill vs. Decode Ratios in Benchmarking\n\n"
@@ -531,7 +673,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How do Temperature, Top-P, and Max Tokens impact benchmark accuracy?",
-        "keywords": ["temperature top p max tokens impact", "sampling parameters accuracy", "sampling benchmark impact"],
+        "keywords": [
+            "temperature top p max tokens impact",
+            "sampling parameters accuracy",
+            "sampling benchmark impact",
+        ],
         "topic": "Sampling Parameter Rigor in Benchmarks",
         "answer": (
             "### 🔬 Benchmark Calibration via Sampling Settings\n\n"
@@ -552,7 +698,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How do I choose the right concurrency worker pool for stress testing?",
-        "keywords": ["choose concurrency worker pool", "right concurrency", "worker pool size", "how many workers"],
+        "keywords": [
+            "choose concurrency worker pool",
+            "right concurrency",
+            "worker pool size",
+            "how many workers",
+        ],
         "topic": "Concurrency Pool Sizing Strategy",
         "answer": (
             "### 👥 Concurrency Pool Sizing Guidelines\n\n"
@@ -571,7 +722,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What is the Saturation Knee Probe and how does it detect cluster limits?",
-        "keywords": ["saturation knee probe detect cluster limits", "knee probe explained", "detect cluster limits"],
+        "keywords": [
+            "saturation knee probe detect cluster limits",
+            "knee probe explained",
+            "detect cluster limits",
+        ],
         "topic": "Saturation Knee Probe Architecture",
         "answer": (
             "### 🔍 Saturation Knee Probe Architecture\n\n"
@@ -587,7 +742,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "Why should I bypass KV Cache (nonce injection) and how does it measure cold GPU prefill?",
-        "keywords": ["bypass kv cache nonce injection", "cold gpu prefill", "nonce injection measure", "cache bust"],
+        "keywords": [
+            "bypass kv cache nonce injection",
+            "cold gpu prefill",
+            "nonce injection measure",
+            "cache bust",
+        ],
         "topic": "Cold GPU Prefill Measurement via Nonce",
         "answer": (
             "### 🧊 Cold GPU Prefill via Nonce Injection\n\n"
@@ -603,7 +763,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How does model parameter size influence prefill vs decode memory bandwidth?",
-        "keywords": ["model parameter size influence prefill decode", "model size memory bandwidth", "weights memory bandwidth"],
+        "keywords": [
+            "model parameter size influence prefill decode",
+            "model size memory bandwidth",
+            "weights memory bandwidth",
+        ],
         "topic": "Model Parameter Sizing & Memory Physics",
         "answer": (
             "### 🧠 Model Parameter Size & Memory Physics\n\n"
@@ -622,7 +786,12 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How does the 3-stage reliability sieve work?",
-        "keywords": ["3-stage reliability sieve", "reliability sieve work", "3 stage sieve", "goodput sieve"],
+        "keywords": [
+            "3-stage reliability sieve",
+            "reliability sieve work",
+            "3 stage sieve",
+            "goodput sieve",
+        ],
         "topic": "The 3-Stage Reliability Sieve",
         "answer": (
             "### 🛡️ The 3-Stage Reliability Sieve\n\n"
@@ -640,7 +809,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What happens when the spend cap is hit?",
-        "keywords": ["what happens when spend cap hit", "spend cap triggered", "budget cap exceeded"],
+        "keywords": [
+            "what happens when spend cap hit",
+            "spend cap triggered",
+            "budget cap exceeded",
+        ],
         "topic": "Spend Cap Trip Dynamics",
         "answer": (
             "### 🛑 What Happens When the Spend Cap is Hit\n\n"
@@ -657,7 +830,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How to input custom provider token pricing?",
-        "keywords": ["input custom provider token pricing", "custom pricing override", "enterprise rate pricing"],
+        "keywords": [
+            "input custom provider token pricing",
+            "custom pricing override",
+            "enterprise rate pricing",
+        ],
         "topic": "Custom Token Pricing Configuration",
         "answer": (
             "### 💲 Configuring Custom Token Pricing\n\n"
@@ -674,7 +851,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "What causes connection latency overhead in cloud endpoints?",
-        "keywords": ["causes connection latency overhead", "cloud endpoints latency overhead", "connection overhead"],
+        "keywords": [
+            "causes connection latency overhead",
+            "cloud endpoints latency overhead",
+            "connection overhead",
+        ],
         "topic": "Cloud Endpoint Connection Overhead Breakdown",
         "answer": (
             "### ⚡ Anatomy of Cloud Connection Overhead\n\n"
@@ -692,7 +873,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How to configure custom vLLM / Ollama endpoints?",
-        "keywords": ["configure custom vllm ollama", "vllm endpoint setup", "ollama benchmark setup"],
+        "keywords": [
+            "configure custom vllm ollama",
+            "vllm endpoint setup",
+            "ollama benchmark setup",
+        ],
         "topic": "Self-Hosted vLLM & Ollama Configuration",
         "answer": (
             "### 🛠️ Connecting Self-Hosted vLLM / Ollama\n\n"
@@ -711,7 +896,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "Why is HTTP/2 or HTTP/3 connection reuse critical?",
-        "keywords": ["http2 http3 connection reuse", "multiplexing sse", "connection reuse critical"],
+        "keywords": [
+            "http2 http3 connection reuse",
+            "multiplexing sse",
+            "connection reuse critical",
+        ],
         "topic": "HTTP/2 & HTTP/3 Transport Multiplexing",
         "answer": (
             "### 🚀 HTTP/2 & Multiplexing in LLM Streaming\n\n"
@@ -744,7 +933,11 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
     {
         "question": "How do I optimize my benchmark parameters?",
-        "keywords": ["optimize my benchmark parameters", "how do i optimize benchmark", "best benchmark configuration"],
+        "keywords": [
+            "optimize my benchmark parameters",
+            "how do i optimize benchmark",
+            "best benchmark configuration",
+        ],
         "topic": "End-to-End Benchmark Optimization Playbook",
         "answer": (
             "### ⚡ 4-Step Benchmark Optimization Playbook\n\n"
@@ -761,10 +954,21 @@ DEDICATED_QA_ITEMS: List[Dict[str, Any]] = [
     },
 ]
 
-TOPIC_ARTICLES: Dict[str, Dict[str, Any]] = {
+TOPIC_ARTICLES: dict[str, dict[str, Any]] = {
     "workload-preset": {
         "id": "workload-preset",
-        "keywords": ["workload", "preset", "prompt", "token", "ratio", "scenario", "rag", "code", "cot", "reasoning"],
+        "keywords": [
+            "workload",
+            "preset",
+            "prompt",
+            "token",
+            "ratio",
+            "scenario",
+            "rag",
+            "code",
+            "cot",
+            "reasoning",
+        ],
         "topic": "Workload Scenarios & Prompt-to-Gen Ratios",
         "answer": (
             "### 🧩 Workload Profiles & Token Ratios\n\n"
@@ -780,7 +984,14 @@ TOPIC_ARTICLES: Dict[str, Dict[str, Any]] = {
     },
     "sampling-params": {
         "id": "sampling-params",
-        "keywords": ["sampling", "temperature", "top_p", "entropy", "max_tokens", "greedy decoding"],
+        "keywords": [
+            "sampling",
+            "temperature",
+            "top_p",
+            "entropy",
+            "max_tokens",
+            "greedy decoding",
+        ],
         "topic": "Sampling Hyperparameters & Output Entropy",
         "answer": (
             "### 🌡️ Temperature & Top-P in LLM Benchmarking\n\n"
@@ -816,7 +1027,17 @@ TOPIC_ARTICLES: Dict[str, Dict[str, Any]] = {
     },
     "load-curve": {
         "id": "load-curve",
-        "keywords": ["curve", "load", "knee", "poisson", "saturation", "ramp", "spike", "concurrency", "traffic"],
+        "keywords": [
+            "curve",
+            "load",
+            "knee",
+            "poisson",
+            "saturation",
+            "ramp",
+            "spike",
+            "concurrency",
+            "traffic",
+        ],
         "topic": "Traffic Load Curves & Saturation Dynamics",
         "answer": (
             "### 📈 Load Curve Geometries & Queue Saturation\n\n"
@@ -834,7 +1055,17 @@ TOPIC_ARTICLES: Dict[str, Dict[str, Any]] = {
     },
     "provider-routing": {
         "id": "provider-routing",
-        "keywords": ["provider", "routing", "protocol", "sse", "endpoint", "tls", "handshake", "anthropic", "openai"],
+        "keywords": [
+            "provider",
+            "routing",
+            "protocol",
+            "sse",
+            "endpoint",
+            "tls",
+            "handshake",
+            "anthropic",
+            "openai",
+        ],
         "topic": "Provider Wire Protocols & Connection Routing",
         "answer": (
             "### 🌐 Provider Wire Protocols & Network Handshakes\n\n"
@@ -850,7 +1081,18 @@ TOPIC_ARTICLES: Dict[str, Dict[str, Any]] = {
     },
     "model-sizing": {
         "id": "model-sizing",
-        "keywords": ["model", "weights", "parameters", "sizing", "dense", "moe", "b200", "h100", "vram", "quantization"],
+        "keywords": [
+            "model",
+            "weights",
+            "parameters",
+            "sizing",
+            "dense",
+            "moe",
+            "b200",
+            "h100",
+            "vram",
+            "quantization",
+        ],
         "topic": "Model Architecture & Parameter Sizing",
         "answer": (
             "### 🧠 Model Architecture & Memory Bandwidth\n\n"
@@ -873,14 +1115,35 @@ def _normalize_text(text: str) -> str:
     return re.sub(r"[^\w\s]", "", text)
 
 
-def _find_best_knowledge_match(query: str, context_topic: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def _find_best_knowledge_match(
+    query: str, context_topic: str | None = None
+) -> dict[str, Any] | None:
     """Accurately finds matching curated knowledge answer only for exact or high-confidence question matches.
     Never hijacks custom questions with generic topic overviews."""
     q_norm = _normalize_text(query)
     q_words = set(q_norm.split())
 
     # Stopwords to ignore in overlap calculation
-    stopwords = {"what", "is", "the", "how", "do", "does", "why", "for", "and", "or", "in", "to", "of", "a", "an", "vs", "difference", "between"}
+    stopwords = {
+        "what",
+        "is",
+        "the",
+        "how",
+        "do",
+        "does",
+        "why",
+        "for",
+        "and",
+        "or",
+        "in",
+        "to",
+        "of",
+        "a",
+        "an",
+        "vs",
+        "difference",
+        "between",
+    }
     meaningful_q_words = q_words - stopwords
 
     # 1. Exact or high-confidence match in dedicated QA items
@@ -897,7 +1160,7 @@ def _find_best_knowledge_match(query: str, context_topic: Optional[str] = None) 
                 return item
 
     # 2. Exact match against curated default questions in topic articles
-    for key, article in TOPIC_ARTICLES.items():
+    for article in TOPIC_ARTICLES.values():
         article_q_norm = _normalize_text(article.get("default_question", ""))
         if article_q_norm and q_norm == article_q_norm:
             return article
@@ -907,19 +1170,19 @@ def _find_best_knowledge_match(query: str, context_topic: Optional[str] = None) 
 
 
 # Specifically hardcoded production models for Groq
-GROQ_CHEAPEST_MODEL = "llama-3.1-8b-instant"   # $0.05 / 1M tokens, ultra-fast 800+ tok/s
-GROQ_BEST_MODEL = "llama-3.3-70b-versatile"     # Flagship 70B reasoning & accuracy
+GROQ_CHEAPEST_MODEL = "llama-3.1-8b-instant"  # $0.05 / 1M tokens, ultra-fast 800+ tok/s
+GROQ_BEST_MODEL = "llama-3.3-70b-versatile"  # Flagship 70B reasoning & accuracy
 
 
 async def _query_groq_llm(
     api_key: str,
     query: str,
-    context_topic: Optional[str],
-    vendor: Optional[str],
-    model: Optional[str],
-    messages_history: Optional[List[ChatMessage]],
-    custom_base_url: Optional[str] = None,
-) -> Optional[ExpertQueryResponse]:
+    context_topic: str | None,
+    vendor: str | None,
+    model: str | None,
+    messages_history: list[ChatMessage] | None,
+    custom_base_url: str | None = None,
+) -> ExpertQueryResponse | None:
     """Queries Groq / OpenAI-compatible Chat Completions API with dynamic model discovery and fallback."""
     # Determine Base URL: custom -> OpenAI if standard sk- -> Groq
     base_url = custom_base_url
@@ -934,7 +1197,7 @@ async def _query_groq_llm(
     )
 
     # 1. Dynamically discover active models from the remote endpoint via models.list()
-    active_remote_models: List[str] = []
+    active_remote_models: list[str] = []
     try:
         remote_models_resp = await groq_client.models.list()
         if remote_models_resp and getattr(remote_models_resp, "data", None):
@@ -943,13 +1206,15 @@ async def _query_groq_llm(
                 if mid and isinstance(mid, str):
                     mid_lower = mid.lower()
                     # Filter out non-chat models (whisper, audio, embeddings, moderation)
-                    if not any(x in mid_lower for x in ("whisper", "guard", "embed", "tts", "moderation")):
+                    if not any(
+                        x in mid_lower for x in ("whisper", "guard", "embed", "tts", "moderation")
+                    ):
                         active_remote_models.append(mid)
     except Exception as e:
         logger.debug("Could not dynamically list models from %s: %s", base_url, e)
 
     # 2. Build prioritized candidate list
-    models_to_try: List[str] = []
+    models_to_try: list[str] = []
 
     # If user/env specified a model and it makes sense for this endpoint
     env_model = os.environ.get("GROQ_MODEL") or getattr(settings, "GROQ_MODEL", None)
@@ -974,20 +1239,29 @@ async def _query_groq_llm(
             if GROQ_BEST_MODEL in active_remote_models:
                 models_to_try.append(GROQ_BEST_MODEL)
             # 3. Known alternate chat models
-            for pref in ["llama-3.1-70b-versatile", "qwen-2.5-32b", "qwen-2.5-coder-32b", "gpt-oss-20b", "deepseek-r1-distill-qwen-32b", "meta-llama/llama-3.3-70b-instruct"]:
+            for pref in [
+                "llama-3.1-70b-versatile",
+                "qwen-2.5-32b",
+                "qwen-2.5-coder-32b",
+                "gpt-oss-20b",
+                "deepseek-r1-distill-qwen-32b",
+                "meta-llama/llama-3.3-70b-instruct",
+            ]:
                 if pref in active_remote_models:
                     models_to_try.append(pref)
             # 4. Any other discovered active chat models
             models_to_try.extend(active_remote_models)
         else:
             # Explicitly hardcoded fallback list: cheapest first, then best
-            models_to_try.extend([
-                GROQ_CHEAPEST_MODEL,
-                GROQ_BEST_MODEL,
-                "qwen-2.5-32b",
-                "gpt-oss-20b",
-                "meta-llama/llama-3.3-70b-instruct",
-            ])
+            models_to_try.extend(
+                [
+                    GROQ_CHEAPEST_MODEL,
+                    GROQ_BEST_MODEL,
+                    "qwen-2.5-32b",
+                    "gpt-oss-20b",
+                    "meta-llama/llama-3.3-70b-instruct",
+                ]
+            )
 
     # Deduplicate while preserving priority order
     models_to_try = list(dict.fromkeys([m for m in models_to_try if m]))
@@ -1005,7 +1279,7 @@ async def _query_groq_llm(
                 "Guidelines:\n"
                 "- Keep explanations compact, tight, and directly answering what was asked.\n"
                 "- End with exactly 3 short follow-up questions formatted as:\n"
-                "FOLLOWUP_QUESTIONS: [\"Question 1?\", \"Question 2?\", \"Question 3?\"]"
+                'FOLLOWUP_QUESTIONS: ["Question 1?", "Question 2?", "Question 3?"]'
             )
 
             formatted_messages = [{"role": "system", "content": system_prompt}]
@@ -1086,7 +1360,9 @@ async def ask_expert(payload: ExpertQueryRequest) -> ExpertQueryResponse:
         return ExpertQueryResponse(
             answer=matched_knowledge["answer"],
             topic=matched_knowledge["topic"],
-            suggested_followups=matched_knowledge.get("followups", matched_knowledge.get("suggested_followups", [])),
+            suggested_followups=matched_knowledge.get(
+                "followups", matched_knowledge.get("suggested_followups", [])
+            ),
             source="knowledge_engine",
             model="built-in",
         )
@@ -1095,7 +1371,12 @@ async def ask_expert(payload: ExpertQueryRequest) -> ExpertQueryResponse:
     groq_api_key = (
         payload.groq_api_key
         or (payload.credential.get("groq_api_key") if payload.credential else None)
-        or (payload.credential.get("api_key") if payload.credential and (payload.vendor == "groq" or "groq" in str(payload.credential.get("base_url", ""))) else None)
+        or (
+            payload.credential.get("api_key")
+            if payload.credential
+            and (payload.vendor == "groq" or "groq" in str(payload.credential.get("base_url", "")))
+            else None
+        )
         or os.environ.get("GROQ_API_KEY")
         or getattr(settings, "GROQ_API_KEY", None)
     )
@@ -1127,7 +1408,7 @@ async def ask_expert(payload: ExpertQueryRequest) -> ExpertQueryResponse:
     return ExpertQueryResponse(
         answer=(
             "### ⚠️ Live AI Response Unavailable for Custom Question\n\n"
-            f"**Your Question**: *\"{query}\"*\n\n"
+            f'**Your Question**: *"{query}"*\n\n'
             "This is a custom, open-ended question that requires a live LLM endpoint to generate an answer.\n\n"
             "**To answer custom questions:**\n"
             "1. Add your **Groq API Key** in `.env` (`GROQ_API_KEY=gsk_...`) or click the **Key icon (🔑)** in the top right of this drawer.\n"

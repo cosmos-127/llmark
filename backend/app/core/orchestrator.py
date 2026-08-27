@@ -548,6 +548,9 @@ class BenchmarkOrchestrator:
         """Persist aggregated benchmark metadata and metrics to SQLite."""
         config = execution.config
         try:
+            from app.db.session import ensure_db_initialized
+
+            await ensure_db_initialized()
             async with async_session_factory() as session:
                 run_db = BenchmarkRun(
                     id=execution.benchmark_id,

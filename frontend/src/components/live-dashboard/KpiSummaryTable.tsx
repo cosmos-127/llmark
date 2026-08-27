@@ -107,14 +107,14 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
       <CardHeader className="p-4 sm:p-5 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#D84577]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35">
               <Activity className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
+              <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-white">
                 Executive KPI Benchmark Telemetry Matrix
               </CardTitle>
-              <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+              <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
                 Workload-targeted metrics telemetry profile: {preset.replace("_", " ")}
               </CardDescription>
             </div>
@@ -135,7 +135,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                 </>
               ) : (
                 <>
-                  <Copy className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                  <Copy className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
                   <span>Copy table</span>
                 </>
               )}
@@ -148,20 +148,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/5 hover:bg-[#2C2C2C]/5 dark:hover:bg-[#F3F4F4]/5 border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableHead className="w-[34%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 pl-4">
+              <TableRow className="bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/5 hover:bg-[#2C2C2C]/5 dark:hover:bg-[#F3F4F4]/5 border-b border-[#2C2C2C]/10 dark:border-white/10">
+                <TableHead className="w-[34%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3 pl-4">
                   Dimension & Metric
                 </TableHead>
-                <TableHead className="w-[18%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                <TableHead className="w-[18%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
                   P50 / Nominal
                 </TableHead>
-                <TableHead className="w-[22%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                <TableHead className="w-[22%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
                   Tail / Saturated Rate
                 </TableHead>
-                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3">
+                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
                   SLO Target
                 </TableHead>
-                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 py-3 text-right pr-4">
+                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3 text-right pr-4">
                   Compliance
                 </TableHead>
               </TableRow>
@@ -173,8 +173,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {preset === "rate_limit_probe" && (
                 <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <ShieldCheck className="h-3.5 w-3.5" />
                         <span>1. Rate Limiting & Quota Saturation Probing</span>
@@ -186,20 +186,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">HTTP 429 Rate Limit %</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">HTTP 429 Rate Limit %</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Proportion of probing requests throttled by provider rate limiters
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {formatPct(snapshot?.rate_limit_pct || 0)}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       {snapshot?.rate_limit_count || 0} throttled requests
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                       0.0% (Zero Throttling)
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -213,20 +213,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Saturated Request Rate (RPM)</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Saturated Request Rate (RPM)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Probed request frequency per minute under concurrent load
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {(snapshot?.current_rpm || (snapshot?.current_rps || 0) * 60).toFixed(0)} req/min
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       {snapshot?.estimated_rpm_limit ? `Ceiling ~${snapshot.estimated_rpm_limit.toFixed(0)} RPM` : "Unbounded capacity"}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -238,20 +238,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Saturated Token Rate (TPM)</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Saturated Token Rate (TPM)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Aggregate prompt + generation token volume consumed per minute
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {Math.round(snapshot?.current_tpm || 0).toLocaleString()} tok/min
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       {snapshot?.estimated_tpm_limit ? `Ceiling ~${snapshot.estimated_tpm_limit.toFixed(0)} TPM` : "Probing volume"}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -263,20 +263,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Status Code Matrix</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Status Code Matrix</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         HTTP response status code distribution across all probing pings
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       200 OK: {snapshot?.status_distribution?.["200"] || snapshot?.completed_requests || 0}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       429: {snapshot?.status_distribution?.["429"] || snapshot?.rate_limit_count || 0} • 5xx: {snapshot?.status_distribution?.["500"] || 0}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                       200 OK Only
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -293,8 +293,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {preset === "prefill_ttft" && (
                 <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Layers className="h-3.5 w-3.5" />
                         <span>1. KV Cache Prefill & Time to First Token</span>
@@ -306,22 +306,22 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Token (TTFT)</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time to First Token (TTFT)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Heavy prompt ingestion + socket handshake before first token stream begins
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {formatMs(snapshot?.ttft_p50)}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       <span>P95: <strong>{formatMs(snapshot?.ttft_p95)}</strong></span>
-                      <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
-                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.ttft_p99)}</span>
+                      <span className="text-[#2C2C2C]/40 dark:text-slate-500 mx-1.5">|</span>
+                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">P99: {formatMs(snapshot?.ttft_p99)}</span>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                       ≤ {formatMs(maxTtftSLO)}
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -336,19 +336,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Prefill Processing Velocity</span>
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Prefill Processing Velocity</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         KV cache memory ingestion speed in prompt tokens per second
                       </p>
                     </TableCell>
                     <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
                       {snapshot?.prefill_tps_p50 ? `${snapshot.prefill_tps_p50.toFixed(0)} tok/s` : "Computing..."}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       P95: {snapshot?.prefill_tps_p95 ? `${snapshot.prefill_tps_p95.toFixed(0)} tok/s` : "—"}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -363,8 +363,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {preset === "reasoning_cot" && (
                 <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>1. Reasoning & Chain-of-Thought Dynamics</span>
@@ -377,19 +377,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Answer (TTFA)</span>
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time to First Answer (TTFA)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Elapsed latency until thinking reasoning trace concludes & user answer starts
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#612D53] dark:text-[#C57BB2]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#612D53] dark:text-[#E270BB]">
                       {formatMs(snapshot?.ttfa_p50 || snapshot?.ttft_p50)}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       P95: <strong>{formatMs(snapshot?.ttfa_p95 || snapshot?.ttft_p95)}</strong>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -401,20 +401,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Thinking Tokens per Query</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Thinking Tokens per Query</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Average internal Chain-of-Thought tokens allocated before response output
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {snapshot?.thinking_tokens_avg ? `${snapshot.thinking_tokens_avg.toFixed(0)} tok` : "—"}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       {snapshot?.thinking_token_ratio_pct ? `${snapshot.thinking_token_ratio_pct.toFixed(1)}% of total output` : "Measuring..."}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -429,8 +429,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {(preset === "structured_json" || preset === "json_schema") && (
                 <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Braces className="h-3.5 w-3.5" />
                         <span>1. Structured JSON & Guided Grammar Compliance</span>
@@ -443,19 +443,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">JSON Schema Syntax Validity</span>
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">JSON Schema Syntax Validity</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Proportion of output responses that strictly parsed as valid JSON
                       </p>
                     </TableCell>
                     <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
                       {formatPct(snapshot?.schema_validity_pct ?? 100)}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       {snapshot?.schema_error_count || 0} syntax parsing errors
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                       100.0% (Zero Errors)
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -472,8 +472,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {preset !== "rate_limit_probe" && preset !== "prefill_ttft" && preset !== "reasoning_cot" && (
                 <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Gauge className="h-3.5 w-3.5" />
                         <span>1. Latency & Responsiveness Dynamics</span>
@@ -485,22 +485,22 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time to First Token (TTFT)</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time to First Token (TTFT)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Prefill computation + socket handshake before first token stream arrives
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {formatMs(snapshot?.ttft_p50)}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       <span>P95: <strong>{formatMs(snapshot?.ttft_p95)}</strong></span>
-                      <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
-                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.ttft_p99)}</span>
+                      <span className="text-[#2C2C2C]/40 dark:text-slate-500 mx-1.5">|</span>
+                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">P99: {formatMs(snapshot?.ttft_p99)}</span>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                       ≤ {formatMs(maxTtftSLO)}
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -514,20 +514,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Time Per Output Token (TPOT)</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time Per Output Token (TPOT)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Hardware decode cycle duration (inverse of single-stream generation speed)
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {formatMs(snapshot?.tpot_mean)} / tok
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       Mean decode throughput
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                       ≤ {formatMs(maxTpotSLO)}
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -541,22 +541,22 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Inter-Token Latency (ITL / Jitter)</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Inter-Token Latency (ITL / Jitter)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Delta spacing between consecutive streaming chunks (delivery smoothness)
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {formatMs(snapshot?.itl_p50)}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                       <span>P95: <strong>{formatMs(snapshot?.itl_p95)}</strong></span>
-                      <span className="text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40 mx-1.5">|</span>
-                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">P99: {formatMs(snapshot?.itl_p99)}</span>
+                      <span className="text-[#2C2C2C]/40 dark:text-slate-500 mx-1.5">|</span>
+                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">P99: {formatMs(snapshot?.itl_p99)}</span>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -570,20 +570,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableRow>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Max Token Stream Freeze</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Max Token Stream Freeze</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         The single longest latency freeze/stall experienced between any two tokens
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                       {formatMs(snapshot?.max_itl)}
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/60 dark:text-slate-400">
                       Peak worst pause
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                       ≤ 200.0 ms
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -600,8 +600,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {preset !== "rate_limit_probe" && (
                 <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                       <div className="flex items-center gap-1.5">
                         <Zap className="h-3.5 w-3.5" />
                         <span>2. Throughput & Cluster Capacity</span>
@@ -614,19 +614,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Decode Token Velocity (TPS)</span>
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Decode Token Velocity (TPS)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Cluster-wide aggregate generation output tokens per second across all workers
                       </p>
                     </TableCell>
                     <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
                       {(snapshot?.current_tps || 0).toFixed(1)} tok/s
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
                       Active aggregate
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -639,19 +639,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Request Throughput (RPS)</span>
+                        <span className="font-medium text-[#2C2C2C] dark:text-white">Request Throughput (RPS)</span>
                       </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                         Completed transactional volume per elapsed wall-clock second
                       </p>
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
+                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white tabular-nums">
                       {(snapshot?.current_rps || 0).toFixed(1)} req/s
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
                       {config.concurrency} concurrent streams
                     </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40">
+                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
                       —
                     </TableCell>
                     <TableCell className="text-right pr-4">
@@ -664,8 +664,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* COMMON SECTION: RELIABILITY & STRICT SLO YIELD                            */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     <span>3. Reliability & Strict SLO Compliance</span>
@@ -678,19 +678,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Goodput % (SLO Yield Rate)</span>
+                    <span className="font-medium text-[#2C2C2C] dark:text-white">Goodput % (SLO Yield Rate)</span>
                   </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                     Percentage of total requests strictly satisfying latency, syntax & error thresholds
                   </p>
                 </TableCell>
                 <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
                   {formatPct(snapshot?.goodput_pct)}
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
                   {snapshot?.completed_requests || 0} passed / {snapshot?.failed_requests || 0} failed
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 tabular-nums">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300 tabular-nums">
                   ≥ 99.0%
                 </TableCell>
                 <TableCell className="text-right pr-4">
@@ -705,19 +705,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Transaction Error Rate</span>
+                    <span className="font-medium text-[#2C2C2C] dark:text-white">Transaction Error Rate</span>
                   </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                     Network drops, rate limits (429), gateway timeouts (504), or dropped connections
                   </p>
                 </TableCell>
-                <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4] tabular-nums">
+                <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white tabular-nums">
                   {formatPct(snapshot?.error_rate_pct)}
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80 tabular-nums">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
                   {snapshot?.failed_requests || 0} failed requests
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 tabular-nums">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300 tabular-nums">
                   ≤ {formatPct(maxErrorSLO)}
                 </TableCell>
                 <TableCell className="text-right pr-4">
@@ -730,8 +730,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* COMMON SECTION: FINANCIAL SPEND & TOKEN ECONOMICS                         */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                   <div className="flex items-center gap-1.5">
                     <Coins className="h-3.5 w-3.5" />
                     <span>4. Financial Spend & Token Economics</span>
@@ -744,19 +744,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Total Incurred Financial Spend</span>
+                    <span className="font-medium text-[#2C2C2C] dark:text-white">Total Incurred Financial Spend</span>
                   </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                     Accumulated dollar spend tracked in ephemeral process memory
                   </p>
                 </TableCell>
                 <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
                   {formatUsd(snapshot?.current_spend_usd)}
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                   Hard Cap: {formatUsd(hardCap)}
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                   ≤ {formatUsd(hardCap)}
                 </TableCell>
                 <TableCell className="text-right pr-4">
@@ -770,20 +770,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               <TableRow>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Cost / 1K SLO-Satisfied Calls</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                    <span className="font-medium text-[#2C2C2C] dark:text-white">Cost / 1K SLO-Satisfied Calls</span>
                   </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                     True unit production cost per 1,000 successful responses meeting all SLO targets
                   </p>
                 </TableCell>
-                <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                   {formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                   Per 1,000 valid calls
                 </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                   Unit Economics
                 </TableCell>
                 <TableCell className="text-right pr-4">
@@ -794,8 +794,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
               {/* ========================================================================= */}
               {/* SECTION 5: WORKLOAD-SPECIFIC DERIVED PERFORMANCE INDICATORS               */}
               {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#A74B6A] tracking-tight text-[11px] font-sans">
+              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="h-3.5 w-3.5" />
                     <span>5. Workload-Specific Derived Indicators</span>
@@ -809,19 +809,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">ITL Jitter Coefficient ($CV_{"{ITL}"}$)</span>
+                      <span className="font-medium text-[#2C2C2C] dark:text-white">ITL Jitter Coefficient ($CV_{"{ITL}"}$)</span>
                     </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                       Stream smoothness index: standard deviation / mean of inter-token deltas
                     </p>
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                     {snapshot.itl_jitter_cv.toFixed(3)}
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                     {snapshot.itl_jitter_cv < 0.30 ? "Glass Smooth (<0.30)" : (snapshot.itl_jitter_cv > 0.70 ? "High Stutter (>0.70)" : "Standard Stream")}
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                     &lt; 0.35
                   </TableCell>
                   <TableCell className="text-right pr-4">
@@ -838,19 +838,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-cyan-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Prefill Latency Slope</span>
+                      <span className="font-medium text-[#2C2C2C] dark:text-white">Prefill Latency Slope</span>
                     </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                       Compute latency scaling rate per 1,000 prompt tokens
                     </p>
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                     {snapshot.prefill_slope_ms_per_1k.toFixed(2)} ms / 1K
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                     Per 1,000 input tokens
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                     Linear Scaling
                   </TableCell>
                   <TableCell className="text-right pr-4">
@@ -865,19 +865,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Prompt Cache Speedup Factor</span>
+                      <span className="font-medium text-[#2C2C2C] dark:text-white">Prompt Cache Speedup Factor</span>
                     </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                       TTFT acceleration ratio achieved via warm KV prefix cache hit vs cold prefill
                     </p>
                   </TableCell>
                   <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
                     {snapshot.cache_speedup_factor.toFixed(2)}x
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                     {((1 - (1 / snapshot.cache_speedup_factor)) * 100).toFixed(0)}% TTFT reduction
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                     ≥ 2.0x
                   </TableCell>
                   <TableCell className="text-right pr-4">
@@ -894,19 +894,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Thinking Wait Multiplier (TTFA/TTFT)</span>
+                      <span className="font-medium text-[#2C2C2C] dark:text-white">Thinking Wait Multiplier (TTFA/TTFT)</span>
                     </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                       User wait time multiplier before reasoning finishes and readable answer begins
                     </p>
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                     {snapshot.thinking_wait_multiplier.toFixed(2)}x
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                     CoT reasoning wait tax
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                     Reasoning Multiplier
                   </TableCell>
                   <TableCell className="text-right pr-4">
@@ -921,19 +921,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Grammar Logit-Masking Penalty</span>
+                      <span className="font-medium text-[#2C2C2C] dark:text-white">Grammar Logit-Masking Penalty</span>
                     </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                       TPOT decode throughput penalty under constrained JSON schema / regex masking
                     </p>
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                     +{snapshot.grammar_penalty_pct.toFixed(1)}%
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                     Guided decoding overhead
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                     &lt; 15.0%
                   </TableCell>
                   <TableCell className="text-right pr-4">
@@ -950,19 +950,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">Parallel Scaling Efficiency</span>
+                      <span className="font-medium text-[#2C2C2C] dark:text-white">Parallel Scaling Efficiency</span>
                     </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 pl-3.5">
+                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
                       Aggregate throughput achieved relative to linear single-stream theoretical ceiling
                     </p>
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-[#F3F4F4]">
+                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
                     {snapshot.concurrency_scaling_efficiency_pct.toFixed(1)}%
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-[#F3F4F4]/80">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
                     Parallel scaling efficiency
                   </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
                     ≥ 75.0%
                   </TableCell>
                   <TableCell className="text-right pr-4">

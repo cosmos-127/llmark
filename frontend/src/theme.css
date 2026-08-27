@@ -91,73 +91,76 @@
 /* ==========================================================================
    Dark Theme Counterpart ("blackmaroongreydarkvintage")
    ========================================================================== */
+/* ==========================================================================
+   Dark Theme Counterpart ("Deep Obsidian Black & Luminous Mulberry")
+   ========================================================================== */
 .dark, [data-theme="dark"] {
-  --bg-app: #111012;
-  --bg-surface: #1A191C;
-  --bg-surface-elevated: #222125;
-  --bg-surface-subtle: #222125;
-  --bg-surface-hover: #2B2A2E;
-  --bg-header: rgba(17, 16, 18, 0.94);
-  --bg-sidebar: rgba(17, 16, 18, 0.97);
-  --bg-card: #1A191C;
-  --bg-input: #1F1E22;
-  --bg-dialog: #222125;
-  --bg-popover: #222125;
+  --bg-app: #08080A;
+  --bg-surface: #0F0F13;
+  --bg-surface-elevated: #14141B;
+  --bg-surface-subtle: #121217;
+  --bg-surface-hover: #1A1A24;
+  --bg-header: rgba(8, 8, 10, 0.88);
+  --bg-sidebar: rgba(8, 8, 10, 0.94);
+  --bg-card: #0F0F13;
+  --bg-input: #0B0B0E;
+  --bg-dialog: #14141B;
+  --bg-popover: #14141B;
 
-  --text-main: #FAFAFA;
-  --text-muted: rgba(250, 250, 250, 0.80);
-  --text-subtle: rgba(250, 250, 250, 0.58);
-  --text-inverse: #111012;
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  --text-subtle: #64748B;
+  --text-inverse: #08080A;
 
-  --border-subtle: rgba(250, 250, 250, 0.12);
-  --border-medium: rgba(250, 250, 250, 0.20);
-  --border-strong: rgba(250, 250, 250, 0.32);
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.20);
 
-  --brand-primary: #B8557A;
-  --brand-primary-hover: #C9668C;
-  --brand-primary-light: rgba(184, 85, 122, 0.18);
-  --brand-primary-border: rgba(184, 85, 122, 0.40);
-  --brand-secondary: #8E457C;
-  --brand-secondary-hover: #A2538F;
-  --brand-secondary-light: rgba(142, 69, 124, 0.18);
-  --brand-secondary-border: rgba(142, 69, 124, 0.40);
+  --brand-primary: #E05284;
+  --brand-primary-hover: #F06A9A;
+  --brand-primary-light: rgba(224, 82, 132, 0.14);
+  --brand-primary-border: rgba(224, 82, 132, 0.35);
+  --brand-secondary: #C14594;
+  --brand-secondary-hover: #D65AA8;
+  --brand-secondary-light: rgba(193, 69, 148, 0.14);
+  --brand-secondary-border: rgba(193, 69, 148, 0.35);
 
-  --chart-grid: rgba(250, 250, 250, 0.08);
-  --chart-tooltip-bg: rgba(26, 25, 28, 0.98);
-  --chart-tooltip-border: rgba(250, 250, 250, 0.18);
-  --chart-text: #B0B0B0;
+  --chart-grid: rgba(255, 255, 255, 0.05);
+  --chart-tooltip-bg: rgba(15, 15, 19, 0.96);
+  --chart-tooltip-border: rgba(255, 255, 255, 0.12);
+  --chart-text: #94A3B8;
 
-  /* HSL Component Tokens for High-Contrast Dark */
-  --background: 270 5% 7%;  /* #111012 */
-  --foreground: 0 0% 98%;   /* #FAFAFA */
-  --card: 270 5% 10%;       /* #1A191C */
-  --card-foreground: 0 0% 98%;
-  --popover: 270 5% 13%;    /* #222125 */
-  --popover-foreground: 0 0% 98%;
-  --primary: 338 45% 53%;   /* #B8557A */
+  /* HSL Component Tokens for Deep Obsidian Dark */
+  --background: 240 11% 4%;   /* #08080A */
+  --foreground: 0 0% 100%;    /* #FFFFFF */
+  --card: 240 10% 7%;         /* #0F0F13 */
+  --card-foreground: 0 0% 100%;
+  --popover: 240 14% 9%;      /* #14141B */
+  --popover-foreground: 0 0% 100%;
+  --primary: 338 72% 60%;     /* #E05284 */
   --primary-foreground: 0 0% 100%;
-  --secondary: 314 36% 41%; /* #8E457C */
+  --secondary: 317 50% 51%;   /* #C14594 */
   --secondary-foreground: 0 0% 100%;
-  --muted: 270 5% 14%;      /* #232226 */
-  --muted-foreground: 0 0% 75%;
-  --accent: 338 35% 24%;
-  --accent-foreground: 338 55% 82%;
+  --muted: 240 10% 8%;        /* #121217 */
+  --muted-foreground: 215 16% 65%; /* #94A3B8 */
+  --accent: 338 72% 60%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
-  --border: 270 4% 18%;
-  --input: 270 4% 16%;
-  --ring: 338 45% 53%;
+  --border: 240 7% 12%;       /* #1B1B22 */
+  --input: 240 12% 5%;        /* #0B0B0E */
+  --ring: 338 72% 60%;
 
-  --ambient-plum: rgba(184, 85, 122, 0.28);
-  --ambient-deepplum: rgba(142, 69, 124, 0.22);
-  --ambient-charcoal: rgba(184, 85, 122, 0.12);
-  --grid-dots: rgba(250, 250, 250, 0.06);
+  --ambient-plum: rgba(224, 82, 132, 0.16);
+  --ambient-deepplum: rgba(193, 69, 148, 0.12);
+  --ambient-charcoal: rgba(224, 82, 132, 0.06);
+  --grid-dots: rgba(255, 255, 255, 0.04);
 
-  --toggle-btn-bg: #222125;
-  --toggle-btn-border: rgba(184, 85, 122, 0.45);
-  --toggle-btn-hover: #2B2A2E;
-  --toggle-btn-text: #B8557A;
-  --toggle-btn-glow: rgba(184, 85, 122, 0.35);
+  --toggle-btn-bg: #14141B;
+  --toggle-btn-border: rgba(224, 82, 132, 0.40);
+  --toggle-btn-hover: #1A1A24;
+  --toggle-btn-text: #E05284;
+  --toggle-btn-glow: rgba(224, 82, 132, 0.30);
 }
 
 /* ==========================================================================
@@ -219,7 +222,7 @@
 
 .dark .text-gradient-brand,
 [data-theme="dark"] .text-gradient-brand {
-  background: linear-gradient(135deg, #C57BB2 0%, #A74B6A 50%, #7E3B6C 100%);
+  background: linear-gradient(135deg, #F06A9A 0%, #E05284 50%, #C14594 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -242,7 +245,7 @@
 
 .glass-card:hover {
   border-color: var(--brand-primary);
-  box-shadow: 0 4px 10px -1px rgba(133, 57, 83, 0.12);
+  box-shadow: 0 4px 12px -1px var(--brand-primary-light);
 }
 
 .glass-input {
@@ -268,10 +271,10 @@
 
 .dark .btn-brand-glow, .dark .btn-amber-glow,
 [data-theme="dark"] .btn-brand-glow, [data-theme="dark"] .btn-amber-glow {
-  background: linear-gradient(135deg, #A74B6A 0%, #7E3B6C 100%) !important;
+  background: linear-gradient(135deg, #D84577 0%, #A52B75 100%) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 14px -2px rgba(167, 75, 106, 0.45);
-  border: 1px solid rgba(167, 75, 106, 0.45);
+  box-shadow: 0 4px 16px -2px rgba(216, 69, 119, 0.45);
+  border: 1px solid rgba(224, 82, 132, 0.45);
 }
 
 .btn-brand-glow:hover, .btn-amber-glow:hover {
@@ -282,8 +285,13 @@
 
 .dark .btn-brand-glow:hover, .dark .btn-amber-glow:hover,
 [data-theme="dark"] .btn-brand-glow:hover, [data-theme="dark"] .btn-amber-glow:hover {
-  background: linear-gradient(135deg, #B85879 0%, #92457E 100%) !important;
-  box-shadow: 0 6px 18px 0px rgba(167, 75, 106, 0.55);
+  background: linear-gradient(135deg, #E05284 0%, #B83484 100%) !important;
+  box-shadow: 0 6px 20px 0px rgba(224, 82, 132, 0.55);
+}
+
+.btn-brand-glow:active, .btn-amber-glow:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 8px -1px rgba(133, 57, 83, 0.3);
 }
 
 .btn-brand-glow:active, .btn-amber-glow:active {

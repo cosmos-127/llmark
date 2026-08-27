@@ -130,35 +130,35 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
   const latest = data[data.length - 1] || null;
 
   // Theme palette colors
-  const primaryColor = isDark ? "#A74B6A" : "#853953";
-  const plumColor = isDark ? "#C57BB2" : "#612D53";
+  const primaryColor = isDark ? "#E05284" : "#853953";
+  const plumColor = isDark ? "#C14594" : "#612D53";
   const emeraldColor = isDark ? "#34D399" : "#059669";
   const cyanColor = isDark ? "#38BDF8" : "#0284C7";
   const roseColor = isDark ? "#F87171" : "#E11D48";
   const amberColor = isDark ? "#FBBF24" : "#D97706";
-  const gridStroke = isDark ? "rgba(243, 244, 244, 0.08)" : "#e1e4e4";
-  const axisColor = isDark ? "#8E9393" : "#6E6E6E";
+  const gridStroke = isDark ? "rgba(255, 255, 255, 0.05)" : "#e1e4e4";
+  const axisColor = isDark ? "#94A3B8" : "#6E6E6E";
 
   return (
-    <Card className="shadow-xs border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10">
+    <Card className="shadow-xs border-[#2C2C2C]/10 dark:border-white/[0.08]">
       <CardHeader className="p-5 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35">
               <Activity className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] font-sans">
+              <CardTitle className="text-sm font-semibold text-[#2C2C2C] dark:text-white font-sans">
                 Real-Time Telemetry Stream
               </CardTitle>
-              <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 font-sans">
+              <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
                 Live 100Hz telemetry trajectory • Mode: {((workloadPreset as string) || "standard").replace("_", " ")}
               </CardDescription>
             </div>
           </div>
 
           {/* Metric Selector Tabs */}
-          <div className="flex flex-wrap items-center gap-1 rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] p-1 border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 text-xs font-sans">
+          <div className="flex flex-wrap items-center gap-1 rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] p-1 border border-[#2C2C2C]/10 dark:border-white/10 text-xs font-sans">
             <Button
               type="button"
               variant="ghost"
@@ -166,8 +166,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               onClick={() => setActiveMetric("overview")}
               className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                 activeMetric === "overview"
-                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs"
+                  : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
               }`}
             >
               <SlidersHorizontal className="h-3 w-3 mr-1" />
@@ -182,8 +182,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("ratelimit")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "ratelimit"
-                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                    ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
                 }`}
               >
                 <ShieldCheck className="h-3 w-3 mr-1" />
@@ -199,8 +199,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("latency")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "latency"
-                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                    ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
                 }`}
               >
                 <Gauge className="h-3 w-3 mr-1" />
@@ -220,8 +220,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("throughput")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "throughput"
-                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                    ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
                 }`}
               >
                 <Zap className="h-3 w-3 mr-1" />
@@ -237,8 +237,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("thinking")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "thinking"
-                    ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                    : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                    ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs"
+                    : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
                 }`}
               >
                 <Sparkles className="h-3 w-3 mr-1" />
@@ -253,8 +253,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               onClick={() => setActiveMetric("goodput")}
               className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                 activeMetric === "goodput"
-                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs"
+                  : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
               }`}
             >
               <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -268,8 +268,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               onClick={() => setActiveMetric("cost")}
               className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                 activeMetric === "cost"
-                  ? "bg-[#853953] dark:bg-[#A74B6A] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  ? "bg-[#853953] dark:bg-[#D84577] text-white shadow-xs"
+                  : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
               }`}
             >
               <DollarSign className="h-3 w-3 mr-1" />
@@ -281,7 +281,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
         {/* Live Snapshot Stat Badge Strip */}
         <div className="flex flex-wrap items-center gap-3 pt-2 font-sans text-xs">
           {activeMetric === "overview" && (
-            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-slate-300">
               {isRateLimit ? (
                 <>
                   <div className="flex items-center gap-1.5">
@@ -346,7 +346,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           )}
 
           {activeMetric === "latency" && (
-            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-slate-300">
               <div className="flex items-center gap-1.5">
                 <span>Instant TTFT:</span>
                 <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
@@ -369,7 +369,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           )}
 
           {activeMetric === "throughput" && (
-            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-slate-300">
               <div className="flex items-center gap-1.5">
                 <span>Decode Output TPS:</span>
                 <Badge variant="emerald" className="font-sans text-xs font-semibold tabular-nums">
@@ -388,7 +388,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           )}
 
           {activeMetric === "goodput" && (
-            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+            <div className="flex flex-wrap items-center gap-3 text-[#2C2C2C]/70 dark:text-slate-300">
               <div className="flex items-center gap-1.5">
                 <span>SLO Yield (Yield %):</span>
                 <Badge variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"} className="font-sans text-xs font-semibold tabular-nums">
@@ -405,7 +405,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           )}
 
           {activeMetric === "cost" && (
-            <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+            <div className="flex items-center gap-2 text-[#2C2C2C]/70 dark:text-slate-300">
               <span>Total Accrued:</span>
               <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
                 {formatUsd(latest?.spend || 0)}
@@ -414,7 +414,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           )}
 
           {activeMetric === "ratelimit" && (
-            <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+            <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-slate-300">
               <div className="flex items-center gap-1.5">
                 <span>HTTP 429 Rate:</span>
                 <Badge variant={(latest?.rate_limit_pct || 0) > 0 ? "destructive" : "emerald"} className="font-sans text-xs font-semibold tabular-nums">
@@ -431,7 +431,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
           )}
 
           {activeMetric === "thinking" && (
-            <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+            <div className="flex items-center gap-3 text-[#2C2C2C]/70 dark:text-slate-300">
               <div className="flex items-center gap-1.5">
                 <span>Thinking Budget:</span>
                 <Badge variant="secondary" className="font-sans text-xs font-semibold tabular-nums">

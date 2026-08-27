@@ -158,20 +158,20 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
   };
 
   return (
-    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 bg-white dark:bg-[#0F0F13] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-xl border ${
             willTripCap
               ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-400"
-              : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400"
+              : "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/25 dark:border-[#E05284]/35 text-[#853953] dark:text-[#F06A9A]"
           } shadow-2xs`}>
             <DollarSign className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+              <span className="text-sm font-bold text-[#2C2C2C] dark:text-white">
                 Spend Accumulation Trajectory & Circuit Breaker Model
               </span>
               <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
@@ -180,13 +180,13 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
               <Badge
                 variant="outline"
                 className={`text-[10px] font-sans py-0 px-2 ${
-                  willTripCap ? "text-rose-700 dark:text-rose-400 font-bold border-rose-300" : "text-emerald-700 dark:text-emerald-400"
+                  willTripCap ? "text-rose-700 dark:text-rose-400 font-bold border-rose-300" : "text-[#853953] dark:text-[#F06A9A] border-[#853953]/30 dark:border-[#E05284]/40"
                 }`}
               >
                 {willTripCap ? "Circuit Breaker Tripped Early" : "Safely Within Budget"}
               </Badge>
             </div>
-            <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65 mt-0.5">
+            <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65 mt-0.5">
               {willTripCap
                 ? `Test will automatically halt at ~${tripTimeSec}${isRequestMode ? " reqs" : "s"} when spend reaches ${formatUsd(capVal)}.`
                 : `Projected spend stays safely within the ${formatUsd(capVal)} hard spend ceiling.`}
@@ -197,19 +197,19 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
         <div className="text-right flex flex-col items-end">
           <span
             className={`text-base font-extrabold font-sans tabular-nums ${
-              willTripCap ? "text-rose-700 dark:text-rose-400" : "text-[#853953] dark:text-[#A74B6A]"
+              willTripCap ? "text-rose-700 dark:text-rose-400" : "text-[#853953] dark:text-[#F06A9A]"
             }`}
           >
             {formatUsd(estimatedCost)} Est.
           </span>
-          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
+          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans tabular-nums">
             {spendPct}% of {formatUsd(capVal)} hard spend cap
           </span>
         </div>
       </div>
 
       {/* Trajectory Graph Canvas */}
-      <div className="relative w-full rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-2 select-none overflow-hidden">
+      <div className="relative w-full rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#14141B] border border-[#2C2C2C]/10 p-2 select-none overflow-hidden">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto cursor-crosshair overflow-visible"
@@ -312,7 +312,7 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
                 fill="#E11D48"
                 stroke="#ffffff"
                 strokeWidth="2"
-                className="dark:stroke-[#252426]"
+                className="dark:stroke-[#0F0F13]"
               />
               <text
                 x={tripX}
@@ -397,7 +397,7 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
                 fill={hoveredPoint.isPastCap ? "#E11D48" : "#853953"}
                 stroke="#ffffff"
                 strokeWidth="2"
-                className="dark:stroke-[#252426]"
+                className="dark:stroke-[#0F0F13]"
               />
             </g>
           )}
@@ -437,8 +437,8 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
 
       {/* Telemetry Summary Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             Hard Spend Cap
           </span>
@@ -447,36 +447,36 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
-            <TrendingUp className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <TrendingUp className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
             Cap Utilization
           </span>
-          <div className={`font-sans tabular-nums font-bold text-xs ${willTripCap ? "text-rose-700 dark:text-rose-400" : "text-[#853953] dark:text-[#A74B6A]"}`}>
+          <div className={`font-sans tabular-nums font-bold text-xs ${willTripCap ? "text-rose-700 dark:text-rose-400" : "text-[#853953] dark:text-[#F06A9A]"}`}>
             {spendPct}% of ceiling
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#612D53] dark:text-[#C57BB2]" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#612D53] dark:text-[#E270BB]" />
             Circuit Breaker Status
           </span>
-          <div className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs truncate">
+          <div className="font-semibold text-[#2C2C2C] dark:text-white text-xs truncate">
             {willTripCap ? `Halt @ ${tripTimeSec}${isRequestMode ? " reqs" : "s"}` : "Zero Bill-Shock Armed"}
           </div>
         </div>
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#14141B] border border-[#2C2C2C]/10 space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] cursor-pointer hover:text-[#853953] dark:hover:text-[#A74B6A]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-white cursor-pointer hover:text-[#853953] dark:hover:text-[#F06A9A]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
             <span>Spend Accumulation Dynamics & Circuit Breaker Formulation</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -488,25 +488,25 @@ export const SpendTrajectoryGraph: React.FC<SpendTrajectoryGraphProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-white/10"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#853953] dark:text-[#F06A9A]">
                     Spend Accumulation Model:
                   </span>
                   <MathFormula math="\text{Cost}(t) = \int_0^t \text{RPS}(s) \cdot \left(N_{\text{prompt}} \cdot P_{\text{in}} + N_{\text{gen}} \cdot P_{\text{out}}\right) ds" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     Integrates token consumption over streaming concurrency and unit token pricing.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
                   <span className="font-semibold text-rose-700 dark:text-rose-400">
                     Circuit Breaker Trip Intercept:
                   </span>
                   <MathFormula math="t_{\text{abort}} = \inf \left\{ t \ge 0 \mid \text{Cost}(t) \ge \text{Cap}_{\text{USD}} \right\} = \frac{\text{Cap}_{\text{USD}}}{\text{BurnRate}}" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     Hard budget circuit breakers terminate in-flight worker streams instantaneously when the threshold is reached.
                   </p>
                 </div>

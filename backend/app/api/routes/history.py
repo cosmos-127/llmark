@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
 from app.models.db.models import BenchmarkRun
+from app.observability.logging import logger
 
 router = APIRouter(prefix="/history", tags=["history"])
 
@@ -17,9 +18,20 @@ async def list_benchmark_history(
     db: AsyncSession = Depends(get_db),
 ) -> list[dict[str, Any]]:
     """Retrieve historical benchmark runs ordered by creation date."""
-    query = select(BenchmarkRun).order_by(desc(BenchmarkRun.created_at)).offset(offset).limit(limit)
-    result = await db.execute(query)
-    runs = result.scalars().all()
+    try:
+        query = (
+            select(BenchmarkRun).order_by(desc(BenchmarkRun.created_at)).offset(offset).limit(limit)
+        )
+        result = await db.execute(query)
+        runs = result.scalars().all()
+    except Exception as exc:
+        logger.error(
+            "Failed to query benchmark history", error=str(exc), limit=limit, offset=offset
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to query benchmark history: {str(exc)}",
+        )
 
     return [
         {
@@ -55,9 +67,16 @@ async def get_benchmark_run_details(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """Retrieve full details, waterfall breakdown, and percentiles for a specific benchmark run."""
-    query = select(BenchmarkRun).where(BenchmarkRun.id == run_id)
-    result = await db.execute(query)
-    run = result.scalar_one_or_none()
+    try:
+        query = select(BenchmarkRun).where(BenchmarkRun.id == run_id)
+        result = await db.execute(query)
+        run = result.scalar_one_or_none()
+    except Exception as exc:
+        logger.error("Failed to query benchmark run details", run_id=run_id, error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error while retrieving benchmark run '{run_id}': {str(exc)}",
+        )
 
     if not run:
         raise HTTPException(

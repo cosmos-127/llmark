@@ -1,0 +1,37 @@
+# Dependencies & Caches
+node_modules
+**/node_modules
+.venv
+**/.venv
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Test & Typecheck Caches
+.pytest_cache
+**/.pytest_cache
+.mypy_cache
+**/.mypy_cache
+.ruff_cache
+**/.ruff_cache
+
+# Git & VCS
+.git
+.gitignore
+.github
+
+# Build Artifacts
+frontend/dist
+dist
+*.db
+llmark.db
+backend/llmark.db
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.log

@@ -8,9 +8,20 @@ import {
   VendorType,
 } from "./types";
 
+export const API_BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_BACKEND_URL ||
+  ""
+).replace(/\/+$/, "");
+
+export function getApiUrl(endpoint: string): string {
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  return API_BASE_URL ? `${API_BASE_URL}${cleanEndpoint}` : cleanEndpoint;
+}
+
 export const api = {
   async startBenchmark(config: BenchmarkConfig): Promise<{ benchmark_id: string; status: string; name: string }> {
-    const res = await fetch("/api/benchmark/run", {
+    const res = await fetch(getApiUrl("/api/benchmark/run"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(config),
@@ -23,7 +34,7 @@ export const api = {
   },
 
   async abortBenchmark(benchmarkId: string): Promise<{ benchmark_id: string; status: string }> {
-    const res = await fetch(`/api/benchmark/${encodeURIComponent(benchmarkId)}/abort`, {
+    const res = await fetch(getApiUrl(`/api/benchmark/${encodeURIComponent(benchmarkId)}/abort`), {
       method: "POST",
     });
     if (!res.ok) {
@@ -40,7 +51,7 @@ export const api = {
         query.append(k, String(v));
       }
     });
-    const res = await fetch(`/api/benchmark/cost-estimate?${query.toString()}`);
+    const res = await fetch(getApiUrl(`/api/benchmark/cost-estimate?${query.toString()}`));
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: "Failed to calculate cost estimate" }));
       throw new Error(err.detail || "Failed to calculate cost estimate");
@@ -63,7 +74,7 @@ export const api = {
       cred = credential;
     }
 
-    const res = await fetch("/api/benchmark/models", {
+    const res = await fetch(getApiUrl("/api/benchmark/models"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ vendor, credential: cred || {} }),
@@ -76,7 +87,7 @@ export const api = {
   },
 
   async getHistory(limit: number = 50, offset: number = 0): Promise<HistoricalRunSummary[]> {
-    const res = await fetch(`/api/history?limit=${limit}&offset=${offset}`);
+    const res = await fetch(getApiUrl(`/api/history?limit=${limit}&offset=${offset}`));
     if (!res.ok) {
       throw new Error("Failed to fetch benchmark history");
     }
@@ -84,7 +95,7 @@ export const api = {
   },
 
   async getRunDetails(runId: string): Promise<HistoricalRunDetails> {
-    const res = await fetch(`/api/history/${encodeURIComponent(runId)}`);
+    const res = await fetch(getApiUrl(`/api/history/${encodeURIComponent(runId)}`));
     if (!res.ok) {
       throw new Error("Failed to fetch run details");
     }
@@ -92,7 +103,7 @@ export const api = {
   },
 
   async getDiff(runAId: string, runBId: string): Promise<RunDiffResponse> {
-    const res = await fetch(`/api/diff?run_a=${encodeURIComponent(runAId)}&run_b=${encodeURIComponent(runBId)}`);
+    const res = await fetch(getApiUrl(`/api/diff?run_a=${encodeURIComponent(runAId)}&run_b=${encodeURIComponent(runBId)}`));
     if (!res.ok) {
       throw new Error("Failed to calculate run diff");
     }
@@ -100,7 +111,7 @@ export const api = {
   },
 
   async getExpertStatus(): Promise<{ has_groq_key: boolean; model: string; source: string }> {
-    const res = await fetch("/api/expert/status");
+    const res = await fetch(getApiUrl("/api/expert/status"));
     if (!res.ok) {
       return { has_groq_key: false, model: "llama-3.3-70b-versatile", source: "none" };
     }
@@ -116,7 +127,7 @@ export const api = {
     credential?: any;
     messages?: Array<{ role: "user" | "assistant" | "system"; content: string }>;
   }): Promise<{ answer: string; topic: string; suggested_followups: string[]; source: string; model?: string }> {
-    const res = await fetch("/api/expert/ask", {
+    const res = await fetch(getApiUrl("/api/expert/ask"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -128,3 +139,4 @@ export const api = {
     return res.json();
   },
 };
+

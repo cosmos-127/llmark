@@ -30,7 +30,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { api } from "@/lib/api";
+import { api, getApiUrl } from "@/lib/api";
 import { HistoricalRunSummary, RunDiffResponse, MetricDelta } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,11 +72,11 @@ export const DiffPage: React.FC = () => {
   const { data: diffData, isLoading: isLoadingDiff, isError } = useQuery<RunDiffResponse>({
     queryKey: ["benchmark-diff", runAId, runBId, runCId],
     queryFn: async () => {
-      let url = `/api/diff?run_a=${encodeURIComponent(runAId)}&run_b=${encodeURIComponent(runBId)}`;
+      let endpoint = `/api/diff?run_a=${encodeURIComponent(runAId)}&run_b=${encodeURIComponent(runBId)}`;
       if (runCId && runCId.trim().length > 0 && runCId !== runAId && runCId !== runBId) {
-        url += `&run_c=${encodeURIComponent(runCId)}`;
+        endpoint += `&run_c=${encodeURIComponent(runCId)}`;
       }
-      const res = await fetch(url);
+      const res = await fetch(getApiUrl(endpoint));
       if (!res.ok) throw new Error("Failed to calculate run diff");
       return res.json();
     },
@@ -85,7 +85,7 @@ export const DiffPage: React.FC = () => {
 
   const handleCopyMarkdown = async (runId: string) => {
     try {
-      const res = await fetch(`/api/export/markdown/${runId}`);
+      const res = await fetch(getApiUrl(`/api/export/markdown/${runId}`));
       const text = await res.text();
       await navigator.clipboard.writeText(text);
       setCopiedMd(true);
@@ -174,13 +174,13 @@ export const DiffPage: React.FC = () => {
         {/* Title & Description */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-[#2C2C2C] dark:text-[#F3F4F4] tracking-normal flex items-center gap-2.5 font-sans">
-              <div className="p-2 rounded-xl bg-[#853953]/10 dark:bg-[#A74B6A]/15 text-[#853953] dark:text-[#A74B6A] border border-[#853953]/25 dark:border-[#A74B6A]/35 shadow-xs">
+            <h2 className="text-lg sm:text-xl font-bold text-[#2C2C2C] dark:text-white tracking-normal flex items-center gap-2.5 font-sans">
+              <div className="p-2 rounded-xl bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35 shadow-xs">
                 <GitCompare className="h-5 w-5" />
               </div>
               Multi-Model Benchmark Comparison Matrix
             </h2>
-            <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 mt-1 font-sans">
+            <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 mt-1 font-sans">
               Compare latency distributions, decode throughput, Goodput yield, and token economics across up to 3 benchmark runs.
             </p>
           </div>
@@ -190,11 +190,11 @@ export const DiffPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Run A (Baseline) */}
           <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.15 }}>
-            <Card className="shadow-xs transition-shadow hover:shadow-sm border-l-4 border-l-[#612D53] dark:border-l-[#7E3B6C]">
+            <Card className="shadow-xs transition-shadow hover:shadow-sm border-l-4 border-l-[#612D53] dark:border-l-[#C14594]">
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xs flex items-center gap-2 font-semibold">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#612D53] dark:bg-[#7E3B6C]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#612D53] dark:bg-[#C14594]" />
                     Run A (Baseline)
                   </CardTitle>
                   <Badge variant="outline" className="font-sans text-[11px] font-medium">Required</Badge>
@@ -202,14 +202,14 @@ export const DiffPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-4 pt-1">
                 <Select value={runAId} onValueChange={setRunAId}>
-                  <SelectTrigger className="focus:border-[#612D53] dark:focus:border-[#7E3B6C] font-sans text-xs bg-white dark:bg-[#252426]">
+                  <SelectTrigger className="focus:border-[#612D53] dark:focus:border-[#C14594] font-sans text-xs bg-white dark:bg-[#0B0B0E]">
                     <SelectValue placeholder="Select baseline run A..." />
                   </SelectTrigger>
                   <SelectContent>
                     {runs?.map((r) => (
                       <SelectItem key={r.id} value={r.id} className="text-xs cursor-pointer">
                         <div className="flex items-center gap-2">
-                          <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A] shrink-0" />
+                          <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A] shrink-0" />
                           <span>{r.name} ({r.model}) — P95: {r.ttft_p95.toFixed(1)}ms</span>
                         </div>
                       </SelectItem>
@@ -222,11 +222,11 @@ export const DiffPage: React.FC = () => {
 
           {/* Run B (Candidate 1) */}
           <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.15 }}>
-            <Card className="shadow-xs transition-shadow hover:shadow-sm border-l-4 border-l-[#853953] dark:border-l-[#A74B6A]">
+            <Card className="shadow-xs transition-shadow hover:shadow-sm border-l-4 border-l-[#853953] dark:border-l-[#E05284]">
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xs flex items-center gap-2 font-semibold">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#853953] dark:bg-[#A74B6A]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#853953] dark:bg-[#E05284]" />
                     Run B (Candidate 1)
                   </CardTitle>
                   <Badge variant="outline" className="font-sans text-[11px] font-medium">Required</Badge>
@@ -234,14 +234,14 @@ export const DiffPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-4 pt-1">
                 <Select value={runBId} onValueChange={setRunBId}>
-                  <SelectTrigger className="focus:border-[#853953] dark:focus:border-[#A74B6A] font-sans text-xs bg-white dark:bg-[#252426]">
+                  <SelectTrigger className="focus:border-[#853953] dark:focus:border-[#E05284] font-sans text-xs bg-white dark:bg-[#0B0B0E]">
                     <SelectValue placeholder="Select candidate run B..." />
                   </SelectTrigger>
                   <SelectContent>
                     {runs?.map((r) => (
                       <SelectItem key={r.id} value={r.id} className="text-xs cursor-pointer">
                         <div className="flex items-center gap-2">
-                          <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A] shrink-0" />
+                          <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A] shrink-0" />
                           <span>{r.name} ({r.model}) — P95: {r.ttft_p95.toFixed(1)}ms</span>
                         </div>
                       </SelectItem>
@@ -266,7 +266,7 @@ export const DiffPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setRunCId("")}
-                        className="text-[11px] text-[#2C2C2C]/50 hover:text-[#2C2C2C] flex items-center gap-0.5 cursor-pointer"
+                        className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white flex items-center gap-0.5 cursor-pointer"
                         title="Clear 3rd model"
                       >
                         <X className="h-3 w-3" /> Clear
@@ -278,7 +278,7 @@ export const DiffPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-4 pt-1">
                 <Select value={runCId} onValueChange={setRunCId}>
-                  <SelectTrigger className="focus:border-emerald-500 font-sans text-xs bg-white dark:bg-[#252426]">
+                  <SelectTrigger className="focus:border-emerald-500 font-sans text-xs bg-white dark:bg-[#0B0B0E]">
                     <SelectValue placeholder="Select optional 3rd run C..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -299,19 +299,19 @@ export const DiffPage: React.FC = () => {
 
         {/* Comparison State */}
         {!runAId || !runBId ? (
-          <Card className="h-64 flex flex-col items-center justify-center text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 space-y-3 font-sans shadow-xs">
+          <Card className="h-64 flex flex-col items-center justify-center text-xs text-[#2C2C2C]/60 dark:text-slate-400 space-y-3 font-sans shadow-xs">
             <EmptyStateIllustration className="h-16 w-16" />
             <p>Select Run A (Baseline) and Run B (Candidate) above to compute comparison graphs and deltas.</p>
           </Card>
         ) : runAId === runBId ? (
-          <Card className="border-[#853953]/30 dark:border-[#A74B6A]/40 bg-[#853953]/10 dark:bg-[#A74B6A]/15 shadow-xs">
-            <CardContent className="p-4 text-xs text-[#853953] dark:text-[#A74B6A] font-medium font-sans">
+          <Card className="border-[#853953]/30 dark:border-[#E05284]/40 bg-[#853953]/10 dark:bg-[#E05284]/15 shadow-xs">
+            <CardContent className="p-4 text-xs text-[#853953] dark:text-[#F06A9A] font-medium font-sans">
               Run A and Run B must be distinct benchmark executions to calculate deltas.
             </CardContent>
           </Card>
         ) : isLoadingDiff ? (
-          <Card className="h-64 flex flex-col items-center justify-center text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 space-y-2 font-sans shadow-xs">
-            <Sparkles className="h-6 w-6 text-[#853953] dark:text-[#A74B6A] animate-spin" />
+          <Card className="h-64 flex flex-col items-center justify-center text-xs text-[#2C2C2C]/60 dark:text-slate-400 space-y-2 font-sans shadow-xs">
+            <Sparkles className="h-6 w-6 text-[#853953] dark:text-[#F06A9A] animate-spin" />
             <p>Calculating statistical distributions across telemetry arrays...</p>
           </Card>
         ) : isError || !diffData ? (
@@ -331,30 +331,30 @@ export const DiffPage: React.FC = () => {
             <Card className="shadow-xs">
               <CardContent className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
                 <div className="space-y-1.5 font-sans">
-                  <div className="flex items-center gap-2 text-sm font-medium text-[#2C2C2C] dark:text-[#F3F4F4] flex-wrap">
+                  <div className="flex items-center gap-2 text-sm font-medium text-[#2C2C2C] dark:text-white flex-wrap">
                     <Badge variant="violet" className="text-xs py-1 px-2.5 font-semibold">
                       A: {diffData.run_a_name}
                     </Badge>
-                    <ArrowRight className="h-4 w-4 text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40" />
+                    <ArrowRight className="h-4 w-4 text-[#2C2C2C]/40 dark:text-white/40" />
                     <Badge variant="default" className="text-xs py-1 px-2.5 font-semibold">
                       B: {diffData.run_b_name}
                     </Badge>
                     {diffData.run_c_name && (
                       <>
-                        <ArrowRight className="h-4 w-4 text-[#2C2C2C]/40 dark:text-[#F3F4F4]/40" />
+                        <ArrowRight className="h-4 w-4 text-[#2C2C2C]/40 dark:text-white/40" />
                         <Badge variant="emerald" className="text-xs py-1 px-2.5 font-semibold">
                           C: {diffData.run_c_name}
                         </Badge>
                       </>
                     )}
                   </div>
-                  <p className="text-xs text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60">
+                  <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
                     B vs A Goodput:{" "}
                     <span className={diffData.goodput_delta_pct >= 0 ? "text-emerald-700 dark:text-emerald-400 font-semibold" : "text-rose-700 dark:text-rose-400 font-semibold"}>
                       {diffData.goodput_delta_pct > 0 ? `+${diffData.goodput_delta_pct}%` : `${diffData.goodput_delta_pct}%`}
                     </span>{" "}
                     • Cost:{" "}
-                    <span className={diffData.cost_delta_pct <= 0 ? "text-emerald-700 dark:text-emerald-400 font-semibold" : "text-[#853953] dark:text-[#A74B6A] font-semibold"}>
+                    <span className={diffData.cost_delta_pct <= 0 ? "text-emerald-700 dark:text-emerald-400 font-semibold" : "text-[#853953] dark:text-[#F06A9A] font-semibold"}>
                       {diffData.cost_delta_pct > 0 ? `+${diffData.cost_delta_pct}%` : `${diffData.cost_delta_pct}%`}
                     </span>
                     {diffData.goodput_delta_c_pct !== undefined && diffData.goodput_delta_c_pct !== null && (
@@ -375,7 +375,7 @@ export const DiffPage: React.FC = () => {
                     onClick={handleCopyDecisionBrief}
                     className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs gap-1.5"
                   >
-                    {copiedDecision ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />}
+                    {copiedDecision ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />}
                     <span>{copiedDecision ? "Decision brief copied!" : "Copy Decision Brief"}</span>
                   </Button>
 
@@ -383,9 +383,9 @@ export const DiffPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs"
-                    onClick={() => downloadFile(`/api/export/pdf/${runBId}`, `llmark_comparison_${runBId}.pdf`)}
+                    onClick={() => downloadFile(getApiUrl(`/api/export/pdf/${runBId}`), `llmark_comparison_${runBId}.pdf`)}
                   >
-                    <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+                    <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
                     Export PDF
                   </Button>
                 </div>
@@ -410,9 +410,9 @@ export const DiffPage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   {/* Chart 1: Latency Benchmark */}
                   <Card className="p-4 space-y-3">
-                    <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 pb-2">
+                    <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-white/10 pb-2">
                       <div className="flex items-center gap-2">
-                        <Activity className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+                        <Activity className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
                         <CardTitle className="text-xs font-semibold">Latency Tail Comparison (ms)</CardTitle>
                       </div>
                       <Badge variant="secondary" className="text-[11px]">Lower is better</Badge>
@@ -423,10 +423,10 @@ export const DiffPage: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                           <XAxis dataKey="metric" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
-                          <RechartsTooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                          <RechartsTooltip contentStyle={{ fontSize: 12, borderRadius: 8, backgroundColor: "#14141B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
                           <Legend wrapperStyle={{ fontSize: 11 }} />
-                          <Bar dataKey={diffData.run_a_name} fill="#612D53" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey={diffData.run_b_name} fill="#853953" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey={diffData.run_a_name} fill="#C14594" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey={diffData.run_b_name} fill="#E05284" radius={[4, 4, 0, 0]} />
                           {diffData.run_c_name && (
                             <Bar dataKey={diffData.run_c_name} fill="#10b981" radius={[4, 4, 0, 0]} />
                           )}
@@ -437,9 +437,9 @@ export const DiffPage: React.FC = () => {
 
                   {/* Chart 2: Throughput & Goodput Yield */}
                   <Card className="p-4 space-y-3">
-                    <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 pb-2">
+                    <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-white/10 pb-2">
                       <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-emerald-600" />
+                        <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                         <CardTitle className="text-xs font-semibold">Throughput & Goodput Yield</CardTitle>
                       </div>
                       <Badge variant="secondary" className="text-[11px]">Higher is better</Badge>
@@ -450,10 +450,10 @@ export const DiffPage: React.FC = () => {
                           <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                           <XAxis dataKey="metric" tick={{ fontSize: 11 }} />
                           <YAxis tick={{ fontSize: 11 }} />
-                          <RechartsTooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                          <RechartsTooltip contentStyle={{ fontSize: 12, borderRadius: 8, backgroundColor: "#14141B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
                           <Legend wrapperStyle={{ fontSize: 11 }} />
-                          <Bar dataKey={diffData.run_a_name} fill="#612D53" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey={diffData.run_b_name} fill="#853953" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey={diffData.run_a_name} fill="#C14594" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey={diffData.run_b_name} fill="#E05284" radius={[4, 4, 0, 0]} />
                           {diffData.run_c_name && (
                             <Bar dataKey={diffData.run_c_name} fill="#10b981" radius={[4, 4, 0, 0]} />
                           )}
@@ -489,15 +489,15 @@ export const DiffPage: React.FC = () => {
                           initial={{ opacity: 0, x: -6 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.2, delay: idx * 0.03 }}
-                          className="border-b border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 transition-colors hover:bg-[#F3F4F4]/70 dark:hover:bg-[#2C2C2C]/60"
+                          className="border-b border-[#2C2C2C]/10 dark:border-white/[0.06] transition-colors hover:bg-[#F3F4F4]/70 dark:hover:bg-white/[0.04]"
                         >
-                          <TableCell className="py-3 px-5 font-medium text-[#2C2C2C] dark:text-[#F3F4F4]">
+                          <TableCell className="py-3 px-5 font-medium text-[#2C2C2C] dark:text-white">
                             {d.metric_name}
                           </TableCell>
-                          <TableCell className="py-3 px-3 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-sans tabular-nums text-xs">
+                          <TableCell className="py-3 px-3 text-[#2C2C2C]/70 dark:text-slate-400 font-sans tabular-nums text-xs">
                             {d.run_a_value}
                           </TableCell>
-                          <TableCell className="py-3 px-3 text-[#2C2C2C] dark:text-[#F3F4F4] font-semibold font-sans tabular-nums text-xs">
+                          <TableCell className="py-3 px-3 text-[#2C2C2C] dark:text-white font-semibold font-sans tabular-nums text-xs">
                             {d.run_b_value}
                           </TableCell>
                           <TableCell className="py-3 px-3">
@@ -524,7 +524,7 @@ export const DiffPage: React.FC = () => {
 
                           {diffData.run_c_name && (
                             <>
-                              <TableCell className="py-3 px-3 text-[#2C2C2C] dark:text-[#F3F4F4] font-semibold font-sans tabular-nums text-xs">
+                              <TableCell className="py-3 px-3 text-[#2C2C2C] dark:text-white font-semibold font-sans tabular-nums text-xs">
                                 {d.run_c_value !== undefined && d.run_c_value !== null ? d.run_c_value : "—"}
                               </TableCell>
                               <TableCell className="py-3 px-5 text-right">
@@ -549,7 +549,7 @@ export const DiffPage: React.FC = () => {
                                     {d.delta_c_pct > 0 ? `+${d.delta_c_pct}%` : `${d.delta_c_pct}%`}
                                   </Badge>
                                 ) : (
-                                  <span className="text-[11px] text-[#2C2C2C]/50">—</span>
+                                  <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-500">—</span>
                                 )}
                               </TableCell>
                             </>

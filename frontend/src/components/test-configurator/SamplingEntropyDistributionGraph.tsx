@@ -107,8 +107,8 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
     let mode = {
       label: "Greedy Deterministic",
       desc: "Top-1 argmax selection. Zero randomness, 100% reproducible benchmark token runs.",
-      color: "text-[#853953] dark:text-[#A74B6A]",
-      badgeBg: "bg-[#853953]/10 dark:bg-[#A74B6A]/15 border-[#853953]/30",
+      color: "text-[#853953] dark:text-[#F06A9A]",
+      badgeBg: "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/30",
       reproducibility: "100% Deterministic (Greedy)",
     };
 
@@ -124,8 +124,8 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
       mode = {
         label: "Balanced Sampling (Standard)",
         desc: "Natural conversational dispersion over top-k tokens. Balances fluency, creativity, and coherence.",
-        color: "text-emerald-700 dark:text-emerald-400",
-        badgeBg: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40",
+        color: "text-[#853953] dark:text-[#F06A9A]",
+        badgeBg: "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/25 dark:border-[#E05284]/35",
         reproducibility: "Moderate Stochasticity",
       };
     } else if (temperature > 0.8 && temperature <= 1.2) {
@@ -158,7 +158,7 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
   const estStreamSec = Number((maxTokens / 45).toFixed(1));
 
   return (
-    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 bg-white dark:bg-[#252426] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 bg-white dark:bg-[#0F0F13] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header Bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -167,7 +167,7 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#2C2C2C] dark:text-[#F3F4F4]">
+              <span className="text-sm font-bold text-[#2C2C2C] dark:text-white">
                 Next-Token Probability Density (Softmax @ T={temperature})
               </span>
               <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
@@ -177,24 +177,24 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
                 {modeInfo.label}
               </Badge>
             </div>
-            <p className="text-xs text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65 mt-0.5">
+            <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65 mt-0.5">
               {modeInfo.desc}
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className="text-sm font-bold font-sans tabular-nums text-[#853953] dark:text-[#A74B6A]">
+          <span className="text-sm font-bold font-sans tabular-nums text-[#853953] dark:text-[#F06A9A]">
             {entropyBits} bits
           </span>
-          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-[#F3F4F4]/50 font-sans tabular-nums">
+          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans tabular-nums">
             Shannon Information Entropy (H)
           </span>
         </div>
       </div>
 
       {/* Probability Bars Distribution Graph */}
-      <div className="relative rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 p-4 pt-5 space-y-3 select-none">
+      <div className="relative rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#14141B] border border-[#2C2C2C]/10 p-4 pt-5 space-y-3 select-none">
         {/* Token Bars */}
         <div className="h-28 w-full flex items-end justify-between gap-2.5 px-2">
           {tokens.map((tok, idx) => {
@@ -211,7 +211,7 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
               >
                 {/* Probability Value Label above bar */}
                 <span className={`text-[10px] font-sans tabular-nums font-bold mb-1.5 transition-all ${
-                  isTop ? "text-[#853953] dark:text-[#A74B6A]" : "text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65"
+                  isTop ? "text-[#853953] dark:text-[#F06A9A]" : "text-[#2C2C2C]/65 dark:text-white/65"
                 }`}>
                   {tok.probPct > 1 ? `${tok.probPct}%` : "<1%"}
                 </span>
@@ -226,12 +226,12 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
                       ? "bg-gradient-to-t from-[#853953] to-[#A74B6A] shadow-xs"
                       : isHovered
                       ? "bg-[#612D53] dark:bg-[#C57BB2] shadow-sm"
-                      : "bg-[#853953]/35 dark:bg-[#A74B6A]/40 group-hover:bg-[#853953]/60"
+                      : "bg-[#853953]/35 dark:bg-[#D84577]/40 group-hover:bg-[#853953]/60"
                   }`}
                 />
 
                 {/* Token Identifier Label below bar */}
-                <span className="text-[11px] font-sans font-medium text-[#2C2C2C]/60 dark:text-[#F3F4F4]/60 mt-1.5 truncate max-w-full text-center">
+                <span className="text-[11px] font-sans font-medium text-[#2C2C2C]/60 dark:text-slate-400 mt-1.5 truncate max-w-full text-center">
                   w{idx + 1}
                 </span>
               </div>
@@ -261,18 +261,18 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
       </div>
 
       {/* Generation Length Ceiling & Streaming Latency Forecast */}
-      <div className="space-y-2 p-4 rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 text-xs">
+      <div className="space-y-2 p-4 rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#14141B] border border-[#2C2C2C]/10 text-xs">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 font-medium flex items-center gap-2">
-            <Timer className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+          <span className="text-[#2C2C2C]/70 dark:text-slate-300 font-medium flex items-center gap-2">
+            <Timer className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
             Output Token Ceiling (max_tokens = {maxTokens}):
           </span>
-          <span className="font-sans tabular-nums font-semibold text-[#853953] dark:text-[#A74B6A]">
+          <span className="font-sans tabular-nums font-semibold text-[#853953] dark:text-[#F06A9A]">
             ~{estStreamSec}s estimated streaming duration (@ 45 tok/s decode)
           </span>
         </div>
 
-        <div className="h-2 w-full rounded-full bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 overflow-hidden">
+        <div className="h-2 w-full rounded-full bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 overflow-hidden">
           <motion.div
             className="h-full rounded-full bg-gradient-to-r from-[#853953] to-[#612D53] dark:from-[#A74B6A] dark:to-[#C57BB2]"
             style={{ width: `${Math.min(100, Math.max(1, (maxTokens / 4096) * 100))}%` }}
@@ -282,46 +282,46 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
 
       {/* Telemetry Summary Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#A74B6A]" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
             Sampling Strategy
           </span>
-          <div className="font-bold text-[#853953] dark:text-[#A74B6A] text-xs truncate">
+          <div className="font-bold text-[#853953] dark:text-[#F06A9A] text-xs truncate">
             {temperature === 0 ? "Greedy ArgMax (Deterministic)" : `Stochastic Softmax (T=${temperature})`}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5 text-[#612D53] dark:text-[#C57BB2]" />
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Activity className="h-3.5 w-3.5 text-[#612D53] dark:text-[#E270BB]" />
             Top-1 Token Confidence
           </span>
-          <div className="font-sans tabular-nums font-extrabold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs">
+          <div className="font-sans tabular-nums font-extrabold text-[#2C2C2C] dark:text-white text-xs">
             {tokens[0]?.probPct}% probability mass
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#2C2C2C]/50 border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-[#F3F4F4]/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
+          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             Benchmark Reproducibility
           </span>
-          <div className="font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] text-xs truncate">
+          <div className="font-semibold text-[#2C2C2C] dark:text-white text-xs truncate">
             {modeInfo.reproducibility}
           </div>
         </div>
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#1E1D1F] border border-[#2C2C2C]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#14141B] border border-[#2C2C2C]/10 space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-[#F3F4F4] cursor-pointer hover:text-[#853953] dark:hover:text-[#A74B6A]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-white cursor-pointer hover:text-[#853953] dark:hover:text-[#F06A9A]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#A74B6A]" />
+            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
             <span>Statistical Mechanics of LLM Sampling: Temperature & Entropy</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -333,25 +333,25 @@ export const SamplingEntropyDistributionGraph: React.FC<SamplingEntropyDistribut
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10"
+              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-white/10"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#853953] dark:text-[#A74B6A]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#853953] dark:text-[#F06A9A]">
                     Temperature-Scaled Softmax Probability:
                   </span>
                   <MathFormula math="P(w_i) = \frac{\exp(z_i / T)}{\sum_{j=1}^{|V|} \exp(z_j / T)}" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     As <MathFormula math="T \to 0" />, distribution approaches a Dirac delta on <MathFormula math="\arg\max(z_i)" /> (greedy). As <MathFormula math="T \to \infty" />, it converges to a uniform distribution.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#252426] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#612D53] dark:text-[#C57BB2]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
+                  <span className="font-semibold text-[#612D53] dark:text-[#E270BB]">
                     Shannon Entropy & Top-p Nucleus Truncation:
                   </span>
                   <MathFormula math="H(X) = -\sum_{i=1}^{|V|} P(w_i) \log_2 P(w_i), \quad \sum_{i \in \text{Top-}p} P(w_i) \ge p" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-[#F3F4F4]/65">
+                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
                     Top-p truncates unreliable long-tail tokens while dynamically resizing the candidate set based on instantaneous model confidence.
                   </p>
                 </div>

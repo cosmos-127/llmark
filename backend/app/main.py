@@ -1,11 +1,15 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.routes import benchmark, diff, export, history, expert
+from app.api.routes import benchmark, diff, expert, export, history
 from app.core.config import settings
 from app.db.session import init_db
 from app.observability.logging import logger, setup_logging
@@ -32,6 +36,75 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
+# Global Exception Handlers
+@app.exception_handler(SQLAlchemyError)
+async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+    logger.error(
+        "Database exception intercepted",
+        path=request.url.path,
+        method=request.method,
+        error=str(exc),
+    )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": f"Database error: {str(exc)}"
+            if settings.DEBUG
+            else "A database error occurred.",
+            "error_type": "DatabaseError",
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.warning(
+        "Request validation failed",
+        path=request.url.path,
+        method=request.method,
+        errors=exc.errors(),
+    )
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": exc.errors(),
+            "error_type": "ValidationError",
+        },
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "detail": exc.detail,
+            "error_type": "HTTPException",
+        },
+        headers=getattr(exc, "headers", None),
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.error(
+        "Unhandled server error",
+        path=request.url.path,
+        method=request.method,
+        error=str(exc),
+    )
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": f"Internal server error: {str(exc)}"
+            if settings.DEBUG
+            else "An unexpected internal server error occurred.",
+            "error_type": "InternalServerError",
+        },
+    )
+
+
 # Set up CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -40,6 +113,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Register routes
 app.include_router(benchmark.router, prefix=settings.API_V1_STR)

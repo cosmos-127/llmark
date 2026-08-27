@@ -262,4 +262,3 @@ def test_pdf_export_structured_json_preset():
     md = ReportExporter.generate_markdown(run)
     assert "Grammar Masking Penalty" in md
     assert "Schema / Grammar Validity" in md
-

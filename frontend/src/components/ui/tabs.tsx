@@ -11,7 +11,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-9 items-center justify-center rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] p-1 border border-[#2C2C2C]/15 dark:border-[#F3F4F4]/15 text-[#2C2C2C] dark:text-[#F3F4F4] select-none shadow-xs transition-colors duration-150",
+      "inline-flex h-9 items-center justify-center rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] p-1 border border-[#2C2C2C]/15 dark:border-white/10 text-[#2C2C2C] dark:text-white select-none shadow-xs transition-colors duration-150",
       className
     )}
     {...props}
@@ -26,7 +26,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-[#252426] data-[state=active]:text-[#853953] dark:data-[state=active]:text-[#A74B6A] data-[state=active]:shadow-xs data-[state=active]:font-semibold text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-[#1A1A24] data-[state=active]:text-[#853953] dark:data-[state=active]:text-[#F06A9A] data-[state=active]:shadow-xs data-[state=active]:font-semibold text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white",
       className
     )}
     {...props}

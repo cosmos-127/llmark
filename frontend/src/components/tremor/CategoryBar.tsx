@@ -21,7 +21,7 @@ export interface CategoryBarProps {
 
 export const CategoryBar: React.FC<CategoryBarProps> = ({
   values = [],
-  colors = ["bg-[#853953] dark:bg-[#A74B6A]", "bg-[#612D53] dark:bg-[#7E3B6C]", "bg-[#2C2C2C] dark:bg-[#F3F4F4]/80", "bg-[#994361] dark:bg-[#B85879]", "bg-emerald-600 dark:bg-emerald-500"],
+  colors = ["bg-[#853953] dark:bg-[#D84577]", "bg-[#612D53] dark:bg-[#C14594]", "bg-[#2C2C2C] dark:bg-[#F3F4F4]/80", "bg-[#994361] dark:bg-[#B85879]", "bg-emerald-600 dark:bg-emerald-500"],
   labels = [],
   items,
   showLabels = true,
@@ -42,7 +42,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
     <TooltipProvider>
       <div className={cn("w-full space-y-2", className)}>
         {/* Segmented bar */}
-        <div className="h-3.5 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#2C2C2C] flex overflow-hidden border border-[#2C2C2C]/10 dark:border-[#F3F4F4]/10 shadow-inner p-0.5 gap-0.5">
+        <div className="h-3.5 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] flex overflow-hidden border border-[#2C2C2C]/10 dark:border-white/10 shadow-inner p-0.5 gap-0.5">
           {barItems.map((item, idx) => {
             const pct = Math.max(3, (item.value / total) * 100);
             return (
@@ -73,10 +73,10 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
         {showLabels && (
           <div className="flex flex-wrap items-center gap-3 pt-1 text-xs font-sans">
             {barItems.map((item, idx) => (
-              <div key={item.key || idx} className="flex items-center gap-1.5 text-[#2C2C2C]/70 dark:text-[#F3F4F4]/70">
+              <div key={item.key || idx} className="flex items-center gap-1.5 text-[#2C2C2C]/70 dark:text-slate-300">
                 <span className={cn("h-2 w-2 rounded-full shrink-0", item.color)} />
                 <span className="truncate">{item.name}</span>
-                <span className="text-[#2C2C2C] dark:text-[#F3F4F4] font-medium font-sans tabular-nums">({((item.value / total) * 100).toFixed(0)}%)</span>
+                <span className="text-[#2C2C2C] dark:text-white font-medium font-sans tabular-nums">({((item.value / total) * 100).toFixed(0)}%)</span>
               </div>
             ))}
           </div>
