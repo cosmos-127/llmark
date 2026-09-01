@@ -172,3 +172,22 @@ async def test_benchmark_run_request_mode(async_client: AsyncClient):
     data = status_resp.json()
     assert data["status"] == "completed"
     assert data["total_requests"] == 3
+
+
+@pytest.mark.asyncio
+async def test_instant_probe_route(async_client: AsyncClient):
+    """Test the instant 5-packet ephemeral probe endpoint."""
+    resp = await async_client.post("/api/benchmark/probe?vendor=mock&model=gpt-4o-mini&packet_count=5")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["vendor"] == "mock"
+    assert data["model"] == "gpt-4o-mini"
+    assert data["packet_count"] == 5
+    assert len(data["packets"]) == 5
+    assert "p50_ttft_ms" in data
+    assert "p95_ttft_ms" in data
+    assert "p99_itl_ms" in data
+    assert "goodput_pct" in data
+    assert data["packets"][0]["status_code"] == 200
+    assert data["packets"][0]["ttft_ms"] > 0
+

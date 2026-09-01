@@ -138,5 +138,26 @@ export const api = {
     }
     return res.json();
   },
+
+  async instantProbe(params?: {
+    vendor?: string;
+    model?: string;
+    packetCount?: number;
+  }): Promise<any> {
+    const query = new URLSearchParams();
+    if (params?.vendor) query.append("vendor", params.vendor);
+    if (params?.model) query.append("model", params.model);
+    if (params?.packetCount) query.append("packet_count", String(params.packetCount));
+
+    const res = await fetch(getApiUrl(`/api/benchmark/probe?${query.toString()}`), {
+      method: "POST",
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Failed to execute instant probe" }));
+      throw new Error(err.detail || "Failed to execute instant probe");
+    }
+    return res.json();
+  },
 };
+
 

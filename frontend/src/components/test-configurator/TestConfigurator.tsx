@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   Lock,
+  Flame,
   Server,
   Check,
   ChevronRight,
@@ -85,6 +86,7 @@ import { AskExpertDrawer, AskExpertContext } from "@/components/common/AskExpert
 import { PayloadDynamicsModal } from "@/components/test-configurator/PayloadDynamicsModal";
 import { TrafficSimulationModal } from "@/components/test-configurator/TrafficSimulationModal";
 import { DiagnosticsPipelineModal } from "@/components/test-configurator/DiagnosticsPipelineModal";
+import { PresetParametersInspector } from "@/components/test-configurator/PresetParametersInspector";
 
 interface TestConfiguratorProps {
   config: BenchmarkConfig;
@@ -99,8 +101,7 @@ export type WorkloadCategory =
   | "all"
   | "latency"
   | "throughput"
-  | "reasoning"
-  | "agentic"
+  | "reasoning_agentic"
   | "heavy_context"
   | "code_structured"
   | "rate_limit"
@@ -123,7 +124,7 @@ const PRESET_OPTIONS: {
     desc: "Real-time conversational streaming responsiveness, reading speed & decode smoothness",
     category: "latency",
     icon: MessageSquare,
-    promptTokens: 200,
+    promptTokens: 123,
     genTokens: 150,
     tag: "Conversational UI",
     metrics: ["TTFT P95", "ITL P95", "TPOT Mean", "Goodput"],
@@ -134,7 +135,7 @@ const PRESET_OPTIONS: {
     desc: "Heavy document context with 1-token output isolating pure KV prefill compute velocity & TTFT tail percentiles",
     category: "latency",
     icon: Layers,
-    promptTokens: 4000,
+    promptTokens: 4280,
     genTokens: 2,
     tag: "Prefill & TTFT",
     metrics: ["TTFT P95/P99", "Prefill tok/s", "DNS/TCP/TLS", "Goodput"],
@@ -145,7 +146,7 @@ const PRESET_OPTIONS: {
     desc: "Light prompt with long decode stream measuring sustained decode TPS, ITL percentiles & max token freezes",
     category: "throughput",
     icon: Zap,
-    promptTokens: 40,
+    promptTokens: 139,
     genTokens: 800,
     tag: "Decode & ITL",
     metrics: ["Decode tok/s", "ITL P95", "Max Freeze", "TPOT Mean"],
@@ -154,9 +155,9 @@ const PRESET_OPTIONS: {
     id: "reasoning_cot",
     name: "Reasoning & CoT Deep-Dive",
     desc: "Chain-of-thought prompts measuring Time to First Answer (TTFA), thinking duration & reasoning token budget",
-    category: "reasoning",
+    category: "reasoning_agentic",
     icon: Brain,
-    promptTokens: 300,
+    promptTokens: 383,
     genTokens: 800,
     tag: "Reasoning & TTFA",
     metrics: ["TTFA P95", "Thinking tok/s", "Reasoning Ratio", "Goodput"],
@@ -165,9 +166,9 @@ const PRESET_OPTIONS: {
     id: "agentic_tool_calling",
     name: "Agentic Tool & Function Calling",
     desc: "Multi-tool definitions & schemas measuring tool call latency, arguments validity & invocation throughput",
-    category: "agentic",
+    category: "reasoning_agentic",
     icon: Wrench,
-    promptTokens: 1200,
+    promptTokens: 1220,
     genTokens: 150,
     tag: "Function Invocation",
     metrics: ["Tool Latency", "Schema Validity %", "Constrained TPS", "Goodput"],
@@ -178,7 +179,7 @@ const PRESET_OPTIONS: {
     desc: "Multi-exemplar in-context prompt measuring ultra-low decode latency & high-throughput classification goodput",
     category: "latency",
     icon: CheckSquare,
-    promptTokens: 1200,
+    promptTokens: 1111,
     genTokens: 10,
     tag: "Classification / ICL",
     metrics: ["TTFT P95", "E2E Latency", "Classification RPS", "Goodput"],
@@ -189,7 +190,7 @@ const PRESET_OPTIONS: {
     desc: "Codebase context & syntax tree generation measuring code decode speed, token jitter & TPOT",
     category: "code_structured",
     icon: Code2,
-    promptTokens: 1500,
+    promptTokens: 787,
     genTokens: 800,
     tag: "Developer Workflow",
     metrics: ["Decode tok/s", "ITL P95", "TPOT Mean", "Max Freeze"],
@@ -200,7 +201,7 @@ const PRESET_OPTIONS: {
     desc: "Document retrieval context ingestion measuring End-to-End latency, prefill/decode split & goodput yield",
     category: "heavy_context",
     icon: FileSearch,
-    promptTokens: 3500,
+    promptTokens: 3151,
     genTokens: 400,
     tag: "Enterprise RAG",
     metrics: ["E2E Latency", "TTFT P95", "Decode TPS", "Goodput"],
@@ -211,7 +212,7 @@ const PRESET_OPTIONS: {
     desc: "Image token embedding context measuring multimodal prefill latency, vision encoder overhead & TTFT",
     category: "heavy_context",
     icon: Eye,
-    promptTokens: 1800,
+    promptTokens: 1412,
     genTokens: 200,
     tag: "Vision & OCR",
     metrics: ["TTFT P95", "Multimodal Prefill", "TPOT Mean", "Goodput"],
@@ -220,9 +221,9 @@ const PRESET_OPTIONS: {
     id: "multiturn_agentic",
     name: "Multi-Turn Session Context",
     desc: "Accumulated multi-turn conversation history measuring KV cache expansion, turn latency drift & memory pressure",
-    category: "agentic",
+    category: "reasoning_agentic",
     icon: MessagesSquare,
-    promptTokens: 2500,
+    promptTokens: 1314,
     genTokens: 350,
     tag: "Session Continuity",
     metrics: ["Turn Latency", "TTFT P95", "Decode TPS", "Goodput"],
@@ -233,7 +234,7 @@ const PRESET_OPTIONS: {
     desc: "Repeated shared prefix context measuring KV cache hit speedup ratio, TTFT reduction & caching discount throughput",
     category: "latency",
     icon: Database,
-    promptTokens: 3200,
+    promptTokens: 3389,
     genTokens: 150,
     tag: "KV Cache Hit",
     metrics: ["Cached TTFT", "Cache Hit Speedup", "TTFT P95", "Goodput"],
@@ -244,7 +245,7 @@ const PRESET_OPTIONS: {
     desc: "Massive context prompt (16k tokens) measuring memory pressure, KV scaling & tail TTFT degradation",
     category: "heavy_context",
     icon: FileText,
-    promptTokens: 16000,
+    promptTokens: 16284,
     genTokens: 300,
     tag: "16k Needle Context",
     metrics: ["TTFT P95/P99", "Prefill tok/s", "E2E Latency", "Goodput"],
@@ -255,7 +256,7 @@ const PRESET_OPTIONS: {
     desc: "Dense document context reduction measuring prefill efficiency, compression speed & turn latency",
     category: "throughput",
     icon: FileSpreadsheet,
-    promptTokens: 4500,
+    promptTokens: 3642,
     genTokens: 300,
     tag: "Text Distillation",
     metrics: ["TTFT P95", "Decode TPS", "TPOT Mean", "Goodput"],
@@ -266,7 +267,7 @@ const PRESET_OPTIONS: {
     desc: "Guided grammar decoding measuring JSON syntax validity compliance & constrained decode speed",
     category: "code_structured",
     icon: Braces,
-    promptTokens: 600,
+    promptTokens: 675,
     genTokens: 300,
     tag: "Grammar Constraint",
     metrics: ["Schema Validity %", "Constrained TPS", "TPOT Mean", "Parse Errors"],
@@ -295,17 +296,17 @@ const PRESET_OPTIONS: {
   },
 ];
 
-const CATEGORY_TABS: { id: WorkloadCategory; label: string }[] = [
-  { id: "all", label: "All Profiles (16)" },
-  { id: "latency", label: "Latency & TTFT" },
-  { id: "throughput", label: "Decode & Jitter" },
-  { id: "reasoning", label: "Reasoning & CoT" },
-  { id: "agentic", label: "Agentic & Multi-Turn" },
-  { id: "heavy_context", label: "Heavy Context & RAG" },
-  { id: "code_structured", label: "Code & JSON" },
-  { id: "rate_limit", label: "429 Rate Limits" },
-  { id: "custom", label: "Custom Studio" },
+const CATEGORY_TABS: { id: WorkloadCategory; label: string; shortLabel: string }[] = [
+  { id: "all", label: "All Presets", shortLabel: "All Presets" },
+  { id: "latency", label: "Interactive & Latency", shortLabel: "Latency & TTFT" },
+  { id: "throughput", label: "Streaming & Throughput", shortLabel: "Throughput" },
+  { id: "reasoning_agentic", label: "Reasoning & Agentic", shortLabel: "Reasoning & Agentic" },
+  { id: "heavy_context", label: "Heavy Context & RAG", shortLabel: "Long Context & RAG" },
+  { id: "code_structured", label: "Code & Structured Data", shortLabel: "Code & JSON" },
+  { id: "rate_limit", label: "429 Rate Limits", shortLabel: "429 Limits" },
+  { id: "custom", label: "Custom Studio", shortLabel: "Custom Studio" },
 ];
+
 
 const LOAD_CURVE_OPTIONS: {
   id: LoadCurveType;
@@ -448,6 +449,16 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
     });
   }, [workloadSearchQuery, selectedCategory]);
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: PRESET_OPTIONS.length };
+    PRESET_OPTIONS.forEach((p) => {
+      counts[p.category] = (counts[p.category] || 0) + 1;
+    });
+    return counts;
+  }, []);
+
+
+
   const handleCopyJson = () => {
     const jsonStr = JSON.stringify(config, null, 2);
     navigator.clipboard.writeText(jsonStr);
@@ -500,7 +511,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
       return hasKey;
     }
     if (config.vendor === "gcp_vertex") {
-      return !!(credential.gcp_project_id?.trim() || credential.api_key?.trim());
+      const isApiKeyMode = (credential.gcp_auth_mode || "api_key") === "api_key";
+      return isApiKeyMode ? !!credential.api_key?.trim() : !!credential.gcp_project_id?.trim();
     }
     if (config.vendor === "aws_bedrock") {
       return !!(credential.aws_access_key_id && credential.aws_access_key_id.trim().length > 0);
@@ -511,6 +523,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
     credential.api_key,
     credential.base_url,
     credential.azure_endpoint,
+    credential.gcp_auth_mode,
     credential.gcp_project_id,
     credential.aws_access_key_id,
   ]);
@@ -691,12 +704,23 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
         setValidationError("AWS Access Key ID is required for Bedrock");
         return false;
       }
-      if (config.vendor === "gcp_vertex" && !credential.gcp_project_id?.trim() && !credential.api_key?.trim()) {
-        setValidationError("GCP Project ID or Gemini API Key is required for Vertex AI / Gemini");
-        return false;
+      if (config.vendor === "gcp_vertex") {
+        const isApiKeyMode = (credential.gcp_auth_mode || "api_key") === "api_key";
+        if (isApiKeyMode && !credential.api_key?.trim()) {
+          setValidationError("Gemini API Key (AIzaSy...) is required for Google AI Studio");
+          return false;
+        }
+        if (!isApiKeyMode && !credential.gcp_project_id?.trim()) {
+          setValidationError("GCP Project ID is required for Vertex AI");
+          return false;
+        }
       }
     }
     if (step === 2) {
+      if (!config.workload_preset && !config.custom_prompt) {
+        setValidationError("Please select a workload preset from the grid above or enter a custom prompt to proceed");
+        return false;
+      }
       if (
         (config.workload_preset === "structured_json" ||
           config.workload_preset === "json_schema" ||
@@ -723,25 +747,95 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
   };
 
   const steps = [
-    { num: 1, title: "Endpoint & Identity", desc: "Protocol, Auth & Model Discovery" },
-    { num: 2, title: "Workload & Payload", desc: "Profiles, Datasets & Sampling" },
-    { num: 3, title: "Traffic & Load Profile", desc: "Concurrency, Curves & Cache" },
-    { num: 4, title: "Governance & Launch", desc: "SLOs, Spend Cap & Pre-Flight" },
+    { num: 1, title: "Provider & Model", desc: "API credentials and model selection" },
+    { num: 2, title: "Presets & Prompts", desc: "Workload preset and sampling" },
+    { num: 3, title: "Traffic & Load", desc: "Concurrency and cache mode" },
+    { num: 4, title: "Limits & Launch", desc: "Latency limits, budget, and review" },
   ];
 
-  const selectedPreset = PRESET_OPTIONS.find((p) => p.id === config.workload_preset) || PRESET_OPTIONS[0];
-  const totalPresetTokens = selectedPreset.promptTokens + selectedPreset.genTokens;
+
+  const selectedPreset = PRESET_OPTIONS.find((p) => p.id === config.workload_preset);
+
+  // Preset & Workload Invariant Locks
+  const isKvCachePreset = config.workload_preset === "kv_cache_reuse";
+  const isPrefillTtftPreset = config.workload_preset === "prefill_ttft";
+  const isRateLimitPreset = config.workload_preset === "rate_limit_probe";
+  const isDecodePreset = config.workload_preset === "decode_throughput";
+  const isReasoningPreset = config.workload_preset === "reasoning_cot";
+  const isKneeCurve = config.load_curve === "saturation_knee";
+
+  // Preset-demanded configuration locks
+  const isCacheBustLocked = isKvCachePreset || isPrefillTtftPreset || isRateLimitPreset;
+  const isMeasureCacheSpeedupLocked = isKvCachePreset || isPrefillTtftPreset || isRateLimitPreset || config.cache_bust;
+  const isWarmupLocked = isKvCachePreset || isRateLimitPreset || Boolean(config.measure_cache_speedup);
+  const isMaxTokensLocked = isPrefillTtftPreset || isRateLimitPreset || (config.workload_preset !== "custom" && !config.custom_prompt);
+  const isStreamLocked = isPrefillTtftPreset || isDecodePreset || isReasoningPreset;
+
+  // Auto-enforce preset invariants in state when workload preset changes
+  useEffect(() => {
+    let changed = false;
+    const updated = { ...config };
+
+    if (isKvCachePreset) {
+      if (updated.cache_bust !== false) {
+        updated.cache_bust = false;
+        changed = true;
+      }
+      if (updated.measure_cache_speedup !== true) {
+        updated.measure_cache_speedup = true;
+        changed = true;
+      }
+      if (updated.warmup_requests !== 0) {
+        updated.warmup_requests = 0;
+        changed = true;
+      }
+    } else if (isPrefillTtftPreset) {
+      if (updated.cache_bust !== true) {
+        updated.cache_bust = true;
+        changed = true;
+      }
+      if (updated.measure_cache_speedup) {
+        updated.measure_cache_speedup = false;
+        changed = true;
+      }
+      if (updated.stream !== true) {
+        updated.stream = true;
+        changed = true;
+      }
+    } else if (isRateLimitPreset) {
+      if (updated.warmup_requests !== 0) {
+        updated.warmup_requests = 0;
+        changed = true;
+      }
+      if (updated.measure_cache_speedup) {
+        updated.measure_cache_speedup = false;
+        changed = true;
+      }
+    }
+
+    if (updated.cache_bust && updated.measure_cache_speedup && !isKvCachePreset) {
+      updated.measure_cache_speedup = false;
+      changed = true;
+    }
+
+    if (changed) {
+      onChange(updated);
+    }
+  }, [config.workload_preset, config.cache_bust, config.measure_cache_speedup, config.warmup_requests, config.stream, isKvCachePreset, isPrefillTtftPreset, isRateLimitPreset, onChange, config]);
+
+  const totalPresetTokens = selectedPreset ? (selectedPreset.promptTokens + selectedPreset.genTokens) : 0;
   const capVal = config.hard_spend_cap || 2.0;
   const estCost = costEstimate?.estimated_cost_usd || 0;
   const isRequestMode = config.test_mode === "requests";
 
   const getTemperatureLabel = (temp: number) => {
-    if (temp === 0) return "0.0 (Deterministic / Greedy)";
-    if (temp <= 0.3) return `${temp.toFixed(1)} (Focused & Precise)`;
-    if (temp <= 0.7) return `${temp.toFixed(1)} (Standard Balanced)`;
+    if (temp === 0) return "0.0 (Deterministic)";
+    if (temp <= 0.3) return `${temp.toFixed(1)} (Precise)`;
+    if (temp <= 0.7) return `${temp.toFixed(1)} (Balanced)`;
     if (temp <= 1.0) return `${temp.toFixed(1)} (Creative)`;
     return `${temp.toFixed(1)} (High Variance)`;
   };
+
 
   return (
     <TooltipProvider>
@@ -828,7 +922,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
         <div className="space-y-6">
           <AnimatePresence mode="wait">
               {/* ===================================================================== */}
-              {/* STEP 1: ENDPOINT & IDENTITY (UNIFIED BENTO CONTAINER)                 */}
+              {/* STEP 1: PROVIDER & MODEL                                              */}
               {/* ===================================================================== */}
               {currentStep === 1 && (
                 <motion.div
@@ -847,10 +941,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
                       <div>
                         <h2 className="text-sm sm:text-base font-bold text-[#2C2C2C] dark:text-white">
-                          Step 1: Provider Wire Protocol & Target Model
+                          Step 1: Provider & Model
                         </h2>
                         <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
-                          Select API wire transport, configure in-memory credentials, and identify target models.
+                          Select your LLM provider, enter credentials, and choose the target model.
                         </p>
                       </div>
                     </div>
@@ -858,7 +952,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => handleOpenExpert("provider-routing", "Wire Protocol & Routing", "How do wire protocols like Anthropic vs OpenAI differ in streaming performance?")}
+                        onClick={() => handleOpenExpert("provider-routing", "Provider & Routing", "How do providers differ in streaming and response latency?")}
                         className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#0F0F13] text-[#853953] dark:text-[#F06A9A] hover:bg-[#853953]/10 border border-[#853953]/30 dark:border-[#E05284]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
@@ -869,12 +963,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                   {/* 2-Column Bento Grid Body (65:35 Ratio) */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#2C2C2C]/10 dark:divide-[#F3F4F4]/10">
-                    {/* Left Bento Column: Sub-Step 1A (Protocol & Credentials) - 65% */}
+                    {/* Left Bento Column: Sub-Step 1A (Provider & Credentials) - 65% */}
                     <div className="lg:col-span-8 p-5 space-y-4">
                       <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
                         <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
                           <Sliders className="h-3.5 w-3.5" />
-                          1A. Wire Protocol & Ephemeral Credentials
+                          1A. Provider & Credentials
                         </span>
                         <Badge variant="outline" className="text-[10px] font-sans capitalize">
                           {config.vendor.replace("_", " ")}
@@ -885,17 +979,17 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <Label htmlFor="run-name-input" className="text-xs font-semibold">
-                            Benchmark Run Label
+                            Benchmark Name
                           </Label>
                           <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans">
-                            Run Identifier
+                            Optional label
                           </span>
                         </div>
                         <Input
                           id="run-name-input"
                           value={config.name}
                           onChange={(e) => onChange({ ...config, name: e.target.value })}
-                          placeholder="e.g. Production Performance Canary"
+                          placeholder="e.g. Production Baseline Test"
                           className="text-xs font-medium bg-white dark:bg-[#0F0F13]"
                         />
                       </div>
@@ -903,7 +997,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       {/* 1. Protocol Architecture Selection Grid */}
                       <div className="space-y-2">
                         <Label className="text-xs font-medium text-[#2C2C2C] dark:text-white">
-                          Select Wire Protocol Driver
+                          Select Provider
                         </Label>
 
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -938,8 +1032,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             },
                             {
                               id: "gcp_vertex",
-                              label: "Google Vertex",
-                              sublabel: "Gemini 2.5",
+                              label: "Google (Gemini & GCP)",
+                              sublabel: "API Key or Project ID",
                               badge: "Enterprise",
                               vendor: "gcp_vertex",
                             },
@@ -1104,43 +1198,120 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
                         )}
 
-                        {/* GCP VERTEX FORM */}
+                        {/* GCP / GEMINI FORM WITH 2 AUTH OPTIONS */}
                         {config.vendor === "gcp_vertex" && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10">
-                            <div className="space-y-1 sm:col-span-2">
-                              <Label className="text-xs font-semibold">GCP Project ID</Label>
-                              <Input
-                                value={credential.gcp_project_id || ""}
-                                onChange={(e) => onCredentialChange({ ...credential, gcp_project_id: e.target.value })}
-                                placeholder="my-gcp-project-123"
-                                className="font-sans tabular-nums text-xs h-8.5 bg-white dark:bg-[#0F0F13]"
-                              />
+                          <div className="space-y-3 p-3 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10">
+                            {/* 2-Option Authentication Mode Selector */}
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-semibold text-[#2C2C2C] dark:text-white">
+                                Google Authentication Method
+                              </Label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => onCredentialChange({ ...credential, gcp_auth_mode: "api_key" })}
+                                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                    (credential.gcp_auth_mode || "api_key") === "api_key"
+                                      ? "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/50 dark:border-[#E05284]/50 text-[#853953] dark:text-[#F06A9A] ring-1 ring-[#853953]/30 shadow-xs"
+                                      : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10 dark:border-white/10 hover:bg-[#F3F4F4] text-[#2C2C2C] dark:text-white"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-semibold">Gemini API Key</span>
+                                    {(credential.gcp_auth_mode || "api_key") === "api_key" && (
+                                      <Badge variant="default" className="text-[9px] py-0 px-1 bg-[#853953] text-white">
+                                        Active
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 mt-0.5">
+                                    Google AI Studio Developer Key
+                                  </p>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => onCredentialChange({ ...credential, gcp_auth_mode: "vertex_ai" })}
+                                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                    credential.gcp_auth_mode === "vertex_ai"
+                                      ? "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/50 dark:border-[#E05284]/50 text-[#853953] dark:text-[#F06A9A] ring-1 ring-[#853953]/30 shadow-xs"
+                                      : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10 dark:border-white/10 hover:bg-[#F3F4F4] text-[#2C2C2C] dark:text-white"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-semibold">GCP Project ID</span>
+                                    {credential.gcp_auth_mode === "vertex_ai" && (
+                                      <Badge variant="default" className="text-[9px] py-0 px-1 bg-[#853953] text-white">
+                                        Active
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 mt-0.5">
+                                    Google Cloud Vertex AI VPC
+                                  </p>
+                                </button>
+                              </div>
                             </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs font-semibold">GCP Region</Label>
-                              <Select
-                                value={credential.gcp_location || "us-central1"}
-                                onValueChange={(val) => onCredentialChange({ ...credential, gcp_location: val })}
-                              >
-                                <SelectTrigger className="h-8.5 font-sans tabular-nums text-xs bg-white dark:bg-[#0F0F13]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="us-central1" className="font-sans tabular-nums text-xs">us-central1 (Iowa)</SelectItem>
-                                  <SelectItem value="europe-west4" className="font-sans tabular-nums text-xs">europe-west4 (Eemshaven)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs font-semibold">API Key / Token</Label>
-                              <Input
-                                type="password"
-                                value={credential.api_key || ""}
-                                onChange={(e) => onCredentialChange({ ...credential, api_key: e.target.value })}
-                                placeholder="AIzaSy..."
-                                className="font-sans tabular-nums text-xs h-8.5 bg-white dark:bg-[#0F0F13]"
-                              />
-                            </div>
+
+                            {/* Option 1 Fields: Gemini API Key */}
+                            {(credential.gcp_auth_mode || "api_key") === "api_key" ? (
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-xs font-semibold">Gemini API Key</Label>
+                                  <span className="text-[10px] text-[#853953] dark:text-[#F06A9A] font-medium font-sans">
+                                    Get key at aistudio.google.com
+                                  </span>
+                                </div>
+                                <Input
+                                  type="password"
+                                  value={credential.api_key || ""}
+                                  onChange={(e) => onCredentialChange({ ...credential, api_key: e.target.value })}
+                                  placeholder="AIzaSy..."
+                                  className="font-sans tabular-nums text-xs h-8.5 bg-white dark:bg-[#0F0F13]"
+                                />
+                              </div>
+                            ) : (
+                              /* Option 2 Fields: GCP Project ID & Region */
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <div className="space-y-1 sm:col-span-2">
+                                  <Label className="text-xs font-semibold">GCP Project ID</Label>
+                                  <Input
+                                    value={credential.gcp_project_id || ""}
+                                    onChange={(e) => onCredentialChange({ ...credential, gcp_project_id: e.target.value })}
+                                    placeholder="my-gcp-project-123"
+                                    className="font-sans tabular-nums text-xs h-8.5 bg-white dark:bg-[#0F0F13]"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs font-semibold">GCP Region</Label>
+                                  <Select
+                                    value={credential.gcp_location || "us-central1"}
+                                    onValueChange={(val) => onCredentialChange({ ...credential, gcp_location: val })}
+                                  >
+                                    <SelectTrigger className="h-8.5 font-sans tabular-nums text-xs bg-white dark:bg-[#0F0F13]">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="us-central1" className="font-sans tabular-nums text-xs">us-central1 (Iowa)</SelectItem>
+                                      <SelectItem value="us-east4" className="font-sans tabular-nums text-xs">us-east4 (N. Virginia)</SelectItem>
+                                      <SelectItem value="us-west1" className="font-sans tabular-nums text-xs">us-west1 (Oregon)</SelectItem>
+                                      <SelectItem value="europe-west4" className="font-sans tabular-nums text-xs">europe-west4 (Eemshaven)</SelectItem>
+                                      <SelectItem value="asia-northeast1" className="font-sans tabular-nums text-xs">asia-northeast1 (Tokyo)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs font-semibold">Vertex API Key / Token <span className="text-[#2C2C2C]/50 dark:text-slate-400 font-normal lowercase">(optional)</span></Label>
+                                  <Input
+                                    type="password"
+                                    value={credential.api_key || ""}
+                                    onChange={(e) => onCredentialChange({ ...credential, api_key: e.target.value })}
+                                    placeholder="AIzaSy... or Bearer Token"
+                                    className="font-sans tabular-nums text-xs h-8.5 bg-white dark:bg-[#0F0F13]"
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -1209,7 +1380,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
                           <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
                             <Sparkles className="h-3.5 w-3.5" />
-                            1B. Target Model Discovery & Architecture
+                            1B. Model Selection
                           </span>
                           {availableModels.length > 0 && !isLoadingModels && (
                             <Badge variant="emerald" className="gap-1 font-sans tabular-nums text-[10px] px-1.5 py-0.5">
@@ -1221,7 +1392,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label className="text-xs font-semibold">Selected Model Identifier</Label>
+                            <Label className="text-xs font-semibold">Selected Model</Label>
                             <div className="flex items-center gap-1.5">
                               <Button
                                 type="button"
@@ -1265,7 +1436,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#0F0F13]"
                               />
                               <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans">
-                                Custom identifier for self-hosted vLLM or fine-tuned weights.
+                                Custom model identifier or self-hosted deployment.
                               </p>
                             </div>
                           ) : (
@@ -1312,7 +1483,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <div className="p-3.5 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 dark:border-white/10 space-y-2 mt-4 shadow-2xs">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] tracking-wider font-semibold text-[#853953] dark:text-[#F06A9A] font-sans">
-                            Active Architecture
+                            Selected Model
                           </span>
                           <Badge variant="outline" className="text-[10px] font-sans capitalize">
                             {config.vendor.replace("_", " ")}
@@ -1327,8 +1498,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <strong className="text-[#2C2C2C] dark:text-white">128k tokens</strong>
                           </div>
                           <div>
-                            <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">Driver Protocol</span>
-                            <strong className="text-[#2C2C2C] dark:text-white">SSE Streaming</strong>
+                            <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">Streaming</span>
+                            <strong className="text-[#2C2C2C] dark:text-white">SSE Protocol</strong>
                           </div>
                         </div>
                       </div>
@@ -1338,8 +1509,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
               )}
 
               {/* ===================================================================== */}
-              {/* STEP 2: WORKLOAD & SAMPLING (UNIFIED BENTO CONTAINER)                 */}
+              {/* STEP 2: PRESETS & PROMPTS                                             */}
               {/* ===================================================================== */}
+
               {currentStep === 2 && (
                 <motion.div
                   key="step-2"
@@ -1357,10 +1529,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
                       <div>
                         <h2 className="text-sm sm:text-base font-bold text-[#2C2C2C] dark:text-white">
-                          Step 2: Workload Scenario & Sampling Profile
+                          Step 2: Presets & Prompts
                         </h2>
                         <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
-                          Calibrate prefill/decode token distribution and tune autoregressive sampling parameters.
+                          Choose a benchmark workload preset or enter a custom prompt.
                         </p>
                       </div>
                     </div>
@@ -1372,12 +1544,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-white dark:bg-[#0F0F13] text-[#2C2C2C]/80 dark:text-slate-200 hover:text-[#853953] dark:hover:text-[#F06A9A] hover:bg-[#853953]/5 border border-[#2C2C2C]/10 dark:border-white/10 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Activity className="h-3.5 w-3.5" />
-                        <span>Inspect Payload Dynamics</span>
+                        <span>Inspect Payload</span>
                       </button>
 
                       <button
                         type="button"
-                        onClick={() => handleOpenExpert("workload-preset", "Workload Scenario & Payload", "How do token ratios (prefill vs. decode) affect benchmarking results?")}
+                        onClick={() => handleOpenExpert("workload-preset", "Workload Presets", "How do token ratios (prefill vs. decode) affect benchmarking results?")}
                         className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#0F0F13] text-[#853953] dark:text-[#F06A9A] hover:bg-[#853953]/10 border border-[#853953]/30 dark:border-[#E05284]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
@@ -1386,28 +1558,28 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     </div>
                   </div>
 
-                  {/* 2-Column Bento Grid Body (65:35 Ratio) */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#2C2C2C]/10 dark:divide-[#F3F4F4]/10">
-                    {/* Left Bento Column: Sub-Step 2A (Workload Scenario & Payload) - 65% */}
-                    <div className="lg:col-span-8 p-5 space-y-4">
+                  {/* Vertically Stacked Sub-Step 2A & 2B Container */}
+                  <div className="divide-y divide-[#2C2C2C]/10 dark:divide-[#F3F4F4]/10">
+                    {/* Top Section: Sub-Step 2A (Workload Presets) - Full Width */}
+                    <div className="p-5 space-y-4">
                       <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
                         <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
                           <Layers className="h-3.5 w-3.5" />
-                          2A. Workload Scenario & Payload
+                          2A. Workload Presets
                         </span>
                         <Badge variant="outline" className="text-[10px] font-sans">
-                          {selectedPreset.name}
+                          {selectedPreset ? `${selectedPreset.name} • ${selectedPreset.tag}` : "No Preset Selected"}
                         </Badge>
                       </div>
 
                       {/* Search Bar & Category Filter Pills */}
                       <div className="space-y-2.5">
-                        <div className="flex flex-col sm:row gap-2 items-stretch sm:items-center justify-between">
-                          <div className="relative flex-1">
+                        <div className="flex flex-col lg:flex-row gap-2 items-stretch lg:items-center justify-between">
+                          <div className="relative flex-1 min-w-[200px]">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#2C2C2C]/40 dark:text-slate-500" />
                             <Input
                               type="text"
-                              placeholder="Search scenarios (e.g. RAG, code, cot)..."
+                              placeholder="Search presets (e.g. RAG, code, cot, cache)..."
                               value={workloadSearchQuery}
                               onChange={(e) => setWorkloadSearchQuery(e.target.value)}
                               className="pl-8.5 pr-8 h-8 text-xs rounded-xl bg-[#F3F4F4]/60 dark:bg-[#0B0B0E] border-[#2C2C2C]/10 dark:border-white/10"
@@ -1423,33 +1595,41 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             )}
                           </div>
 
-                          <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-                            {[
-                              { id: "all", label: "All" },
-                              { id: "latency", label: "Latency" },
-                              { id: "throughput", label: "Throughput" },
-                              { id: "reasoning", label: "Reasoning" },
-                              { id: "heavy_context", label: "Long Context" },
-                              { id: "code_structured", label: "Code/JSON" },
-                            ].map((cat) => (
-                              <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => setSelectedCategory(cat.id as WorkloadCategory)}
-                                className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-all whitespace-nowrap cursor-pointer ${
-                                  selectedCategory === cat.id
-                                    ? "bg-[#853953] text-white shadow-2xs font-semibold"
-                                    : "bg-[#F3F4F4] dark:bg-[#0B0B0E] text-[#2C2C2C]/70 dark:text-slate-300 hover:bg-[#2C2C2C]/10"
-                                }`}
-                              >
-                                {cat.label}
-                              </button>
-                            ))}
+                          {/* Refactored Filter Pills with Dynamic Counts */}
+                          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+                            {CATEGORY_TABS.map((cat) => {
+                              const count = categoryCounts[cat.id] || 0;
+                              const isSelected = selectedCategory === cat.id;
+                              return (
+                                <button
+                                  key={cat.id}
+                                  type="button"
+                                  onClick={() => setSelectedCategory(cat.id)}
+                                  className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                                    isSelected
+                                      ? "bg-[#853953] text-white shadow-2xs font-semibold"
+                                      : "bg-[#F3F4F4] dark:bg-[#0B0B0E] text-[#2C2C2C]/70 dark:text-slate-300 hover:bg-[#2C2C2C]/10 dark:hover:bg-white/5"
+                                  }`}
+                                >
+                                  <span>{cat.shortLabel}</span>
+                                  <span
+                                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono tabular-nums ${
+                                      isSelected
+                                        ? "bg-white/25 text-white font-bold"
+                                        : "bg-[#2C2C2C]/10 dark:bg-white/10 text-[#2C2C2C]/60 dark:text-slate-400"
+                                    }`}
+                                  >
+                                    {count}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
 
-                        {/* Presets Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[340px] overflow-y-auto pr-1">
+
+                        {/* Presets Grid - 3 Columns */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-[340px] overflow-y-auto pr-1">
                           {filteredPresets.map((preset) => {
                             const Icon = preset.icon;
                             const isSelected = config.workload_preset === preset.id;
@@ -1461,11 +1641,31 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 key={preset.id}
                                 type="button"
                                 onClick={() => {
-                                  onChange({
-                                    ...config,
-                                    workload_preset: preset.id,
-                                    max_tokens: preset.genTokens,
-                                  });
+                                  if (isSelected) {
+                                    onChange({
+                                      ...config,
+                                      workload_preset: undefined as any,
+                                    });
+                                  } else {
+                                    const isKv = preset.id === "kv_cache_reuse";
+                                    const isPrefill = preset.id === "prefill_ttft";
+                                    const isRate = preset.id === "rate_limit_probe";
+                                    const isReason = preset.id === "reasoning_cot";
+
+                                    let newMaxTokens = preset.genTokens;
+                                    if (isPrefill) newMaxTokens = 10;
+                                    else if (isRate) newMaxTokens = 2;
+                                    else if (isReason) newMaxTokens = Math.max(config.max_tokens || 512, 1024);
+
+                                    onChange({
+                                      ...config,
+                                      workload_preset: preset.id,
+                                      max_tokens: newMaxTokens,
+                                      measure_cache_speedup: isKv,
+                                      cache_bust: isKv ? false : config.cache_bust,
+                                      warmup_requests: isKv ? 0 : (config.warmup_requests ?? 2),
+                                    });
+                                  }
                                 }}
                                 className={`group p-2.5 rounded-xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
                                   isSelected
@@ -1491,7 +1691,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                       {preset.tag}
                                     </Badge>
                                   </div>
-                                  <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 line-clamp-2 leading-tight">
+                                  <p className="text-[11px] text-[#2C2C2C]/70 dark:text-slate-300 line-clamp-3 leading-relaxed min-h-[44px]">
                                     {preset.desc}
                                   </p>
                                 </div>
@@ -1506,25 +1706,60 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
                       </div>
 
-                      {/* Calibrated Prompt Template Preview */}
+                      {/* Preset Specifications */}
+                      <PresetParametersInspector config={config} preset={selectedPreset} />
+
+                      {/* Prompt Preview */}
                       {(() => {
+                        const hasPreset = Boolean(config.workload_preset) || Boolean(config.custom_prompt);
+
+                        if (!hasPreset) {
+                          return (
+                            <div className="p-3.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-2.5">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold flex items-center gap-1.5 text-[#2C2C2C]/70 dark:text-slate-300">
+                                  <Sparkles className="h-3 w-3 text-[#853953]/60 dark:text-[#F06A9A]/60" />
+                                  Prompt Preview
+                                </Label>
+                                <Badge variant="outline" className="text-[10px] font-sans opacity-60">
+                                  Awaiting Preset Selection
+                                </Badge>
+                              </div>
+
+                              <div className="p-3 rounded-lg border border-[#2C2C2C]/10 dark:border-white/5 bg-white/60 dark:bg-[#0F0F13]/60 space-y-2">
+                                <div className="h-3 w-full bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
+                                <div className="h-3 w-4/5 bg-slate-200/50 dark:bg-white/5 rounded animate-pulse" />
+                                <div className="h-3 w-2/3 bg-slate-200/40 dark:bg-white/5 rounded animate-pulse" />
+                              </div>
+
+                              <p className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-500 font-sans italic text-center">
+                                Select a workload preset from the grid above to load and inspect its calibrated benchmark prompt.
+                              </p>
+                            </div>
+                          );
+                        }
+
+
                         const promptDetails = WORKLOAD_PROMPT_PREVIEWS[config.workload_preset as WorkloadPreset] || WORKLOAD_PROMPT_PREVIEWS.custom;
                         const activePromptText = config.custom_prompt ?? promptDetails?.prompt ?? "";
+                        const measuredTokens = activePromptText.trim()
+                          ? (config.custom_prompt ? Math.max(1, Math.round(activePromptText.trim().length / 3.8)) : (promptDetails?.promptTokens || Math.max(1, Math.round(activePromptText.trim().length / 3.8))))
+                          : 0;
 
                         return (
                           <div className="p-3 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1.5">
                             <div className="flex items-center justify-between">
                               <Label className="text-xs font-semibold flex items-center gap-1.5">
                                 <Sparkles className="h-3 w-3 text-[#853953] dark:text-[#F06A9A]" />
-                                Calibrated Prompt Template
+                                Prompt Preview
                               </Label>
                               <div className="flex items-center gap-2 text-[10px] font-sans tabular-nums text-[#2C2C2C]/60 dark:text-slate-400">
-                                <span>~{selectedPreset.promptTokens} tokens</span>
+                                <span>~{measuredTokens} tokens{config.custom_prompt ? " (Custom)" : " (Calibrated)"}</span>
                                 {config.custom_prompt && (
                                   <button
                                     type="button"
                                     onClick={() => onChange({ ...config, custom_prompt: undefined })}
-                                    className="text-[#853953] dark:text-[#F06A9A] hover:underline cursor-pointer"
+                                    className="text-[#853953] dark:text-[#F06A9A] hover:underline cursor-pointer font-medium"
                                   >
                                     Reset
                                   </button>
@@ -1534,59 +1769,41 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <textarea
                               value={activePromptText}
                               onChange={(e) => onChange({ ...config, custom_prompt: e.target.value })}
-                              rows={3}
+                              rows={4}
                               className="w-full text-xs font-sans p-2 rounded-lg border border-[#2C2C2C]/15 dark:border-white/10 bg-white dark:bg-[#0F0F13] resize-none focus:border-[#853953]"
                             />
                           </div>
                         );
                       })()}
+
                     </div>
 
-                    {/* Right Bento Column: Sub-Step 2B (Sampling & Hyperparameters) - 35% */}
-                    <div className="lg:col-span-4 p-5 space-y-4 bg-[#F3F4F4]/20 dark:bg-[#0B0B0E]/60 flex flex-col justify-between">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
-                          <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
-                            <Sliders className="h-3.5 w-3.5" />
-                            2B. Sampling & Hyperparameters
-                          </span>
-                          <Badge variant="outline" className="text-[10px] font-sans">
-                            {config.max_tokens} max tok @ T={config.temperature}
-                          </Badge>
-                        </div>
+                    {/* Bottom Section: Sub-Step 2B (Sampling & Generation Dynamics) - Full Width */}
+                    <div className="p-5 space-y-4 bg-[#F3F4F4]/20 dark:bg-[#0B0B0E]/60">
+                      <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
+                        <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
+                          <Sliders className="h-3.5 w-3.5" />
+                          2B. Generation Settings
+                        </span>
+                        <Badge variant="outline" className="text-[10px] font-sans">
+                          T={config.temperature.toFixed(2)} • {config.max_tokens} max tok
+                        </Badge>
+                      </div>
 
-                        {/* Generation Sliders Grid */}
-                        <div className="space-y-3">
-                          {/* Max Tokens Slider */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
+                      {/* 3-Column Responsive Bento Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {/* 1. Sampling Temperature */}
+                          <div className="space-y-2 p-3.5 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
-                              <Label className="font-semibold">Max Output Tokens (Generation Bound)</Label>
-                              <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
-                                {config.max_tokens} tokens
-                              </Badge>
-                            </div>
-                            <Slider
-                              min={16}
-                              max={4096}
-                              step={16}
-                              value={[config.max_tokens]}
-                              onValueChange={(val) => onChange({ ...config, max_tokens: val[0] })}
-                            />
-                            <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-slate-400">
-                              <span>16 tok</span>
-                              <span>256 (Standard)</span>
-                              <span>4096 tok</span>
-                            </div>
-                          </div>
-
-                          {/* Temperature Slider */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
-                            <div className="flex justify-between items-center text-xs">
-                              <Label className="font-semibold">Sampling Temperature</Label>
+                              <Label className="font-semibold flex items-center gap-1.5">
+                                <Flame className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+                                Sampling Temperature
+                              </Label>
                               <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
                                 {getTemperatureLabel(config.temperature)}
                               </Badge>
                             </div>
+
                             <Slider
                               min={0.0}
                               max={1.5}
@@ -1594,110 +1811,173 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               value={[config.temperature]}
                               onValueChange={(val) => onChange({ ...config, temperature: Number(val[0].toFixed(2)) })}
                             />
-                            <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-slate-400">
-                              <span>0.0 (Deterministic)</span>
-                              <span>0.7 (Balanced)</span>
-                              <span>1.5 (Creative)</span>
+
+                            {/* Quick Preset Buttons */}
+                            <div className="flex items-center gap-1.5 pt-0.5">
+                              <button
+                                type="button"
+                                onClick={() => onChange({ ...config, temperature: 0.0 })}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all cursor-pointer ${
+                                  config.temperature === 0.0
+                                    ? "bg-[#853953] text-white shadow-2xs font-semibold"
+                                    : "bg-[#F3F4F4] dark:bg-[#1A1A24] text-[#2C2C2C]/70 dark:text-slate-400 hover:bg-[#2C2C2C]/10"
+                                }`}
+                              >
+                                0.0 (Deterministic)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onChange({ ...config, temperature: 0.7 })}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all cursor-pointer ${
+                                  config.temperature === 0.7
+                                    ? "bg-[#853953] text-white shadow-2xs font-semibold"
+                                    : "bg-[#F3F4F4] dark:bg-[#1A1A24] text-[#2C2C2C]/70 dark:text-slate-400 hover:bg-[#2C2C2C]/10"
+                                }`}
+                              >
+                                0.7 (Balanced)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onChange({ ...config, temperature: 1.0 })}
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all cursor-pointer ${
+                                  config.temperature === 1.0
+                                    ? "bg-[#853953] text-white shadow-2xs font-semibold"
+                                    : "bg-[#F3F4F4] dark:bg-[#1A1A24] text-[#2C2C2C]/70 dark:text-slate-400 hover:bg-[#2C2C2C]/10"
+                                }`}
+                              >
+                                1.0 (Creative)
+                              </button>
                             </div>
+
+                            <p className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans leading-tight">
+                              Lower values (0.0) give consistent, deterministic outputs for fair benchmarking.
+                            </p>
                           </div>
 
-                          {/* Top-P Slider */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
-                            <div className="flex justify-between items-center text-xs">
-                              <Label className="font-semibold">Top-P (Nucleus Sampling)</Label>
-                              <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
-                                {config.top_p ?? 1.0}
+                          {/* 2. Output Token Bound */}
+                          {Boolean(config.custom_prompt) || config.workload_preset === "custom" ? (
+                            <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
+                              <div className="flex justify-between items-center text-xs">
+                                <Label className="font-semibold">Max Output Tokens</Label>
+                                <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
+                                  {config.max_tokens} tokens
+                                </Badge>
+                              </div>
+                              <Slider
+                                min={16}
+                                max={4096}
+                                step={16}
+                                value={[config.max_tokens]}
+                                onValueChange={(val) => onChange({ ...config, max_tokens: val[0] })}
+                              />
+                              <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-slate-400">
+                                <span>16 tok</span>
+                                <span>256 (Standard)</span>
+                                <span>4096 tok</span>
+                              </div>
+                            </div>
+                          ) : !config.workload_preset ? (
+                            <div className="p-3.5 rounded-xl bg-white/60 dark:bg-[#0F0F13]/60 border border-[#2C2C2C]/10 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-[#2C2C2C]/70 dark:text-slate-300">Max Output Tokens</span>
+                                <Badge variant="outline" className="text-[10px] font-sans opacity-60">
+                                  Awaiting Preset
+                                </Badge>
+                              </div>
+                              <div className="h-3.5 w-3/4 bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
+                              <p className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-500 font-sans">
+                                Select a workload preset above to calibrate output token limits.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="p-3 rounded-xl bg-[#F3F4F4]/70 dark:bg-[#15151C] border border-[#2C2C2C]/10 flex items-center justify-between">
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-semibold text-[#2C2C2C] dark:text-white">Max Output Tokens</span>
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-sans flex items-center gap-1 font-medium">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Preset Enforced
+                                  </Badge>
+                                </div>
+                                <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
+                                  Fixed to {selectedPreset?.genTokens || config.max_tokens} tokens for this preset.
+                                </p>
+                              </div>
+                              <Badge variant="default" className="text-xs font-bold tabular-nums font-sans">
+                                {selectedPreset?.genTokens || config.max_tokens} tok
                               </Badge>
                             </div>
-                            <Slider
-                              min={0.1}
-                              max={1.0}
-                              step={0.05}
-                              value={[config.top_p ?? 1.0]}
-                              onValueChange={(val) => onChange({ ...config, top_p: Number(val[0].toFixed(2)) })}
-                            />
-                            <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-slate-400">
-                              <span>0.1 (Strict)</span>
-                              <span>0.9 (Standard)</span>
-                              <span>1.0 (Full Mass)</span>
-                            </div>
-                          </div>
+                          )}
 
-                          {/* SSE Streaming Toggle */}
-                          <div className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
+
+
+                          {/* 3. SSE Streaming Protocol */}
+                          <div className={`flex items-center justify-between p-3 rounded-xl border shadow-2xs transition-colors ${
+                            isStreamLocked ? "bg-[#F3F4F4]/70 dark:bg-[#15151C] border-[#2C2C2C]/10" : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10"
+                          }`}>
                             <div className="space-y-0.5 pr-2">
-                              <Label className="text-xs font-semibold cursor-pointer">Server-Sent Events (SSE Streaming)</Label>
+                              <div className="flex items-center gap-2">
+                                <Label className={`text-xs font-semibold ${isStreamLocked ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                                  Streaming (SSE)
+                                </Label>
+                                {isStreamLocked && (
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
-                                Stream tokens to capture Time to First Token (TTFT) and inter-token jitter.
+                                {isStreamLocked
+                                  ? "Streaming is required to capture Time to First Token (TTFT) and token generation speed."
+                                  : "Stream tokens to capture Time to First Token (TTFT) and token jitter."}
                               </p>
                             </div>
                             <Switch
-                              checked={config.stream ?? true}
+                              disabled={isStreamLocked}
+                              checked={isStreamLocked ? true : (config.stream ?? true)}
                               onCheckedChange={(checked) => onChange({ ...config, stream: checked })}
                             />
                           </div>
                         </div>
 
-                        {/* Structured JSON Schema Editor (When applicable) */}
-                        {(config.workload_preset === "structured_json" ||
-                          config.workload_preset === "json_schema" ||
-                          config.workload_preset === "agentic_tool_calling" ||
-                          config.workload_preset === "tool_calling" ||
-                          Boolean(config.json_schema)) && (
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
-                            <div className="flex items-center justify-between">
-                              <Label className="text-xs font-semibold text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5">
-                                <Braces className="h-3.5 w-3.5" />
-                                JSON Schema Validation Contract
-                              </Label>
-                              {jsonSchemaError ? (
-                                <Badge variant="destructive" className="text-[10px]">
-                                  {jsonSchemaError}
-                                </Badge>
-                              ) : (
-                                <Badge variant="emerald" className="text-[10px]">
-                                  Valid JSON Schema
-                                </Badge>
-                              )}
-                            </div>
-                            <textarea
-                              value={rawJsonSchema}
-                              onChange={(e) => handleJsonSchemaChange(e.target.value)}
-                              rows={4}
-                              className="w-full text-[11px] font-mono p-2 rounded-lg border border-[#2C2C2C]/15 dark:border-white/10 bg-white dark:bg-[#14141B]"
-                            />
+                      {/* Structured JSON Schema Editor */}
+                      {(config.workload_preset === "structured_json" ||
+                        config.workload_preset === "json_schema" ||
+                        config.workload_preset === "agentic_tool_calling" ||
+                        config.workload_preset === "tool_calling" ||
+                        Boolean(config.json_schema)) && (
+                        <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5">
+                              <Braces className="h-3.5 w-3.5" />
+                              JSON Schema Validation
+                            </Label>
+                            {jsonSchemaError ? (
+                              <Badge variant="destructive" className="text-[10px]">
+                                {jsonSchemaError}
+                              </Badge>
+                            ) : (
+                              <Badge variant="emerald" className="text-[10px]">
+                                Valid Schema
+                              </Badge>
+                            )}
                           </div>
-                        )}
-                      </div>
-
-                      {/* Workload Profile Summary Card */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 dark:border-white/10 space-y-1.5 mt-3 shadow-2xs">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-[#2C2C2C] dark:text-white">
-                            Calibrated Turn Footprint
-                          </span>
-                          <span className="text-[#853953] dark:text-[#F06A9A] font-bold font-sans tabular-nums">
-                            ~{totalPresetTokens} total tokens
-                          </span>
+                          <textarea
+                            value={rawJsonSchema}
+                            onChange={(e) => handleJsonSchemaChange(e.target.value)}
+                            rows={4}
+                            className="w-full text-[11px] font-mono p-2 rounded-lg border border-[#2C2C2C]/15 dark:border-white/10 bg-white dark:bg-[#14141B]"
+                          />
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#2C2C2C]/5 dark:border-white/[0.06] font-sans">
-                          <div>
-                            <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">Prefill Phase</span>
-                            <strong className="text-[#2C2C2C] dark:text-white">{selectedPreset.promptTokens} tokens</strong>
-                          </div>
-                          <div>
-                            <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">Decode Bound</span>
-                            <strong className="text-[#2C2C2C] dark:text-white">{config.max_tokens} max tokens</strong>
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
               )}
 
               {/* ===================================================================== */}
-              {/* STEP 3: CONCURRENCY & TRAFFIC (UNIFIED BENTO CONTAINER)               */}
+              {/* STEP 3: TRAFFIC & LOAD                                                */}
               {/* ===================================================================== */}
               {currentStep === 3 && (
                 <motion.div
@@ -1716,10 +1996,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
                       <div>
                         <h2 className="text-sm sm:text-base font-bold text-[#2C2C2C] dark:text-white">
-                          Step 3: Concurrency, Load Dynamics & Cache Isolation
+                          Step 3: Traffic & Load
                         </h2>
                         <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
-                          Model client traffic waveforms, concurrency workers, and configure cold KV-cache memory isolation.
+                          Configure concurrency, traffic patterns, and cache behavior.
                         </p>
                       </div>
                     </div>
@@ -1731,12 +2011,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-white dark:bg-[#0F0F13] text-[#2C2C2C]/80 dark:text-slate-200 hover:text-[#853953] dark:hover:text-[#F06A9A] hover:bg-[#853953]/5 border border-[#2C2C2C]/10 dark:border-white/10 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Activity className="h-3.5 w-3.5" />
-                        <span>Preview Waveform & VRAM</span>
+                        <span>Simulate Traffic</span>
                       </button>
 
                       <button
                         type="button"
-                        onClick={() => handleOpenExpert("traffic-concurrency", "Execution Scope & Concurrency", "How do I choose the right concurrency worker pool for stress testing?")}
+                        onClick={() => handleOpenExpert("traffic-concurrency", "Traffic & Concurrency", "How do I choose the right concurrency worker pool for stress testing?")}
                         className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#0F0F13] text-[#853953] dark:text-[#F06A9A] hover:bg-[#853953]/10 border border-[#853953]/30 dark:border-[#E05284]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
@@ -1747,12 +2027,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                   {/* 2-Column Bento Grid Body (50:50 Ratio) */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#2C2C2C]/10 dark:divide-[#F3F4F4]/10">
-                    {/* Left Bento Column: Sub-Step 3A (Scope, Concurrency & Arrival Waveforms) */}
+                    {/* Left Bento Column: Sub-Step 3A (Traffic & Concurrency) */}
                     <div className="p-5 space-y-4">
                       <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
                         <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
                           <Target className="h-3.5 w-3.5" />
-                          3A. Execution Scope & Concurrency
+                          3A. Traffic & Concurrency
                         </span>
                         <Badge variant="outline" className="text-[10px] font-sans capitalize">
                           {config.concurrency} streams • {config.load_curve.replace("_", " ")}
@@ -1761,7 +2041,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                       {/* Strategy Mode Toggle */}
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-semibold">Benchmark Execution Mode</Label>
+                        <Label className="text-xs font-semibold">Test Mode</Label>
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
@@ -1805,7 +2085,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       {isRequestMode ? (
                         <div className="space-y-1.5 p-3 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10">
                           <div className="flex justify-between items-center text-xs">
-                            <Label className="font-semibold">Total Request Batch Volume</Label>
+                            <Label className="font-semibold">Total Requests</Label>
                             <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
                               {config.total_requests || 50} requests
                             </Badge>
@@ -1826,7 +2106,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       ) : (
                         <div className="space-y-1.5 p-3 rounded-xl bg-[#F3F4F4]/60 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10">
                           <div className="flex justify-between items-center text-xs">
-                            <Label className="font-semibold">Benchmark Duration</Label>
+                            <Label className="font-semibold">Test Duration</Label>
                             <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
                               {config.duration_seconds} seconds
                             </Badge>
@@ -1849,28 +2129,44 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       {/* Concurrency Slider */}
                       <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
                         <div className="flex justify-between items-center text-xs">
-                          <Label className="font-semibold">Parallel Worker Streams (Concurrency)</Label>
+                          <div className="flex items-center gap-2">
+                            <Label className="font-semibold">Concurrency (Parallel Streams)</Label>
+                            {isKneeCurve && (
+                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                                <Lock className="h-2.5 w-2.5" />
+                                Min 8 (Knee Probe)
+                              </Badge>
+                            )}
+                          </div>
                           <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
                             {config.concurrency} streams
                           </Badge>
                         </div>
                         <Slider
-                          min={1}
+                          min={isKneeCurve ? 8 : 1}
                           max={50}
                           step={1}
                           value={[config.concurrency]}
                           onValueChange={(val) => onChange({ ...config, concurrency: val[0] })}
                         />
                         <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-slate-400">
-                          <span>1 worker</span>
-                          <span>16 (Balanced)</span>
-                          <span>50 (High Load)</span>
+                          {isKneeCurve ? (
+                            <span className="text-blue-600 dark:text-blue-400 font-medium">
+                              Knee probe automatically ramps across 1 → 3 → 8 → 16 → 50 streams to discover server inflection points
+                            </span>
+                          ) : (
+                            <>
+                              <span>1 worker</span>
+                              <span>16 (Balanced)</span>
+                              <span>50 (High Load)</span>
+                            </>
+                          )}
                         </div>
                       </div>
 
-                      {/* 5 Arrival Waveforms Selector */}
+                      {/* Traffic Pattern Selector */}
                       <div className="space-y-2">
-                        <Label className="text-xs font-semibold">Traffic Arrival Geometry</Label>
+                        <Label className="text-xs font-semibold">Traffic Pattern</Label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {LOAD_CURVE_OPTIONS.map((curve) => {
                             const Icon = curve.icon;
@@ -1879,7 +2175,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               <button
                                 key={curve.id}
                                 type="button"
-                                onClick={() => onChange({ ...config, load_curve: curve.id })}
+                                onClick={() => onChange({
+                                  ...config,
+                                  load_curve: curve.id,
+                                  concurrency: curve.id === "saturation_knee" ? Math.max(config.concurrency, 8) : config.concurrency,
+                                })}
                                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer select-none ${
                                   isSelected
                                     ? "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/50 dark:border-[#E05284]/50 text-[#853953] dark:text-[#F06A9A] ring-1 ring-[#853953]/20 shadow-xs"
@@ -1898,72 +2198,240 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
                     </div>
 
-                    {/* Right Bento Column: Sub-Step 3B (Cache Semantics & Hardware Footprint) */}
+                    {/* Right Bento Column: Sub-Step 3B (Cache & Warmup) */}
                     <div className="p-5 space-y-4 bg-[#F3F4F4]/20 dark:bg-[#0B0B0E]/60 flex flex-col justify-between">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
                           <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
                             <Database className="h-3.5 w-3.5" />
-                            3B. Cache Semantics & Socket Warmup
+                            3B. Cache & Warmup Protocol
                           </span>
                           <Badge variant="outline" className="text-[10px] font-sans">
-                            {config.cache_bust ? "Cold Prefill" : "Warm Prefix Cache"}
+                            {isKvCachePreset
+                              ? "Cold Seed → Warm Hits (Enforced)"
+                              : isPrefillTtftPreset
+                              ? "Cold Prefill (Enforced)"
+                              : config.cache_bust
+                              ? "Cold Prefill (Nonce Active)"
+                              : config.measure_cache_speedup
+                              ? "Cache Speedup Active"
+                              : "Warm Prefix Cache"}
                           </Badge>
                         </div>
 
+                        {/* Dedicated KV-Cache Preset Protocol Banner */}
+                        {isKvCachePreset && (
+                          <div className="rounded-xl border border-emerald-500/30 dark:border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-500/15 p-3.5 space-y-2.5 shadow-2xs">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                                  <Database className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 block font-sans">
+                                    Dedicated Cold vs Warm Cache Benchmark
+                                  </span>
+                                  <span className="text-[10px] text-emerald-700/80 dark:text-emerald-400 font-sans">
+                                    Enforced protocol for prompt prefix caching & KV reuse
+                                  </span>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-[10px] py-0 px-2 bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 font-sans font-semibold">
+                                Dedicated Preset
+                              </Badge>
+                            </div>
+
+                            <p className="text-[11px] text-[#2C2C2C]/85 dark:text-slate-200 leading-relaxed font-sans">
+                              Request #1 is dispatched as the cold baseline prefill seed. Subsequent concurrent streams measure warm KV cache hit acceleration and cached TTFT reduction.
+                            </p>
+
+                            <div className="grid grid-cols-2 gap-2 pt-1 text-[10px] font-sans">
+                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/70 dark:bg-[#0F0F13]/80 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
+                                <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600" />
+                                <span>Req #1: Cold Seed Baseline</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/70 dark:bg-[#0F0F13]/80 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
+                                <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600" />
+                                <span>Reqs #2..N: Warm Cache Hits</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         {/* KV Cache Bypass Switch */}
-                        <div className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
+                        <div className={`flex items-center justify-between p-3.5 rounded-xl border shadow-2xs transition-colors ${
+                          isCacheBustLocked ? "bg-[#F3F4F4]/70 dark:bg-[#15151C] border-[#2C2C2C]/10 opacity-85" : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10"
+                        }`}>
                           <div className="space-y-0.5 pr-2">
-                            <Label className="text-xs font-semibold cursor-pointer">Bypass KV Prefix Cache (Unique Nonce)</Label>
+                            <div className="flex items-center gap-2">
+                              <Label className={`text-xs font-semibold ${isCacheBustLocked ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                                Bypass Cache (Force Cold Prefill)
+                              </Label>
+                              {isKvCachePreset ? (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Lock className="h-2.5 w-2.5" />
+                                  Locked OFF (KV-Cache Preset)
+                                </Badge>
+                              ) : isPrefillTtftPreset ? (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Lock className="h-2.5 w-2.5" />
+                                  Enforced ON (Prefill TTFT)
+                                </Badge>
+                              ) : isRateLimitPreset ? (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Lock className="h-2.5 w-2.5" />
+                                  Locked OFF (Rate Limit Probe)
+                                </Badge>
+                              ) : null}
+                            </div>
                             <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
-                              Appends dynamic timestamps to bypass cached KV states and measure pure cold GPU prefill compute.
+                              {isKvCachePreset
+                                ? "Disabled by preset: Prefix cache hit measurement requires identical deterministic token prefixes."
+                                : isPrefillTtftPreset
+                                ? "Enforced by preset: Unique nonces guarantee 100% cold GPU prefill compute without warm prefix cache interference."
+                                : isRateLimitPreset
+                                ? "Disabled by preset: Micro-token probes test immediate HTTP 429 quota ceilings."
+                                : "Appends dynamic timestamps/nonces to bypass cached KV states and measure pure cold GPU prefill compute."}
                             </p>
                           </div>
                           <Switch
-                            checked={config.cache_bust}
-                            onCheckedChange={(checked) => onChange({ ...config, cache_bust: checked })}
+                            disabled={isCacheBustLocked}
+                            checked={isPrefillTtftPreset ? true : (isKvCachePreset || isRateLimitPreset ? false : config.cache_bust)}
+                            onCheckedChange={(checked) => onChange({
+                              ...config,
+                              cache_bust: checked,
+                              measure_cache_speedup: checked ? false : config.measure_cache_speedup,
+                            })}
                           />
                         </div>
 
+                        {/* Cold vs Warm Cache Test Option (Custom or general preset) */}
+                        {!isKvCachePreset && (
+                          <div className={`flex items-center justify-between p-3.5 rounded-xl border shadow-2xs transition-colors ${
+                            isMeasureCacheSpeedupLocked ? "bg-[#F3F4F4]/70 dark:bg-[#15151C] border-[#2C2C2C]/10 opacity-80" : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10"
+                          }`}>
+                            <div className="space-y-0.5 pr-2">
+                              <div className="flex items-center gap-2">
+                                <Label className={`text-xs font-semibold flex items-center gap-1.5 ${isMeasureCacheSpeedupLocked ? "cursor-not-allowed" : "cursor-pointer"}`}>
+                                  <Zap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                                  Measure Cache Speedup
+                                </Label>
+                                {isPrefillTtftPreset ? (
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-sans flex items-center gap-1 font-medium">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Disabled by Prefill TTFT
+                                  </Badge>
+                                ) : isRateLimitPreset ? (
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Disabled by Rate Limit Probe
+                                  </Badge>
+                                ) : config.cache_bust ? (
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-sans flex items-center gap-1 font-medium">
+                                    <Lock className="h-2.5 w-2.5" />
+                                    Disabled by Cache Bypass
+                                  </Badge>
+                                ) : null}
+                              </div>
+                              <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
+                                {isPrefillTtftPreset
+                                  ? "Disabled: Prefill TTFT isolates pure compute velocity rather than cache hit ratio."
+                                  : isRateLimitPreset
+                                  ? "Disabled: Rate limit probing tests quota boundaries rather than prefix caching."
+                                  : config.cache_bust
+                                  ? "Disabled: Prefix cache acceleration cannot be measured when cache bypass is active."
+                                  : "Sends an initial cold request followed by warm requests to measure prompt caching speedup."}
+                              </p>
+                            </div>
+                            <Switch
+                              disabled={isMeasureCacheSpeedupLocked}
+                              checked={isMeasureCacheSpeedupLocked ? false : Boolean(config.measure_cache_speedup)}
+                              onCheckedChange={(checked) => onChange({
+                                ...config,
+                                measure_cache_speedup: checked,
+                                warmup_requests: checked ? 0 : config.warmup_requests,
+                              })}
+                            />
+                          </div>
+                        )}
+
+
                         {/* Warmup Requests Slider */}
-                        <div className="space-y-2 p-3.5 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
+                        <div className={`space-y-2 p-3.5 rounded-xl border shadow-2xs transition-colors ${
+                          isWarmupLocked ? "bg-[#F3F4F4]/70 dark:bg-[#15151C] border-[#2C2C2C]/10 opacity-85" : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10"
+                        }`}>
                           <div className="flex justify-between items-center text-xs">
-                            <Label className="flex items-center gap-1.5 font-semibold">
-                              <RotateCw className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
-                              Warmup Requests (Discarded from Latency)
-                            </Label>
+                            <div className="flex items-center gap-2">
+                              <Label className="flex items-center gap-1.5 font-semibold">
+                                <RotateCw className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+                                Warmup Requests
+                              </Label>
+                              {isKvCachePreset ? (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Lock className="h-2.5 w-2.5" />
+                                  Locked to 0 (Cold Seed Reference)
+                                </Badge>
+                              ) : isRateLimitPreset ? (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Lock className="h-2.5 w-2.5" />
+                                  Locked to 0 (Rate Limit Probe)
+                                </Badge>
+                              ) : config.measure_cache_speedup ? (
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Lock className="h-2.5 w-2.5" />
+                                  Anchored (Req #1 is Cold Seed)
+                                </Badge>
+                              ) : null}
+                            </div>
                             <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
-                              {config.warmup_requests || 0} reqs
+                              {isWarmupLocked ? 0 : (config.warmup_requests || 0)} reqs
                             </Badge>
                           </div>
                           <Slider
+                            disabled={isWarmupLocked}
                             min={0}
                             max={10}
                             step={1}
-                            value={[config.warmup_requests || 0]}
+                            value={[isWarmupLocked ? 0 : (config.warmup_requests || 0)]}
                             onValueChange={(val) => onChange({ ...config, warmup_requests: val[0] })}
                           />
                           <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#2C2C2C]/50 dark:text-slate-400">
-                            <span>0 (Immediate)</span>
-                            <span>2 (Recommended to prime sockets)</span>
-                            <span>10 (Full prime)</span>
+                            {isKvCachePreset ? (
+                              <span className="text-blue-600 dark:text-blue-400 font-medium">
+                                Warmup bypassed so Request #1 cold baseline is strictly preserved
+                              </span>
+                            ) : isRateLimitPreset ? (
+                              <span className="text-slate-600 dark:text-slate-400 font-medium">
+                                Warmup bypassed to immediately test HTTP 429 quota boundaries
+                              </span>
+                            ) : config.measure_cache_speedup ? (
+                              <span className="text-blue-600 dark:text-blue-400 font-medium">
+                                Warmup bypassed so Request #1 cold baseline is strictly preserved
+                              </span>
+                            ) : (
+                              <>
+                                <span>0 (Immediate)</span>
+                                <span>2 (Recommended to prime sockets)</span>
+                                <span>10 (Full prime)</span>
+                              </>
+                            )}
                           </div>
                         </div>
 
                         {/* Hardware Footprint Telemetry Card */}
                         <div className="p-3.5 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 dark:border-white/10 space-y-2 shadow-2xs">
                           <span className="text-[10px] tracking-wider font-semibold text-[#853953] dark:text-[#F06A9A] font-sans block">
-                            Hardware & Quota Demand Estimate
+                            Estimated Load & Memory
                           </span>
                           <div className="grid grid-cols-2 gap-2 text-[11px] font-sans">
                             <div className="p-2 rounded-lg bg-[#F3F4F4]/60 dark:bg-[#14141B] border border-[#2C2C2C]/5">
-                              <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">Estimated Demand</span>
+                              <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">Estimated Request Rate</span>
                               <strong className="text-[#2C2C2C] dark:text-white">
                                 ~{Math.round(config.concurrency * 1.8 * 60)} RPM
                               </strong>
                             </div>
                             <div className="p-2 rounded-lg bg-[#F3F4F4]/60 dark:bg-[#14141B] border border-[#2C2C2C]/5">
-                              <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">KV Cache VRAM</span>
+                              <span className="text-[#2C2C2C]/50 dark:text-slate-400 block text-[10px]">Est. KV Cache Memory</span>
                               <strong className="text-[#612D53] dark:text-[#E270BB]">
                                 ~{(config.concurrency * 0.12).toFixed(1)} GB VRAM
                               </strong>
@@ -1981,7 +2449,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </span>
                         </div>
                         <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
-                          {config.concurrency} concurrent worker streams • {isRequestMode ? `${config.total_requests || 50} total requests` : `${config.duration_seconds}s duration`} • {config.cache_bust ? "Cold Prefill Nonce" : "Warm Prefix"}
+                          {config.concurrency} concurrent worker streams • {isRequestMode ? `${config.total_requests || 50} total requests` : `${config.duration_seconds}s duration`} • {isKvCachePreset ? "Cold Seed → Warm Hits" : config.cache_bust ? "Cold Prefill Nonce" : "Warm Prefix"}
                         </p>
                       </div>
                     </div>
@@ -1990,7 +2458,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
               )}
 
               {/* ===================================================================== */}
-              {/* STEP 4: GOVERNANCE, BUDGET & LAUNCH (UNIFIED BENTO CONTAINER)         */}
+              {/* STEP 4: LIMITS & LAUNCH                                               */}
               {/* ===================================================================== */}
               {currentStep === 4 && (
                 <motion.div
@@ -2011,10 +2479,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
                         <div>
                           <h2 className="text-sm sm:text-base font-bold text-[#2C2C2C] dark:text-white">
-                            Step 4: Reliability Governance & Financial Guardrails
+                            Step 4: Limits & Launch
                           </h2>
                           <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
-                            Establish Goodput latency contracts, calibrate token pricing, and arm automated spend caps.
+                            Set latency targets (SLOs), budget limits, and review your benchmark.
                           </p>
                         </div>
                       </div>
@@ -2026,12 +2494,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-white dark:bg-[#0F0F13] text-[#2C2C2C]/80 dark:text-slate-200 hover:text-[#853953] dark:hover:text-[#F06A9A] hover:bg-[#853953]/5 border border-[#2C2C2C]/10 dark:border-white/10 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                         >
                           <Activity className="h-3.5 w-3.5" />
-                          <span>Reliability Sieve & Spend</span>
+                          <span>View Diagnostics</span>
                         </button>
 
                         <button
                           type="button"
-                          onClick={() => handleOpenExpert("slo-goodput", "Reliability SLOs & Goodput", "What is Goodput and why is it superior to Raw Throughput?")}
+                          onClick={() => handleOpenExpert("slo-goodput", "Latency Targets & SLOs", "What is Goodput and why is it superior to Raw Throughput?")}
                           className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#0F0F13] text-[#853953] dark:text-[#F06A9A] hover:bg-[#853953]/10 border border-[#853953]/30 dark:border-[#E05284]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                         >
                           <Sparkles className="h-3.5 w-3.5" />
@@ -2040,14 +2508,16 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
                     </div>
 
+
+
                     {/* 2-Column Bento Grid Body (50:50 Ratio) */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#2C2C2C]/10 dark:divide-[#F3F4F4]/10">
-                      {/* Left Bento Column: Sub-Step 4A (Reliability SLOs & Goodput Ceilings) */}
+                      {/* Left Bento Column: Sub-Step 4A (Reliability SLOs) */}
                       <div className="p-5 space-y-4">
                         <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
                           <span className="text-xs font-bold tracking-tight text-[#853953] dark:text-[#F06A9A] flex items-center gap-1.5 font-sans">
                             <Gauge className="h-3.5 w-3.5" />
-                            4A. Reliability SLOs & Goodput Sieve
+                            4A. Latency Limits (SLOs)
                           </span>
                           <div className="flex items-center gap-1">
                             <button
@@ -2079,7 +2549,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           {/* Max TTFT */}
                           <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
-                              <Label className="font-semibold">Max TTFT SLO</Label>
+                              <Label className="font-semibold">Max TTFT Target</Label>
                               <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#853953] dark:text-[#F06A9A] font-semibold">
                                 ≤ {config.slo.max_ttft_ms} ms
                               </Badge>
@@ -2093,13 +2563,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_ttft_ms: val[0] } })
                               }
                             />
-                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">Time to First Token budget</span>
+                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">Time to First Token limit</span>
                           </div>
 
                           {/* Max TPOT */}
                           <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
-                              <Label className="font-semibold">Max TPOT SLO</Label>
+                              <Label className="font-semibold">Max TPOT Target</Label>
                               <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#612D53] dark:text-[#E270BB] font-semibold">
                                 ≤ {config.slo.max_tpot_ms} ms/tok
                               </Badge>
@@ -2113,13 +2583,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_tpot_ms: val[0] } })
                               }
                             />
-                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">Inter-token latency ceiling</span>
+                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">Time per output token ceiling</span>
                           </div>
 
                           {/* Max E2E */}
                           <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
-                              <Label className="font-semibold">Max E2E Duration</Label>
+                              <Label className="font-semibold">Max Total Duration</Label>
                               <Badge variant="outline" className="font-sans tabular-nums text-xs font-semibold">
                                 ≤ {(config.slo.max_e2e_ms / 1000).toFixed(1)} s
                               </Badge>
@@ -2133,7 +2603,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_e2e_ms: val[0] } })
                               }
                             />
-                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">Full-turn timeout budget</span>
+                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">Total request timeout limit</span>
                           </div>
 
                           {/* Max Error Rate */}
@@ -2153,18 +2623,18 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_error_rate_pct: Number(val[0].toFixed(1)) } })
                               }
                             />
-                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">HTTP 429 & 5xx threshold</span>
+                            <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 block">Max allowed 429 and 5xx errors</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Right Bento Column: Sub-Step 4B (Financial Guardrails & Token Economics) */}
+                      {/* Right Bento Column: Sub-Step 4B (Budget & Spend Limits) */}
                       <div className="p-5 space-y-4 bg-[#F3F4F4]/20 dark:bg-[#0B0B0E]/60 flex flex-col justify-between">
                         <div className="space-y-4">
                           <div className="flex items-center justify-between pb-2 border-b border-[#2C2C2C]/5 dark:border-white/[0.06]">
                             <span className="text-xs font-bold tracking-tight text-[#612D53] dark:text-[#E270BB] flex items-center gap-1.5 font-sans">
                               <DollarSign className="h-3.5 w-3.5" />
-                              4B. Financial Guardrails & Spend Caps
+                              4B. Budget & Spend Limits
                             </span>
                             <Badge variant="default" className="font-sans tabular-nums text-[10px]">
                               {formatUsd(config.hard_spend_cap || 2.0)} hard cap
@@ -2188,7 +2658,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 className="flex items-center gap-1 text-[10px] text-[#853953] dark:text-[#F06A9A] hover:underline font-medium font-sans cursor-pointer"
                               >
                                 <RotateCcw className="h-3 w-3" />
-                                Reset to catalog defaults
+                                Reset to defaults
                               </button>
                             </div>
 
@@ -2227,7 +2697,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <div className="flex justify-between items-center text-xs">
                               <Label className="flex items-center gap-1.5 font-semibold text-[#2C2C2C] dark:text-white">
                                 <ShieldAlert className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
-                                Hard Spend Cap Circuit Breaker
+                                Spend Cap (Circuit Breaker)
                               </Label>
                               <Badge variant="default" className="font-sans tabular-nums text-xs font-semibold">
                                 {formatUsd(config.hard_spend_cap || 2.0)} USD
@@ -2262,14 +2732,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             </span>
                           </div>
                           <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans leading-tight">
-                            Worker streams continuously report token tallies. If cumulative cost reaches your hard spend cap, the runner terminates all active HTTP connections immediately within ≤50ms.
+                            Requests continuously track token costs. If cumulative cost reaches your spend cap, the test terminates immediately to prevent unexpected billing.
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* PRE-FLIGHT VERIFICATION MATRIX & LAUNCH Studio */}
+                  {/* Summary & Launch Cockpit */}
                   <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 bg-white dark:bg-[#14141B] p-4 sm:p-5 shadow-xs space-y-4">
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#2C2C2C]/10 dark:border-white/10">
@@ -2279,10 +2749,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
                         <div>
                           <h3 className="text-xs sm:text-sm font-bold text-[#2C2C2C] dark:text-white font-sans">
-                            Pre-Flight Cockpit Verification
+                            Benchmark Summary & Launch
                           </h3>
                           <p className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">
-                            Final hardware, protocol, and budgetary parameters before initiating benchmark run.
+                            Review your settings before starting the live test.
                           </p>
                         </div>
                       </div>
@@ -2308,7 +2778,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                       <div className="p-3 rounded-xl border border-[#2C2C2C]/10 dark:border-white/10 bg-[#F3F4F4]/60 dark:bg-[#0F0F13] space-y-0.5">
                         <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 tracking-wider font-sans font-medium">Workload Profile</span>
-                        <div className="font-sans font-semibold text-xs text-[#2C2C2C] dark:text-white truncate">{selectedPreset.name}</div>
+                        <div className="font-sans font-semibold text-xs text-[#2C2C2C] dark:text-white truncate">{selectedPreset ? selectedPreset.name : "Custom / Unset"}</div>
                         <span className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans tabular-nums font-normal">~{totalPresetTokens} tokens/turn</span>
                       </div>
 
@@ -2327,7 +2797,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
                     </div>
 
-                    {/* Structured Pre-Flight Specification Matrix */}
+                    {/* Structured Summary Specification Matrix */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {/* Box A: Infrastructure & Sampling */}
                       <div className="rounded-xl border border-[#2C2C2C]/10 dark:border-white/10 bg-[#F3F4F4]/30 dark:bg-[#0F0F13] p-3 space-y-2 text-xs">
@@ -2337,7 +2807,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
                         <div className="space-y-1 text-[11px] font-sans">
                           <div className="flex justify-between items-center">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Wire Protocol:</span>
+                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Provider:</span>
                             <span className="font-medium text-[#2C2C2C] dark:text-white capitalize">{config.vendor.replace("_", " ")}</span>
                           </div>
                           <div className="flex justify-between">
@@ -2353,7 +2823,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <span className="font-sans tabular-nums font-medium text-[#2C2C2C] dark:text-white">{config.temperature}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Cache Busting:</span>
+                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Cache Mode:</span>
                             <span className="font-medium text-[#2C2C2C] dark:text-white">{config.cache_bust ? "Cold Nonce" : "Warm Prefix"}</span>
                           </div>
                         </div>
@@ -2363,7 +2833,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <div className="rounded-xl border border-[#2C2C2C]/10 dark:border-white/10 bg-[#F3F4F4]/30 dark:bg-[#0F0F13] p-3 space-y-2 text-xs">
                         <div className="flex items-center gap-1.5 pb-1.5 border-b border-[#2C2C2C]/10 dark:border-white/10 font-semibold text-[#612D53] dark:text-[#E270BB]">
                           <TrendingUp className="h-3.5 w-3.5" />
-                          <span>Execution Strategy</span>
+                          <span>Traffic & Concurrency</span>
                         </div>
                         <div className="space-y-1 text-[11px] font-sans">
                           <div className="flex justify-between">
@@ -2378,14 +2848,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[#2C2C2C]/60 dark:text-slate-400">
-                              {isRequestMode ? "Batch Target:" : "Duration:"}
+                              {isRequestMode ? "Total Requests:" : "Duration:"}
                             </span>
                             <span className="font-sans tabular-nums font-medium text-[#2C2C2C] dark:text-white">
                               {isRequestMode ? `${config.total_requests || 50} requests` : `${config.duration_seconds}s`}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Arrival Curve:</span>
+                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Traffic Pattern:</span>
                             <span className="font-medium text-[#2C2C2C] dark:text-white capitalize">{config.load_curve.replace("_", " ")}</span>
                           </div>
                           <div className="flex justify-between">
@@ -2399,7 +2869,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <div className="rounded-xl border border-[#2C2C2C]/10 dark:border-white/10 bg-[#F3F4F4]/30 dark:bg-[#0F0F13] p-3 space-y-2 text-xs">
                         <div className="flex items-center gap-1.5 pb-1.5 border-b border-[#2C2C2C]/10 dark:border-white/10 font-semibold text-[#853953] dark:text-[#F06A9A]">
                           <Gauge className="h-3.5 w-3.5" />
-                          <span>Projections & SLOs</span>
+                          <span>Budget & SLO Targets</span>
                         </div>
                         <div className="space-y-1 text-[11px] font-sans">
                           <div className="flex justify-between">
@@ -2411,15 +2881,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <span className="font-sans tabular-nums font-medium text-[#853953] dark:text-[#F06A9A]">{formatUsd(estCost)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Max TTFT SLO:</span>
+                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Max TTFT Target:</span>
                             <span className="font-sans tabular-nums font-medium text-[#2C2C2C] dark:text-white">≤ {formatMs(config.slo.max_ttft_ms)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Max TPOT SLO:</span>
+                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Max TPOT Target:</span>
                             <span className="font-sans tabular-nums font-medium text-[#2C2C2C] dark:text-white">≤ {formatMs(config.slo.max_tpot_ms)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Max Error SLO:</span>
+                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Max Error Rate:</span>
                             <span className="font-sans tabular-nums font-medium text-[#2C2C2C] dark:text-white">≤ {formatPct(config.slo.max_error_rate_pct)}</span>
                           </div>
                         </div>
@@ -2471,7 +2941,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       className="w-full h-14 text-sm font-semibold gap-3 shadow-md hover:shadow-lg cursor-pointer transition-all active:scale-[0.99]"
                     >
                       <Play className="h-4 w-4 fill-white" />
-                      {isLaunching ? "Initializing benchmark session..." : "Launch Live Benchmark Studio (Microsecond Telemetry)"}
+                      {isLaunching ? "Starting benchmark..." : "Launch Live Benchmark"}
                     </Button>
                   </div>
                 </motion.div>
@@ -2534,9 +3004,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
         <PayloadDynamicsModal
           isOpen={isPayloadModalOpen}
           onClose={() => setIsPayloadModalOpen(false)}
-          promptTokens={selectedPreset.promptTokens}
+          promptTokens={selectedPreset?.promptTokens || 512}
           maxTokens={config.max_tokens}
-          presetName={selectedPreset.name}
+          presetName={selectedPreset?.name || "Custom"}
           cacheBust={config.cache_bust}
           temperature={config.temperature}
           topP={config.top_p ?? 1.0}
@@ -2552,7 +3022,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           durationSeconds={config.duration_seconds}
           totalRequests={config.total_requests}
           warmupRequests={config.warmup_requests}
-          promptTokens={selectedPreset.promptTokens}
+          promptTokens={selectedPreset?.promptTokens || 512}
           maxTokens={config.max_tokens}
           model={config.model}
           cacheBust={config.cache_bust}
@@ -2566,7 +3036,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           maxTpotMs={config.slo.max_tpot_ms}
           maxErrorRatePct={config.slo.max_error_rate_pct}
           maxE2eMs={config.slo.max_e2e_ms}
-          promptTokens={selectedPreset.promptTokens}
+          promptTokens={selectedPreset?.promptTokens || 512}
           maxTokens={config.max_tokens}
           vendor={config.vendor}
           model={config.model}

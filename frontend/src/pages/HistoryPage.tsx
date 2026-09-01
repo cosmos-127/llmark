@@ -60,7 +60,8 @@ import {
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { EmptyStateIllustration } from "@/components/common/AnimatedSvg";
-import { ProductionCostCalculator } from "@/components/live-dashboard/ProductionCostCalculator";
+import { LatencyDistributionChart } from "@/components/live-dashboard/LatencyDistributionChart";
+import { KvCacheSpeedupCard } from "@/components/live-dashboard/KvCacheSpeedupCard";
 
 interface HistoryPageProps {
   initialView?: string;
@@ -73,7 +74,6 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
   onNavigateToBenchmark,
 }) => {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(initialRunId);
-  const [modalTab, setModalTab] = useState<"telemetry" | "cost">("telemetry");
   const [globalFilter, setGlobalFilter] = useState("");
   const [vendorFilter, setVendorFilter] = useState<string>("all");
   const [sorting, setSorting] = useState<SortingState>([{ id: "created_at", desc: true }]);
@@ -217,26 +217,12 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedRunId(row.original.id);
-                setModalTab("cost");
               }}
-              className="h-8 text-[11px] px-2.5 rounded-xl shadow-2xs hover:shadow-xs cursor-pointer text-[#853953] dark:text-[#F06A9A] border-[#853953]/25 dark:border-[#E05284]/35 hover:bg-[#853953]/10 dark:hover:bg-[#E05284]/15 flex items-center gap-1 font-medium"
-              title="Forecast daily and monthly production budget from this run"
-            >
-              <DollarSign className="h-3.5 w-3.5" />
-              <span>Cost Forecast</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedRunId(row.original.id);
-                setModalTab("telemetry");
-              }}
-              className="h-8 w-8 rounded-xl shadow-2xs hover:shadow-xs cursor-pointer"
+              className="h-8 text-[11px] px-3 rounded-xl shadow-2xs hover:shadow-xs cursor-pointer text-[#853953] dark:text-[#F06A9A] border-[#853953]/25 dark:border-[#E05284]/35 hover:bg-[#853953]/10 dark:hover:bg-[#E05284]/15 flex items-center gap-1.5 font-medium"
               title="Inspect unaggregated percentiles & raw telemetry"
             >
-              <ArrowUpRight className="h-4 w-4" />
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              <span>Inspect Telemetry</span>
             </Button>
           </div>
         ),
@@ -275,10 +261,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
               <div className="p-2 rounded-xl bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35">
                 <History className="h-5 w-5" />
               </div>
-              <span>Benchmark History Explorer</span>
+              <span>Benchmark Runs</span>
             </h2>
             <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 mt-1">
-              Persisted benchmark audit logs, unaggregated tail percentiles, multi-format exports, and production cost forecasts.
+              Review saved benchmarks, tail percentiles, and export audit reports.
             </p>
           </div>
 
@@ -290,7 +276,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                 onClick={onNavigateToBenchmark}
                 className="text-xs bg-[#853953] dark:bg-[#D84577] hover:bg-[#743663] dark:hover:bg-[#E05284] text-white cursor-pointer shadow-xs"
               >
-                <span>Launch New Benchmark</span>
+                <span>Open Studio</span>
               </Button>
             )}
           </div>
@@ -369,7 +355,6 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                       key={row.id}
                       onClick={() => {
                         setSelectedRunId(row.original.id);
-                        setModalTab("telemetry");
                       }}
                       className="hover:bg-[#F3F4F4]/50 dark:hover:bg-white/[0.04] cursor-pointer transition-colors group"
                     >
@@ -432,47 +417,15 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
           )}
         </Card>
 
-        {/* Run Details Inspection & Cost Forecast Dialog */}
+        {/* Run Details Inspection Dialog */}
         <Dialog open={!!selectedRunId} onOpenChange={(open) => !open && setSelectedRunId(null)}>
           <DialogContent className="max-w-4xl max-h-[88vh] overflow-y-auto">
             <DialogHeader>
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  {runDetails && <ProviderLogo vendor={runDetails.vendor} className="h-5 w-5" />}
-                  <DialogTitle className="text-base font-bold font-sans text-[#2C2C2C] dark:text-white">
-                    {runDetails?.name || "Benchmark Execution Details"}
-                  </DialogTitle>
-                </div>
-
-                {/* Modal Tab Switcher */}
-                <div className="flex items-center gap-1 p-1 rounded-lg bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setModalTab("telemetry")}
-                    className={cn(
-                      "text-xs px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5",
-                      modalTab === "telemetry"
-                        ? "bg-white dark:bg-[#1A1A24] text-[#853953] dark:text-[#F06A9A] shadow-xs font-semibold"
-                        : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
-                    )}
-                  >
-                    <Activity className="h-3.5 w-3.5" />
-                    <span>Telemetry & Percentiles</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setModalTab("cost")}
-                    className={cn(
-                      "text-xs px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5",
-                      modalTab === "cost"
-                        ? "bg-white dark:bg-[#1A1A24] text-[#853953] dark:text-[#F06A9A] shadow-xs font-semibold"
-                        : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
-                    )}
-                  >
-                    <DollarSign className="h-3.5 w-3.5" />
-                    <span>Production Cost Forecast</span>
-                  </button>
-                </div>
+              <div className="flex items-center gap-2">
+                {runDetails && <ProviderLogo vendor={runDetails.vendor} className="h-5 w-5" />}
+                <DialogTitle className="text-base font-bold font-sans text-[#2C2C2C] dark:text-white">
+                  {runDetails?.name || "Benchmark Execution Details"}
+                </DialogTitle>
               </div>
 
               <DialogDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
@@ -484,31 +437,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
               <div className="p-8 text-center text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
                 Fetching microsecond trace percentiles and waterfall telemetry...
               </div>
-            ) : modalTab === "cost" ? (
-              /* TAB 2: PRODUCTION COST FORECAST */
-              <div className="pt-2">
-                <ProductionCostCalculator
-                  vendor={runDetails.vendor}
-                  model={runDetails.model}
-                  measuredPromptTokens={
-                    runDetails.counts?.total_prompt_tokens
-                      ? Math.round(runDetails.counts.total_prompt_tokens / Math.max(1, runDetails.counts.completed_requests))
-                      : 1200
-                  }
-                  measuredGenTokens={
-                    runDetails.counts?.total_gen_tokens
-                      ? Math.round(runDetails.counts.total_gen_tokens / Math.max(1, runDetails.counts.completed_requests))
-                      : 300
-                  }
-                  measuredTtftMs={runDetails.percentiles?.ttft_p50}
-                  tpsDecode={runDetails.percentiles?.tps_decode}
-                  benchmarkName={runDetails.name}
-                  title={`Production Cost Forecast for ${runDetails.name}`}
-                  description={`Calculate your projected production bill if you scale this exact workload (${runDetails.model}) to daily production volumes.`}
-                />
-              </div>
             ) : (
-              /* TAB 1: TELEMETRY & UNAGGREGATED PERCENTILES */
               <div className="space-y-5 pt-2">
                 {/* Metrics Summary Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-sans">
@@ -586,19 +515,21 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                   </div>
                 </div>
 
+                {/* Prefix Cache Hit Acceleration if present in raw telemetry */}
+                {runDetails.raw_telemetry && (
+                  <KvCacheSpeedupCard
+                    snapshot={runDetails.raw_telemetry as any}
+                    workloadPreset={runDetails.workload_preset}
+                  />
+                )}
+
+                {/* Tail Latency Distribution Histogram if present in raw telemetry */}
+                {runDetails.raw_telemetry && (
+                  <LatencyDistributionChart snapshot={runDetails.raw_telemetry as any} />
+                )}
+
                 {/* Multi-Format Export Hub Bar */}
-                <div className="pt-3 border-t border-[#2C2C2C]/10 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl font-medium shadow-2xs text-[#853953] dark:text-[#F06A9A] border-[#853953]/30 dark:border-[#E05284]/40 bg-[#853953]/5 dark:bg-[#E05284]/10 hover:bg-[#853953]/15 cursor-pointer"
-                      onClick={() => setModalTab("cost")}
-                    >
-                      <DollarSign className="h-3.5 w-3.5" />
-                      <span>Forecast Production Cost</span>
-                    </Button>
-                  </div>
+                <div className="pt-3 border-t border-[#2C2C2C]/10 dark:border-white/10 flex flex-wrap items-center justify-end gap-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="outline"

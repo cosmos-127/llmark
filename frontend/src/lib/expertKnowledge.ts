@@ -19,15 +19,16 @@ export interface QuestionAnswer {
 export const EXPERT_KNOWLEDGE: Record<string, ExpertArticle> = {
   "workload-preset": {
     id: "workload-preset",
-    topic: "Workload Scenarios & Prompt-to-Gen Ratios",
+    topic: "Workload Presets & Prompt-to-Gen Ratios",
     badge: "Step 2A • Workloads",
+
     defaultQuestion: "How do token ratios (prefill vs. decode) affect benchmarking results?",
     suggestedFollowups: [
       "Why is TTFT critical for RAG vs. Chat?",
       "How to benchmark reasoning (CoT) models?",
       "What is the difference between TTFT and TTFA?",
     ],
-    markdown: `### 🧩 Workload Profiles & Token Arithmetic
+    markdown: `### Workload Profiles & Token Arithmetic
 
 In LLM inference, performance is split into two fundamentally different compute phases:
 
@@ -41,7 +42,7 @@ In LLM inference, performance is split into two fundamentally different compute 
    - **Metric**: Time Per Output Token (**TPOT**) or Inter-Token Latency (**ITL**).
    - **Workload examples**: Creative Writing, Code Generation, Reasoning Steps.
 
-> **💡 Best Practice**: Always benchmark with realistic input/output distributions rather than arbitrary dummy tokens.`,
+> **Best Practice**: Always benchmark with realistic input/output distributions rather than arbitrary dummy tokens.`,
   },
   "sampling-params": {
     id: "sampling-params",
@@ -53,7 +54,7 @@ In LLM inference, performance is split into two fundamentally different compute 
       "How does sampling affect token jitter & ITL?",
       "What happens when Max Tokens is reached?",
     ],
-    markdown: `### 🌡️ Sampling Parameters & Jitter Analysis
+    markdown: `### Sampling Parameters & Jitter Analysis
 
 - **Temperature = 0.0 (Argmax / Greedy)**:
   - Selects the single highest probability token at each step ($T \\to 0$).
@@ -78,7 +79,7 @@ In LLM inference, performance is split into two fundamentally different compute 
       "What is the relationship between RPS and concurrency?",
       "When does TTFT degrade exponentially?",
     ],
-    markdown: `### ⚡ Concurrency & Worker Streams
+    markdown: `### Concurrency & Worker Streams
 
 **Concurrency ($N$)** represents the number of simultaneous active HTTP streaming connections hitting the model endpoint:
 
@@ -98,7 +99,7 @@ $$\\text{Throughput (RPS)} = \\frac{\\text{Concurrency}}{\\text{Mean Latency (se
       "How does Poisson arrival model human traffic?",
       "How to simulate traffic spikes safely?",
     ],
-    markdown: `### 📈 Load Curve Geometries
+    markdown: `### Load Curve Geometries
 
 1. **Constant**: Steady stream of workers for baseline throughput measurement.
 2. **Step Ramp (Staircase)**: Gradually scales concurrency (e.g. $5 \\to 10 \\to 25 \\to 50$) to visualize where latency inflection begins.
@@ -118,7 +119,7 @@ $$\\text{Throughput (RPS)} = \\frac{\\text{Concurrency}}{\\text{Mean Latency (se
       "How is KV cache memory calculated per stream?",
       "Why do warmup requests matter?",
     ],
-    markdown: `### 🧊 Cold Prefill vs. Warm KV Cache
+    markdown: `### Cold Prefill vs. Warm KV Cache
 
 Modern LLM endpoints (OpenAI, Anthropic Claude, vLLM, DeepSeek) implement **shared prefix caching** (e.g., Radix Attention or PagedAttention). Repeated prompts hit cached KV states in GPU memory, bypassing prefill compute.
 
@@ -140,7 +141,7 @@ Modern LLM endpoints (OpenAI, Anthropic Claude, vLLM, DeepSeek) implement **shar
       "How does TPOT differ from ITL?",
       "How does the 3-stage reliability sieve work?",
     ],
-    markdown: `### 🎯 Goodput vs. Raw Throughput
+    markdown: `### Goodput vs. Raw Throughput
 
 **Raw Throughput** counts every token generated, even if a user waited 20 seconds for the first token or experienced frozen streams.
 
@@ -162,7 +163,7 @@ $$\\text{Goodput (tok/s)} = \\frac{\\sum \\text{Tokens of Passing Requests}}{\\t
       "What happens when the spend cap is hit?",
       "How to input custom provider token pricing?",
     ],
-    markdown: `### 💰 Financial Guardrails & Spend Caps
+    markdown: `### Financial Guardrails & Spend Caps
 
 - **Zero Bill-Shock Circuit Breaker**:
   - LLMark continuously tallies input and output tokens across all active threads.
@@ -182,7 +183,7 @@ $$\\text{Goodput (tok/s)} = \\frac{\\sum \\text{Tokens of Passing Requests}}{\\t
       "How to configure custom vLLM / Ollama endpoints?",
       "Why is HTTP/2 or HTTP/3 connection reuse critical?",
     ],
-    markdown: `### 🌐 Provider Wire Protocols & Telemetry Overhead
+    markdown: `### Provider Wire Protocols & Telemetry Overhead
 
 - **Server-Sent Events (SSE)**:
   - Standard streaming protocol across OpenAI, Anthropic, and vLLM.
@@ -203,7 +204,7 @@ $$\\text{Goodput (tok/s)} = \\frac{\\sum \\text{Tokens of Passing Requests}}{\\t
       "What is the VRAM footprint of 8B vs 70B models?",
       "How does quantization (FP8/INT4) affect TPS?",
     ],
-    markdown: `### 🧠 Model Architecture & Memory Bandwidth
+    markdown: `### Model Architecture & Memory Bandwidth
 
 - **Dense Models (e.g. Llama-3-8B / 70B)**:
   - Every token during decode requires reading 100% of active model parameters from GPU HBM.
@@ -327,8 +328,7 @@ export const TOPIC_SUGGESTED_QUESTIONS: Record<string, TopicPromptGroup> = {
   },
 };
 
-/**
- * Dedicated Question-Answer mappings for every prefilled & suggested question.
+/*** Dedicated Question-Answer mappings for every prefilled & suggested question.
  */
 export const DEDICATED_QA_ANSWERS: QuestionAnswer[] = [
   {
@@ -336,7 +336,7 @@ export const DEDICATED_QA_ANSWERS: QuestionAnswer[] = [
     keywords: ["ttft", "rag", "chat", "prefill", "retrieval", "context"],
     topic: "TTFT Dynamics in RAG Architectures",
     badge: "Step 2A • RAG Latency",
-    answer: `### 🔍 Why TTFT Dominates RAG Latency
+    answer: `### Why TTFT Dominates RAG Latency
 
 In **Retrieval-Augmented Generation (RAG)** systems, prompts contain extensive retrieved context (typically $3{,}000\\text{--}16{,}000$ tokens of vector embeddings, chunked markdown, or SQL schemas).
 
@@ -358,7 +358,7 @@ In **Retrieval-Augmented Generation (RAG)** systems, prompts contain extensive r
     keywords: ["reasoning", "cot", "chain of thought", "deepseek-r1", "o1", "thinking"],
     topic: "Reasoning (Chain-of-Thought) Benchmarking",
     badge: "Step 2A • Reasoning Models",
-    answer: `### 🧠 Benchmarking Chain-of-Thought (CoT) & Reasoning Models
+    answer: `### Benchmarking Chain-of-Thought (CoT) & Reasoning Models
 
 Reasoning models (e.g. **DeepSeek-R1**, **OpenAI o1/o3-mini**) generate hidden internal "thinking tokens" before streaming the final user-facing response.
 
@@ -380,7 +380,7 @@ Reasoning models (e.g. **DeepSeek-R1**, **OpenAI o1/o3-mini**) generate hidden i
     keywords: ["ttft", "ttfa", "first answer", "first token", "thinking"],
     topic: "TTFT vs. TTFA Metric Dissection",
     badge: "Step 2A • Latency Metrics",
-    answer: `### ⏱️ TTFT vs. TTFA Explained
+    answer: `### TTFT vs. TTFA Explained
 
 | Metric | Definition | Target Workloads | Production SLA Target |
 | :--- | :--- | :--- | :--- |
@@ -399,7 +399,7 @@ Reasoning models (e.g. **DeepSeek-R1**, **OpenAI o1/o3-mini**) generate hidden i
     keywords: ["temperature = 0", "temp 0", "deterministic", "reproducible", "greedy", "throughput"],
     topic: "Deterministic Decoding at Temperature = 0",
     badge: "Step 2B • Determinism",
-    answer: `### 🎯 Why Temperature = 0.0 is the Gold Standard for Benchmarks
+    answer: `### Why Temperature = 0.0 is the Gold Standard for Benchmarks
 
 Setting $\\text{Temperature} = 0.0$ forces **Argmax (Greedy) decoding**:
 
@@ -420,7 +420,7 @@ Setting $\\text{Temperature} = 0.0$ forces **Argmax (Greedy) decoding**:
     keywords: ["jitter", "itl", "inter-token", "sampling", "entropy", "variance"],
     topic: "Sampling Entropy & Inter-Token Latency Jitter",
     badge: "Step 2B • Token Jitter",
-    answer: `### 📊 Token Jitter & Inter-Token Latency (ITL)
+    answer: `### Token Jitter & Inter-Token Latency (ITL)
 
 **Inter-Token Latency (ITL)** is the time interval between consecutive token frames in an SSE stream.
 
@@ -442,7 +442,7 @@ Setting $\\text{Temperature} = 0.0$ forces **Argmax (Greedy) decoding**:
     keywords: ["max tokens", "generation bound", "finish_reason", "length"],
     topic: "Generation Bounds & Finish Reasons",
     badge: "Step 2B • Bounds",
-    answer: `### 🛑 Max Tokens & Generation Bounds
+    answer: `### Max Tokens & Generation Bounds
 
 When an autoregressive generation reaches the configured \`max_tokens\` bound:
 
@@ -461,7 +461,7 @@ When an autoregressive generation reaches the configured \`max_tokens\` bound:
     keywords: ["saturation cliff", "saturation knee", "cluster limits", "knee probe", "overload"],
     topic: "Identifying the Saturation Cliff",
     badge: "Step 3A • Saturation",
-    answer: `### 📉 Finding the Saturation Cliff ($N_{\\text{knee}}$)
+    answer: `### Finding the Saturation Cliff ($N_{\\text{knee}}$)
 
 The **Saturation Cliff** is the exact concurrency load where an LLM serving cluster transitions from hardware-limited to queue-delayed.
 
@@ -483,7 +483,7 @@ The **Saturation Cliff** is the exact concurrency load where an LLM serving clus
     keywords: ["rps", "concurrency", "littles law", "throughput", "formula"],
     topic: "Little's Law & Concurrency-to-RPS Conversion",
     badge: "Step 3A • Queuing Theory",
-    answer: `### 📐 Little's Law in LLM Queuing
+    answer: `### Little's Law in LLM Queuing
 
 $$\\text{Concurrency } (N) = \\text{Throughput } (\\lambda) \\times \\text{Mean Latency } (W)$$
 
@@ -501,7 +501,7 @@ $$\\text{Concurrency } (N) = \\text{Throughput } (\\lambda) \\times \\text{Mean 
     keywords: ["ttft degrade", "exponential", "queue", "delay", "tail latency"],
     topic: "Exponential TTFT Queue Degradation",
     badge: "Step 3A • Queuing Delays",
-    answer: `### ⚡ Why TTFT Spikes Exponentially
+    answer: `### Why TTFT Spikes Exponentially
 
 TTFT consists of two components:
 
@@ -524,7 +524,7 @@ $$\\text{TTFT} = W_q \\text{ (Queue Waiting Time)} + T_{\\text{prefill}} \\text{
     keywords: ["constant load", "synthetic", "realistic", "burst", "poisson", "production"],
     topic: "Why Constant Load Masks Production Bottlenecks",
     badge: "Step 3B • Load Profiles",
-    answer: `### ⚠️ The Blind Spot of Constant Load Benchmarks
+    answer: `### The Blind Spot of Constant Load Benchmarks
 
 - **Artificial Uniformity**:
   - Constant load dispatches requests at clockwork intervals. In reality, human traffic arrives in stochastic clusters.
@@ -543,7 +543,7 @@ $$\\text{TTFT} = W_q \\text{ (Queue Waiting Time)} + T_{\\text{prefill}} \\text{
     keywords: ["poisson", "human traffic", "stochastic", "exponential", "lambda"],
     topic: "Poisson Arrival Process Dynamics",
     badge: "Step 3B • Poisson Dynamics",
-    answer: `### 🌊 Poisson Arrival Process in LLM Benchmarking
+    answer: `### Poisson Arrival Process in LLM Benchmarking
 
 Human client requests arrive independently at random timestamps. In LLMark:
 
@@ -564,7 +564,7 @@ Human client requests arrive independently at random timestamps. In LLMark:
     keywords: ["spike", "safely", "stress wave", "rate limit", "circuit breaker"],
     topic: "Safe Traffic Spike Simulation",
     badge: "Step 3B • Stress Testing",
-    answer: `### ⚡ Safely Simulating Concurrency Spikes
+    answer: `### Safely Simulating Concurrency Spikes
 
 1. **Configure Hard Spend Cap**:
    - Set a hard spend ceiling (e.g. $\$1.50$) in Step 4B to guarantee that runaway spike tests terminate immediately if cost accelerates.
@@ -583,7 +583,7 @@ Human client requests arrive independently at random timestamps. In LLMark:
     keywords: ["prefix caching", "speedup", "radix", "paged attention", "cache hit"],
     topic: "Prompt Prefix Caching Speedup Metrics",
     badge: "Step 3C • Cache Speedup",
-    answer: `### 🚀 Prompt Prefix Caching Speedup
+    answer: `### Prompt Prefix Caching Speedup
 
 When a prompt shares a common system prefix or RAG document with previously processed requests:
 
@@ -605,7 +605,7 @@ When a prompt shares a common system prefix or RAG document with previously proc
     keywords: ["kv cache memory", "vram formula", "heads", "layers", "dimensions"],
     topic: "KV Cache VRAM Memory Sizing Formula",
     badge: "Step 3C • VRAM Sizing",
-    answer: `### 💾 KV Cache VRAM Formula
+    answer: `### KV Cache VRAM Formula
 
 For a Transformer model with Multi-Head Attention (MHA) or Grouped Query Attention (GQA):
 
@@ -629,7 +629,7 @@ A 70B model with GQA requires $\\approx 1.25\\text{ MB}$ of KV Cache per stream 
     keywords: ["warmup", "tcp", "tls", "handshake", "dns", "connection pool"],
     topic: "Warmup Request Rationale & Connection Priming",
     badge: "Step 3C • Socket Warmup",
-    answer: `### 🔌 Why Warmup Requests are Essential
+    answer: `### Why Warmup Requests are Essential
 
 When dispatching the first request to an inference endpoint:
 
@@ -650,7 +650,7 @@ LLMark dispatches 1-3 warmup requests before recording metrics. This ensures mea
     keywords: ["goodput", "raw throughput", "superior", "slo", "yield", "reliability"],
     topic: "Goodput vs. Raw Throughput Deep Dive",
     badge: "Step 4A • Goodput",
-    answer: `### 🏆 Goodput: The True Metric of Production LLM Performance
+    answer: `### Goodput: The True Metric of Production LLM Performance
 
 - **The Flaw of Raw Throughput**:
   - An engine generating $2{,}000\\text{ tok/s}$ sounds fast, but if TTFT was 15 seconds and $12\\%$ of requests threw HTTP 429 rate limits, users experienced failure.
@@ -674,7 +674,7 @@ LLMark dispatches 1-3 warmup requests before recording metrics. This ensures mea
     keywords: ["standard slo", "thresholds", "production", "interactive", "batch", "voice"],
     topic: "Production LLM SLO Threshold Guidelines",
     badge: "Step 4A • SLO Standards",
-    answer: `### 🎯 Standard Production SLO Thresholds
+    answer: `### Standard Production SLO Thresholds
 
 | Workload Category | Max TTFT | Max TPOT | Max E2E | Max Error Rate |
 | :--- | :--- | :--- | :--- | :--- |
@@ -693,7 +693,7 @@ LLMark dispatches 1-3 warmup requests before recording metrics. This ensures mea
     keywords: ["tpot", "itl", "difference", "output token", "inter-token"],
     topic: "TPOT vs. ITL Distinction",
     badge: "Step 4A • Latency Metrics",
-    answer: `### ⏱️ TPOT vs. ITL Dissection
+    answer: `### TPOT vs. ITL Dissection
 
 - **TPOT (Time Per Output Token)**:
   $$\\text{TPOT} = \\frac{\\text{E2E Duration} - \\text{TTFT}}{\\text{Generated Tokens} - 1}$$
@@ -714,7 +714,7 @@ LLMark dispatches 1-3 warmup requests before recording metrics. This ensures mea
     keywords: ["bill-shock", "circuit breaker", "cloud costs", "hard spend cap", "abort"],
     topic: "Zero Bill-Shock Circuit Breaker Architecture",
     badge: "Step 4B • Cost Safety",
-    answer: `### 🛡️ Zero Bill-Shock Protection
+    answer: `### Zero Bill-Shock Protection
 
 Running high-concurrency benchmarks on frontier models (e.g. GPT-4o, Claude 3.5 Sonnet) can quickly incur hundreds of dollars if left unchecked.
 
@@ -734,7 +734,7 @@ Running high-concurrency benchmarks on frontier models (e.g. GPT-4o, Claude 3.5 
     keywords: ["cost calculated", "formula", "pricing", "real time", "token cost"],
     topic: "Real-Time Benchmark Cost Model",
     badge: "Step 4B • Cost Model",
-    answer: `### 💵 Real-Time Cost Formula
+    answer: `### Real-Time Cost Formula
 
 $$\\text{Total Spend ($)} = \\sum_{i=1}^{N} \\left[ \\left(\\frac{\\text{Prompt Tokens}_i \\times P_{\\text{in}}}{10^6}\\right) + \\left(\\frac{\\text{Gen Tokens}_i \\times P_{\\text{out}}}{10^6}\\right) \\right]$$
 
@@ -752,7 +752,7 @@ $$\\text{Total Spend ($)} = \\sum_{i=1}^{N} \\left[ \\left(\\frac{\\text{Prompt 
     keywords: ["anthropic", "openai", "wire protocol", "streaming performance", "messages api"],
     topic: "OpenAI vs. Anthropic Wire Protocol Differences",
     badge: "Step 1A • Protocols",
-    answer: `### 🌐 OpenAI vs. Anthropic Wire Protocols
+    answer: `### OpenAI vs. Anthropic Wire Protocols
 
 | Dimension | OpenAI (\`/v1/chat/completions\`) | Anthropic (\`/v1/messages\`) |
 | :--- | :--- | :--- |
@@ -771,7 +771,7 @@ $$\\text{Total Spend ($)} = \\sum_{i=1}^{N} \\left[ \\left(\\frac{\\text{Prompt 
     keywords: ["moe", "mixture of experts", "deepseek-v3", "mixtral", "experts"],
     topic: "Mixture-of-Experts (MoE) Inference Dynamics",
     badge: "Step 1B • MoE Architecture",
-    answer: `### 🧩 Mixture of Experts (MoE) Performance Dynamics
+    answer: `### Mixture of Experts (MoE) Performance Dynamics
 
 In MoE models (e.g. **DeepSeek-V3**, **Mixtral 8x22B**):
 
@@ -792,7 +792,7 @@ In MoE models (e.g. **DeepSeek-V3**, **Mixtral 8x22B**):
     keywords: ["quantization", "fp8", "int4", "tps", "throughput", "precision"],
     topic: "Quantization & Memory Bandwidth Scaling",
     badge: "Step 1B • Quantization",
-    answer: `### ⚡ Quantization Impact on Inference Speed
+    answer: `### Quantization Impact on Inference Speed
 
 Autoregressive decode is strictly **memory bandwidth bound**:
 
@@ -814,7 +814,7 @@ $$\\text{Speedup} \\approx \\frac{\\text{Original Precision (16-bit)}}{\\text{Qu
     keywords: ["token ratios", "prefill vs decode", "prompt ratio", "workload ratio", "prompt to generation"],
     topic: "Token Ratios & Workload Archetypes",
     badge: "Step 2A • Workload Ratio",
-    answer: `### ⚖️ Prefill vs. Decode Ratios in Benchmarking
+    answer: `### Prefill vs. Decode Ratios in Benchmarking
 
 LLM inference comprises two distinct compute regimes:
 
@@ -841,7 +841,7 @@ LLM inference comprises two distinct compute regimes:
     keywords: ["temperature top p max tokens impact", "sampling parameters accuracy", "sampling benchmark impact"],
     topic: "Sampling Parameter Rigor in Benchmarks",
     badge: "Step 2B • Sampling Settings",
-    answer: `### 🔬 Benchmark Calibration via Sampling Settings
+    answer: `### Benchmark Calibration via Sampling Settings
 
 1. **Temperature = 0.0 (Argmax / Greedy)**:
    - Guarantees 100% deterministic output paths across all runs and providers.
@@ -862,7 +862,7 @@ LLM inference comprises two distinct compute regimes:
     keywords: ["choose concurrency worker pool", "right concurrency", "worker pool size", "how many workers"],
     topic: "Concurrency Pool Sizing Strategy",
     badge: "Step 3A • Pool Sizing",
-    answer: `### 👥 Concurrency Pool Sizing Guidelines
+    answer: `### Concurrency Pool Sizing Guidelines
 
 1. **Baseline Single-Stream ($N = 1$)**:
    - Captures minimal theoretical TTFT and maximum single-user token streaming speed.
@@ -881,7 +881,7 @@ LLM inference comprises two distinct compute regimes:
     keywords: ["saturation knee probe detect cluster limits", "knee probe explained", "detect cluster limits"],
     topic: "Saturation Knee Probe Architecture",
     badge: "Step 3B • Knee Probe",
-    answer: `### 🔍 Saturation Knee Probe Architecture
+    answer: `### Saturation Knee Probe Architecture
 
 The **Saturation Knee Probe** runs a geometric load progression ($1 \\to 3 \\to 8 \\to 16 \\to 32 \\to 64$):
 
@@ -898,7 +898,7 @@ The **Saturation Knee Probe** runs a geometric load progression ($1 \\to 3 \\to 
     keywords: ["bypass kv cache nonce injection", "cold gpu prefill", "nonce injection measure", "cache bust"],
     topic: "Cold GPU Prefill Measurement via Nonce",
     badge: "Step 3C • Nonce Injection",
-    answer: `### 🧊 Cold GPU Prefill via Nonce Injection
+    answer: `### Cold GPU Prefill via Nonce Injection
 
 Modern inference engines (vLLM, SGLang, OpenAI, Anthropic) reuse KV cache tensors across identical prompt prefixes.
 
@@ -915,7 +915,7 @@ Modern inference engines (vLLM, SGLang, OpenAI, Anthropic) reuse KV cache tensor
     keywords: ["model parameter size influence prefill decode", "model size memory bandwidth", "weights memory bandwidth"],
     topic: "Model Parameter Sizing & Memory Physics",
     badge: "Step 1B • Parameter Sizing",
-    answer: `### 🧠 Model Parameter Size & Memory Physics
+    answer: `### Model Parameter Size & Memory Physics
 
 - **Prefill (Compute-Bound)**:
   $$\\text{Prefill FLOPs} \\approx 2 \\times P \\times T_{\\text{prompt}}$$
@@ -934,7 +934,7 @@ Modern inference engines (vLLM, SGLang, OpenAI, Anthropic) reuse KV cache tensor
     keywords: ["3-stage reliability sieve", "reliability sieve work", "3 stage sieve", "goodput sieve"],
     topic: "The 3-Stage Reliability Sieve",
     badge: "Step 4A • Reliability Sieve",
-    answer: `### 🛡️ The 3-Stage Reliability Sieve
+    answer: `### The 3-Stage Reliability Sieve
 
 LLMark filters every completed request through 3 cascading gates:
 
@@ -954,7 +954,7 @@ Tokens from requests failing any stage are discarded from **Goodput** calculatio
     keywords: ["what happens when spend cap hit", "spend cap triggered", "budget cap exceeded"],
     topic: "Spend Cap Trip Dynamics",
     badge: "Step 4B • Budget Safety",
-    answer: `### 🛑 What Happens When the Spend Cap is Hit
+    answer: `### What Happens When the Spend Cap is Hit
 
 When accumulated token spend reaches your **Hard Spend Cap**:
 
@@ -972,7 +972,7 @@ When accumulated token spend reaches your **Hard Spend Cap**:
     keywords: ["input custom provider token pricing", "custom pricing override", "enterprise rate pricing"],
     topic: "Custom Token Pricing Configuration",
     badge: "Step 4B • Pricing Overrides",
-    answer: `### 💲 Configuring Custom Token Pricing
+    answer: `### Configuring Custom Token Pricing
 
 In Step 4B (Spend Guardrails):
 
@@ -990,7 +990,7 @@ In Step 4B (Spend Guardrails):
     keywords: ["causes connection latency overhead", "cloud endpoints latency overhead", "connection overhead"],
     topic: "Cloud Endpoint Connection Overhead Breakdown",
     badge: "Step 1A • Connection Latency",
-    answer: `### ⚡ Anatomy of Cloud Connection Overhead
+    answer: `### Anatomy of Cloud Connection Overhead
 
 1. **DNS Resolution**: $10\\text{--}40\\text{ms}$ depending on resolver cache.
 2. **TCP Handshake**: $1\\text{ RTT}$ ($20\\text{--}50\\text{ms}$ based on cloud region distance).
@@ -1009,7 +1009,7 @@ In Step 4B (Spend Guardrails):
     keywords: ["configure custom vllm ollama", "vllm endpoint setup", "ollama benchmark setup"],
     topic: "Self-Hosted vLLM & Ollama Configuration",
     badge: "Step 1A • Local Deployments",
-    answer: `### 🛠️ Connecting Self-Hosted vLLM / Ollama
+    answer: `### Connecting Self-Hosted vLLM / Ollama
 
 1. In Step 1, select **OpenAI Compatible** provider.
 2. Set **Base URL**:
@@ -1028,7 +1028,7 @@ In Step 4B (Spend Guardrails):
     keywords: ["http2 http3 connection reuse", "multiplexing sse", "connection reuse critical"],
     topic: "HTTP/2 & HTTP/3 Transport Multiplexing",
     badge: "Step 1A • Transport",
-    answer: `### 🚀 HTTP/2 & Multiplexing in LLM Streaming
+    answer: `### HTTP/2 & Multiplexing in LLM Streaming
 
 - **Head-of-Line Blocking Elimination**: Multiplexes dozens of concurrent SSE token streams over a single TLS connection.
 - **Socket Exhaustion Prevention**: Prevents running out of ephemeral client OS ports when running 100+ concurrent workers.`,
@@ -1043,7 +1043,7 @@ In Step 4B (Spend Guardrails):
     keywords: ["vram footprint 8b vs 70b", "8b vs 70b vram", "gpu memory requirements 70b"],
     topic: "VRAM Footprint Comparison (8B vs 70B)",
     badge: "Step 1B • VRAM Footprint",
-    answer: `### 💾 VRAM Sizing: 8B vs 70B Models
+    answer: `### VRAM Sizing: 8B vs 70B Models
 
 | Component | Llama-3-8B (FP16) | Llama-3-8B (FP8) | Llama-3-70B (FP16) | Llama-3-70B (FP8) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1061,7 +1061,7 @@ In Step 4B (Spend Guardrails):
     keywords: ["optimize my benchmark parameters", "how do i optimize benchmark", "best benchmark configuration"],
     topic: "End-to-End Benchmark Optimization Playbook",
     badge: "Inference Copilot",
-    answer: `### ⚡ 4-Step Benchmark Optimization Playbook
+    answer: `### 4-Step Benchmark Optimization Playbook
 
 1. **Step 1 (Wire Protocol)**: Enable Warmup runs (1-3) to prime persistent TLS connections.
 2. **Step 2 (Workload & Sampling)**: Match input/output token ratio to your production scenario and set $\\text{Temperature} = 0.0$ for deterministic results.
@@ -1075,8 +1075,7 @@ In Step 4B (Spend Guardrails):
   },
 ];
 
-/**
- * Intelligent semantic resolver for Ask Expert queries.
+/*** Intelligent semantic resolver for Ask Expert queries.
  */
 export function getExpertAnswer(
   query: string,
@@ -1140,17 +1139,17 @@ export function getExpertAnswer(
         ];
 
   return {
-    answer: `### ⚠️ Live AI Response Unavailable for Custom Question
+    answer: `### Live AI Response Unavailable for Custom Question
 
 **Your Question**: *"${query}"*
 
 This is a custom, open-ended question that requires a live LLM endpoint to generate an answer.
 
 **To answer custom questions in real time:**
-1. Add your **Groq API Key** in \`.env\` (\`GROQ_API_KEY=gsk_...\`) or click the **Key icon (🔑)** in the top right of this drawer.
+1. Add your **Groq API Key** in \`.env\` (\`GROQ_API_KEY=gsk_...\`) or click the **Key icon** in the top right of this drawer.
 2. Ensure your model (e.g. \`gpt-oss-20b\`, \`llama-3.3-70b-versatile\`, \`llama-3.1-8b-instant\`) is supported.
 
-💡 **Curated Presaved Questions Available Offline**:
+ **Curated Presaved Questions Available Offline**:
 You can click any of the verified suggested questions below to get instant architectural explanations without needing an API key.`,
     topic: "Custom Question (Key Required)",
     badge: "Key Required",

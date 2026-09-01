@@ -87,29 +87,29 @@ export const MODEL_PRICING: Record<string, [number, number]> = {
 
 export const PRESET_TOKEN_PROFILES: Record<WorkloadPreset, [number, number]> = {
   rate_limit_probe: [5, 2],
-  prefill_ttft: [4000, 2],
-  decode_throughput: [40, 800],
-  reasoning_cot: [300, 800],
-  agentic_tool_calling: [1200, 150],
-  code_generation: [1500, 800],
-  rag_synthesis: [3500, 400],
-  long_context_retrieval: [16000, 300],
-  summarization_distill: [4500, 300],
-  structured_json: [600, 300],
-  chat_interactive: [200, 150],
-  fewshot_classification: [1200, 10],
-  multimodal_vision: [1800, 200],
-  multiturn_agentic: [2500, 350],
-  kv_cache_reuse: [3200, 150],
-  tool_calling: [1200, 150],
-  code: [1500, 800],
-  long_context: [16000, 300],
-  summarization: [4500, 300],
-  chat: [200, 150],
-  rag: [3500, 400],
-  vision: [1600, 300],
-  json_schema: [800, 400],
-  custom: [500, 500],
+  prefill_ttft: [4280, 2],
+  decode_throughput: [139, 800],
+  reasoning_cot: [383, 800],
+  agentic_tool_calling: [1220, 150],
+  code_generation: [787, 800],
+  rag_synthesis: [3151, 400],
+  long_context_retrieval: [16284, 300],
+  summarization_distill: [3642, 300],
+  structured_json: [675, 300],
+  chat_interactive: [123, 150],
+  fewshot_classification: [1111, 10],
+  multimodal_vision: [1412, 200],
+  multiturn_agentic: [1314, 350],
+  kv_cache_reuse: [3389, 150],
+  tool_calling: [1220, 150],
+  code: [787, 800],
+  long_context: [16284, 300],
+  summarization: [3642, 300],
+  chat: [123, 150],
+  rag: [3151, 400],
+  vision: [1412, 200],
+  json_schema: [675, 300],
+  custom: [43, 500],
 };
 
 export function getModelPricing(
@@ -168,7 +168,9 @@ export function calculateInstantCostEstimate(config: Partial<BenchmarkConfig>): 
   const hardSpendCap = config.hard_spend_cap;
 
   const [presetPromptTokens, expectedGenTokens] = PRESET_TOKEN_PROFILES[workload] || [500, 500];
-  const promptTokens = presetPromptTokens;
+  const promptTokens = config.custom_prompt && config.custom_prompt.trim().length > 0
+    ? Math.max(1, Math.round(config.custom_prompt.trim().length / 3.8))
+    : presetPromptTokens;
   const genTokens = Math.min(maxTokens, expectedGenTokens);
 
   let estimatedRequests = 1;
@@ -286,163 +288,6 @@ export function calculateCacheSavings(
     measuredTtftMs: measuredTtftMs || undefined,
     estimatedCachedTtftMs,
     cacheDiscountPct: Math.round(cacheDiscountPct * 100),
-  };
-}
-
-export interface ModelCostComparisonItem {
-  model: string;
-  vendor: string;
-  label: string;
-  monthlyCost: number;
-  dailyCost: number;
-  costPer1kReqs: number;
-  deltaDollars: number;
-  deltaPct: number;
-  isCheaper: boolean;
-  isCurrent: boolean;
-}
-
-export interface ProductionCostProjection {
-  vendor: string;
-  model: string;
-  promptTokens: number;
-  genTokens: number;
-  totalTokensPerReq: number;
-  dailyRequests: number;
-  monthlyRequests: number;
-  annualRequests: number;
-  inputPricePer1M: number;
-  outputPricePer1M: number;
-  inputCostPerReq: number;
-  outputCostPerReq: number;
-  costPerReq: number;
-  costPer1kReqs: number;
-  blendedPricePer1MTokens: number;
-  dailyCost: number;
-  monthlyCost: number;
-  annualCost: number;
-  dailyTokens: number;
-  monthlyTokens: number;
-  annualTokens: number;
-  inputCostSharePct: number;
-  outputCostSharePct: number;
-  avgQps: number;
-  peakQps: number;
-  recommendedConcurrency: number;
-  comparisons: ModelCostComparisonItem[];
-}
-
-const COMPARISON_MODELS: Array<{ model: string; vendor: string; label: string }> = [
-  { model: "gpt-4o", vendor: "openai", label: "GPT-4o (Flagship)" },
-  { model: "gpt-4o-mini", vendor: "openai", label: "GPT-4o mini (Low-Cost)" },
-  { model: "claude-3-7-sonnet", vendor: "anthropic", label: "Claude 3.7 Sonnet (Reasoning)" },
-  { model: "claude-3-5-haiku", vendor: "anthropic", label: "Claude 3.5 Haiku (Fast)" },
-  { model: "gemini-1.5-pro", vendor: "gcp_vertex", label: "Gemini 1.5 Pro (Long-Context)" },
-  { model: "gemini-2.0-flash", vendor: "gcp_vertex", label: "Gemini 2.0 Flash (Ultra-Fast)" },
-  { model: "deepseek-ai/deepseek-r1", vendor: "openai_compatible", label: "DeepSeek R1 (Open Reasoning)" },
-  { model: "deepseek-v3", vendor: "openai_compatible", label: "DeepSeek V3 (Economic)" },
-];
-
-export function calculateProductionCost(
-  vendor: string,
-  model: string,
-  dailyRequests: number = 10_000,
-  measuredPromptTokens?: number | null,
-  measuredGenTokens?: number | null,
-  customPromptPrice?: number | null,
-  customCompletionPrice?: number | null,
-  measuredTtftMs?: number | null,
-  tpsDecode?: number | null,
-): ProductionCostProjection {
-  const [promptPrice, completionPrice] = getModelPricing(vendor, model, customPromptPrice, customCompletionPrice);
-  const inTokens = Math.max(1, measuredPromptTokens && measuredPromptTokens > 0 ? measuredPromptTokens : 1200);
-  const outTokens = Math.max(1, measuredGenTokens && measuredGenTokens > 0 ? measuredGenTokens : 300);
-  const totalTokensPerReq = inTokens + outTokens;
-
-  const validDailyReqs = Math.max(10, dailyRequests || 10_000);
-  const monthlyRequests = validDailyReqs * 30;
-  const annualRequests = validDailyReqs * 365;
-
-  const inputCostPerReq = (inTokens * promptPrice) / 1_000_000.0;
-  const outputCostPerReq = (outTokens * completionPrice) / 1_000_000.0;
-  const costPerReq = inputCostPerReq + outputCostPerReq;
-  const costPer1kReqs = costPerReq * 1_000.0;
-  const blendedPricePer1MTokens = totalTokensPerReq > 0
-    ? (costPerReq / totalTokensPerReq) * 1_000_000.0
-    : 0;
-
-  const dailyCost = costPerReq * validDailyReqs;
-  const monthlyCost = costPerReq * monthlyRequests;
-  const annualCost = costPerReq * annualRequests;
-
-  const dailyTokens = totalTokensPerReq * validDailyReqs;
-  const monthlyTokens = totalTokensPerReq * monthlyRequests;
-  const annualTokens = totalTokensPerReq * annualRequests;
-
-  const inputCostSharePct = costPerReq > 0
-    ? Math.round((inputCostPerReq / costPerReq) * 100)
-    : 50;
-  const outputCostSharePct = 100 - inputCostSharePct;
-
-  const avgQps = validDailyReqs / (24 * 3600);
-  const peakQps = avgQps * 3.0; // Assume 3x peak multiplier
-  const avgTurnaroundSec = ((measuredTtftMs || 350) / 1000.0) + (outTokens / (tpsDecode || 45.0));
-  const recommendedConcurrency = Math.max(1, Math.ceil(peakQps * avgTurnaroundSec));
-
-  // Build model comparisons
-  const comparisons: ModelCostComparisonItem[] = COMPARISON_MODELS.map((item) => {
-    const isCurrent = (model.toLowerCase().includes(item.model.toLowerCase()) || item.model.toLowerCase().includes(model.toLowerCase())) &&
-      (vendor.toLowerCase() === item.vendor.toLowerCase() || item.vendor === "openai_compatible");
-    const [itemInPrice, itemOutPrice] = getModelPricing(item.vendor, item.model);
-    const itemCostPerReq = (inTokens * itemInPrice + outTokens * itemOutPrice) / 1_000_000.0;
-    const itemMonthlyCost = itemCostPerReq * monthlyRequests;
-    const itemDailyCost = itemCostPerReq * validDailyReqs;
-    const itemCostPer1k = itemCostPerReq * 1_000.0;
-    const deltaDollars = itemMonthlyCost - monthlyCost;
-    const deltaPct = monthlyCost > 0 ? ((itemMonthlyCost - monthlyCost) / monthlyCost) * 100 : 0;
-
-    return {
-      model: item.model,
-      vendor: item.vendor,
-      label: item.label,
-      monthlyCost: itemMonthlyCost,
-      dailyCost: itemDailyCost,
-      costPer1kReqs: itemCostPer1k,
-      deltaDollars,
-      deltaPct: Math.round(deltaPct),
-      isCheaper: deltaDollars < -0.01,
-      isCurrent,
-    };
-  });
-
-  return {
-    vendor,
-    model,
-    promptTokens: inTokens,
-    genTokens: outTokens,
-    totalTokensPerReq,
-    dailyRequests: validDailyReqs,
-    monthlyRequests,
-    annualRequests,
-    inputPricePer1M: promptPrice,
-    outputPricePer1M: completionPrice,
-    inputCostPerReq,
-    outputCostPerReq,
-    costPerReq,
-    costPer1kReqs,
-    blendedPricePer1MTokens,
-    dailyCost,
-    monthlyCost,
-    annualCost,
-    dailyTokens,
-    monthlyTokens,
-    annualTokens,
-    inputCostSharePct,
-    outputCostSharePct,
-    avgQps,
-    peakQps,
-    recommendedConcurrency,
-    comparisons,
   };
 }
 

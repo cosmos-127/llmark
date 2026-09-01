@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class VendorType(str, Enum):
@@ -80,7 +80,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 4000,
+        "default_in_tokens": 4280,
         "default_out_tokens": 2,
         "default_concurrency": 4,
         "default_max_tokens": 2,
@@ -97,7 +97,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 40,
+        "default_in_tokens": 139,
         "default_out_tokens": 800,
         "default_concurrency": 5,
         "default_max_tokens": 800,
@@ -114,7 +114,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "current_tps",
             "current_spend_usd",
         ],
-        "default_in_tokens": 300,
+        "default_in_tokens": 383,
         "default_out_tokens": 800,
         "default_concurrency": 3,
         "default_max_tokens": 1024,
@@ -131,7 +131,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 1200,
+        "default_in_tokens": 1220,
         "default_out_tokens": 150,
         "default_concurrency": 4,
         "default_max_tokens": 256,
@@ -148,7 +148,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 1500,
+        "default_in_tokens": 787,
         "default_out_tokens": 800,
         "default_concurrency": 4,
         "default_max_tokens": 1024,
@@ -165,7 +165,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "error_rate_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 3500,
+        "default_in_tokens": 3151,
         "default_out_tokens": 400,
         "default_concurrency": 4,
         "default_max_tokens": 512,
@@ -182,7 +182,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 16000,
+        "default_in_tokens": 16284,
         "default_out_tokens": 300,
         "default_concurrency": 2,
         "default_max_tokens": 512,
@@ -198,7 +198,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 4500,
+        "default_in_tokens": 3642,
         "default_out_tokens": 300,
         "default_concurrency": 4,
         "default_max_tokens": 512,
@@ -215,7 +215,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 600,
+        "default_in_tokens": 675,
         "default_out_tokens": 300,
         "default_concurrency": 4,
         "default_max_tokens": 512,
@@ -232,7 +232,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
             "goodput_pct",
             "current_spend_usd",
         ],
-        "default_in_tokens": 200,
+        "default_in_tokens": 123,
         "default_out_tokens": 150,
         "default_concurrency": 5,
         "default_max_tokens": 512,
@@ -242,7 +242,7 @@ WORKLOAD_METRIC_PROFILES: dict[str, dict[str, Any]] = {
         "name": "Few-Shot In-Context Classification",
         "tagline": "Multi-exemplar in-context prompt measuring low-decode latency & high-throughput classification goodput",
         "target_metrics": ["ttft_p95", "e2e_ms", "current_tps", "goodput_pct", "current_spend_usd"],
-        "default_in_tokens": 1200,
+        "default_in_tokens": 1220,
         "default_out_tokens": 10,
         "default_concurrency": 6,
         "default_max_tokens": 32,
@@ -356,7 +356,7 @@ class VendorCredential(BaseModel):
 
     # GCP Vertex AI / Gemini
     gcp_auth_mode: str | None = Field(
-        "api_key", description="api_key (AI Studio) or vertex_ai (GCP VPC)"
+        None, description="api_key (AI Studio) or vertex_ai (GCP VPC)"
     )
     gcp_project_id: str | None = None
     gcp_location: str | None = "us-central1"
@@ -394,6 +394,9 @@ class BenchmarkConfig(BaseModel):
     duration_seconds: int = Field(30, ge=1, le=300)
     warmup_requests: int = Field(2, ge=0, le=5)
     cache_bust: bool = Field(False, description="Append unique nonce to defeat prefix caching")
+    measure_cache_speedup: bool = Field(
+        False, description="Explicitly benchmark cold vs warm prefix cache speedup"
+    )
     hard_spend_cap: float | None = Field(
         2.0, description="Max dollar spend ceiling before circuit break"
     )
@@ -404,6 +407,40 @@ class BenchmarkConfig(BaseModel):
         None, ge=0.0, description="Custom completion price per 1M tokens in USD"
     )
     slo: SLOThresholds = Field(default_factory=SLOThresholds)
+
+    @model_validator(mode="after")
+    def enforce_preset_dependencies(self) -> "BenchmarkConfig":
+        preset_str = getattr(self.workload_preset, "value", str(self.workload_preset))
+        curve_str = getattr(self.load_curve, "value", str(self.load_curve))
+
+        # 1. KV-Cache Prefix Reuse protocol enforcement
+        if preset_str in ("kv_cache_reuse", WorkloadPreset.KV_CACHE_REUSE.value):
+            self.cache_bust = False
+            self.measure_cache_speedup = True
+            self.warmup_requests = 0
+            if self.max_tokens > 300:
+                self.max_tokens = 150
+
+        # 2. Cache-bust vs Cache speedup mutual exclusivity
+        if self.cache_bust:
+            self.measure_cache_speedup = False
+
+        # 3. Saturation Knee Probe load curve enforcement
+        if curve_str in ("saturation_knee", LoadCurveType.SATURATION_KNEE.value):
+            if self.concurrency < 8:
+                self.concurrency = 8
+
+        # 4. Prefill TTFT Latency isolation
+        if preset_str in ("prefill_ttft", WorkloadPreset.PREFILL_TTFT.value):
+            if self.max_tokens > 20:
+                self.max_tokens = 10
+
+        # 5. Rate Limit Probe isolation
+        if preset_str in ("rate_limit_probe", WorkloadPreset.RATE_LIMIT_PROBE.value):
+            if self.max_tokens > 10:
+                self.max_tokens = 2
+
+        return self
 
 
 class TokenEvent(BaseModel):
@@ -425,11 +462,37 @@ class WaterfallTiming(BaseModel):
     total_e2e_ms: float = 0.0
 
 
+class LatencyBin(BaseModel):
+    bin_start_ms: float
+    bin_end_ms: float
+    bin_label: str
+    count: int
+    percentage: float
+
+
+class LatencyDistribution(BaseModel):
+    metric: str
+    count: int
+    min_ms: float
+    max_ms: float
+    mean_ms: float
+    std_dev_ms: float
+    cv: float
+    p50_ms: float
+    p75_ms: float
+    p95_ms: float
+    p99_ms: float
+    bimodal_detected: bool = False
+    bimodal_description: str | None = None
+    bins: list[LatencyBin] = Field(default_factory=list)
+
+
 class SingleRequestMetric(BaseModel):
     request_id: str
     status_code: int = 200
     is_error: bool = False
     is_rate_limit: bool = False
+    is_cache_cold: bool = False
     retry_after_ms: float | None = None
     error_message: str | None = None
     prompt_tokens: int = 0
@@ -512,11 +575,19 @@ class MetricsSnapshot(BaseModel):
     itl_jitter_cv: float | None = None
     prefill_slope_ms_per_1k: float | None = None
     cache_speedup_factor: float | None = None
+    cold_ttft_ms: float | None = None
+    warm_ttft_p50_ms: float | None = None
+    cache_hit_pct: float | None = None
+    cache_token_savings_pct: float | None = None
     thinking_wait_multiplier: float | None = None
     thinking_cost_share_pct: float | None = None
     grammar_penalty_pct: float | None = None
     concurrency_scaling_efficiency_pct: float | None = None
     cost_per_1k_goodput_usd: float | None = None
+
+    # Latency Distribution Histograms
+    ttft_distribution: LatencyDistribution | None = None
+    e2e_distribution: LatencyDistribution | None = None
 
     # Target Metric Profile Tags for Dynamic Frontend Filtering
     profile_metrics: list[str] = Field(default_factory=list)
@@ -540,6 +611,7 @@ class CostEstimate(BaseModel):
 
 class MetricDelta(BaseModel):
     metric_name: str
+    category: str | None = None
     run_a_value: float
     run_b_value: float
     run_c_value: float | None = None
@@ -564,6 +636,10 @@ class RunDiffResponse(BaseModel):
     run_a_model: str | None = None
     run_b_model: str | None = None
     run_c_model: str | None = None
+    run_a_preset: str | None = None
+    run_b_preset: str | None = None
+    run_c_preset: str | None = None
+    workload_preset: str | None = None
     deltas: list[MetricDelta]
     goodput_delta_pct: float
     cost_delta_pct: float

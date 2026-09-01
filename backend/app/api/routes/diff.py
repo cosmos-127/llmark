@@ -64,6 +64,12 @@ async def compare_benchmark_runs(
 
     try:
         return DiffEngine.compare_runs(run_a_obj, run_b_obj, run_c_obj)
+    except ValueError as exc:
+        logger.warning("Workload preset mismatch in diff comparison", error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
     except Exception as exc:
         logger.error("Failed to calculate diff deltas", error=str(exc))
         raise HTTPException(

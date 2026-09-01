@@ -58,7 +58,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         "keywords": ["ttft", "rag", "chat", "prefill", "retrieval", "context", "first token"],
         "topic": "TTFT Dynamics in RAG Architectures",
         "answer": (
-            "### 🔍 Why TTFT Dominates RAG Latency\n\n"
+            "### Why TTFT Dominates RAG Latency\n\n"
             "In **Retrieval-Augmented Generation (RAG)** systems, prompts contain extensive retrieved context (typically $3{,}000\\text{--}16{,}000$ tokens of vector embeddings, chunked markdown, or SQL schemas).\n\n"
             "1. **Compute Phase Breakdown**:\n"
             "   - In standard Chat ($200$ prompt tokens), prefill finishes in under $\\le 40\\text{ms}$.\n"
@@ -88,7 +88,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Reasoning (Chain-of-Thought) Benchmarking",
         "answer": (
-            "### 🧠 Benchmarking Chain-of-Thought (CoT) & Reasoning Models\n\n"
+            "### Benchmarking Chain-of-Thought (CoT) & Reasoning Models\n\n"
             "Reasoning models (e.g. **DeepSeek-R1**, **OpenAI o1/o3-mini**) generate hidden internal 'thinking tokens' before streaming the final user-facing response.\n\n"
             "- **TTFT vs. TTFA (Time to First Answer)**:\n"
             "  - Standard TTFT captures when the *first thinking token* is emitted.\n"
@@ -115,7 +115,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "TTFT vs. TTFA Metric Dissection",
         "answer": (
-            "### ⏱️ TTFT vs. TTFA Explained\n\n"
+            "### TTFT vs. TTFA Explained\n\n"
             "| Metric | Definition | Target Workloads | Production SLA Target |\n"
             "| :--- | :--- | :--- | :--- |\n"
             "| **TTFT** (Time to First Token) | Time elapsed from HTTP request dispatch until the very first SSE byte/token chunk arrives. | Standard Chat, RAG, Code Completion | $\\le 400\\text{--}800\\text{ms}$ |\n"
@@ -141,7 +141,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Deterministic Decoding at Temperature = 0",
         "answer": (
-            "### 🎯 Why Temperature = 0.0 is the Gold Standard for Benchmarks\n\n"
+            "### Why Temperature = 0.0 is the Gold Standard for Benchmarks\n\n"
             "Setting $\\text{Temperature} = 0.0$ forces **Argmax (Greedy) decoding**:\n\n"
             "1. **Exact Reproducibility**:\n"
             "   - At $T=0$, the model always picks the token with maximum probability $\\text{argmax}_i P(y_t = w_i)$.\n"
@@ -168,7 +168,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Sampling Entropy & Inter-Token Latency Jitter",
         "answer": (
-            "### 📊 Token Jitter & Inter-Token Latency (ITL)\n\n"
+            "### Token Jitter & Inter-Token Latency (ITL)\n\n"
             "**Inter-Token Latency (ITL)** is the time interval between consecutive token frames in an SSE stream.\n\n"
             "- **High Temperature ($T > 1.0$)**:\n"
             "  - Probability mass is spread evenly across vocabulary tokens.\n"
@@ -195,7 +195,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Generation Bounds & Finish Reasons",
         "answer": (
-            "### 🛑 Max Tokens & Generation Bounds\n\n"
+            "### Max Tokens & Generation Bounds\n\n"
             "When an autoregressive generation reaches the configured `max_tokens` bound:\n\n"
             '1. The inference engine halts decoding immediately and returns `finish_reason: "length"` instead of `"stop"`.\n'
             "2. **Benchmarking Impact**:\n"
@@ -220,7 +220,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Identifying the Saturation Cliff",
         "answer": (
-            "### 📉 Finding the Saturation Cliff ($N_{\\text{knee}}$)\n\n"
+            "### Finding the Saturation Cliff ($N_{\\text{knee}}$)\n\n"
             "The **Saturation Cliff** is the exact concurrency load where an LLM serving cluster transitions from hardware-limited to queue-delayed.\n\n"
             "1. **Step-by-Step Probe**:\n"
             "   - Run the **Saturation Knee Probe (1→3→8→16→32→64)**.\n"
@@ -246,7 +246,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Little's Law & Concurrency-to-RPS Conversion",
         "answer": (
-            "### 📐 Little's Law in LLM Queuing\n\n"
+            "### Little's Law in LLM Queuing\n\n"
             "$$\\text{Concurrency } (N) = \\text{Throughput } (\\lambda) \\times \\text{Mean Latency } (W)$$\n\n"
             "- If your average request duration is $2.0\\text{ seconds}$ and you configure $20\\text{ concurrent streams}$:\n"
             "  $$\\text{Target RPS} = \\frac{20}{2.0\\text{ s}} = 10\\text{ requests/second}$$\n"
@@ -269,7 +269,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Exponential TTFT Queue Degradation",
         "answer": (
-            "### ⚡ Why TTFT Spikes Exponentially\n\n"
+            "### Why TTFT Spikes Exponentially\n\n"
             "TTFT consists of two components:\n\n"
             "$$\\text{TTFT} = W_q \\text{ (Queue Waiting Time)} + T_{\\text{prefill}} \\text{ (Compute Execution Time)}$$\n\n"
             "1. **Under Normal Load ($M/M/1$ Queuing)**:\n"
@@ -295,7 +295,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Why Constant Load Masks Production Bottlenecks",
         "answer": (
-            "### ⚠️ The Blind Spot of Constant Load Benchmarks\n\n"
+            "### The Blind Spot of Constant Load Benchmarks\n\n"
             "- **Artificial Uniformity**:\n"
             "  - Constant load dispatches requests at clockwork intervals. In reality, human traffic arrives in stochastic clusters.\n"
             "- **Hides Queue Head-of-Line Blocking**:\n"
@@ -319,7 +319,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Poisson Arrival Process Dynamics",
         "answer": (
-            "### 🌊 Poisson Arrival Process in LLM Benchmarking\n\n"
+            "### Poisson Arrival Process in LLM Benchmarking\n\n"
             "Human client requests arrive independently at random timestamps. In LLMark:\n\n"
             "1. Inter-arrival time $\\Delta t$ is sampled from an **Exponential Distribution**:\n"
             "   $$P(\\Delta t) = \\lambda e^{-\\lambda \\Delta t}$$\n"
@@ -345,7 +345,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Safe Traffic Spike Simulation",
         "answer": (
-            "### ⚡ Safely Simulating Concurrency Spikes\n\n"
+            "### Safely Simulating Concurrency Spikes\n\n"
             "1. **Configure Hard Spend Cap**:\n"
             "   - Set a hard spend ceiling (e.g. $\\$1.50$) in Step 4B to guarantee that runaway spike tests terminate immediately if cost accelerates.\n"
             "2. **Use 3x Surge Waveform**:\n"
@@ -369,7 +369,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Prompt Prefix Caching Speedup Metrics",
         "answer": (
-            "### 🚀 Prompt Prefix Caching Speedup\n\n"
+            "### Prompt Prefix Caching Speedup\n\n"
             "When a prompt shares a common system prefix or RAG document with previously processed requests:\n\n"
             "- **TTFT Reduction**:\n"
             "  - **Cold TTFT (No Cache)**: $800\\text{--}1{,}800\\text{ms}$ for $4{,}000$ tokens.\n"
@@ -396,7 +396,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "KV Cache VRAM Memory Sizing Formula",
         "answer": (
-            "### 💾 KV Cache VRAM Formula\n\n"
+            "### KV Cache VRAM Formula\n\n"
             "For a Transformer model with Multi-Head Attention (MHA) or Grouped Query Attention (GQA):\n\n"
             "$$\\text{VRAM}_{\\text{KV}} = 2 \\times L \\times H_{\\text{kv}} \\times D_{\\text{head}} \\times \\text{SeqLen} \\times B_{\\text{prec}}$$\n\n"
             "- $L$: Number of layers (e.g. 32 for 8B, 80 for 70B)\n"
@@ -423,7 +423,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Warmup Request Rationale & Connection Priming",
         "answer": (
-            "### 🔌 Why Warmup Requests are Essential\n\n"
+            "### Why Warmup Requests are Essential\n\n"
             "When dispatching the first request to an inference endpoint:\n\n"
             "1. **DNS Resolution**: Adds $10\\text{--}40\\text{ms}$.\n"
             "2. **TCP 3-Way Handshake + TLS 1.3**: Adds $30\\text{--}80\\text{ms}$ of round-trip latency.\n"
@@ -448,7 +448,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Goodput vs. Raw Throughput Deep Dive",
         "answer": (
-            "### 🏆 Goodput: The True Metric of Production LLM Performance\n\n"
+            "### Goodput: The True Metric of Production LLM Performance\n\n"
             "- **The Flaw of Raw Throughput**:\n"
             "  - An engine generating $2{,}000\\text{ tok/s}$ sounds fast, but if TTFT was 15 seconds and $12\\%$ of requests threw HTTP 429 rate limits, users experienced failure.\n"
             "- **The Goodput Sieve**:\n"
@@ -478,7 +478,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Production LLM SLO Threshold Guidelines",
         "answer": (
-            "### 🎯 Standard Production SLO Thresholds\n\n"
+            "### Standard Production SLO Thresholds\n\n"
             "| Workload Category | Max TTFT | Max TPOT | Max E2E | Max Error Rate |\n"
             "| :--- | :--- | :--- | :--- | :--- |\n"
             "| **Interactive Voice Agent** | $\\le 300\\text{ ms}$ | $\\le 20\\text{ ms/tok}$ | $\\le 3.0\\text{ s}$ | $\\le 0.1\\%$ |\n"
@@ -503,7 +503,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "TPOT vs. ITL Distinction",
         "answer": (
-            "### ⏱️ TPOT vs. ITL Dissection\n\n"
+            "### TPOT vs. ITL Dissection\n\n"
             "- **TPOT (Time Per Output Token)**:\n"
             "  $$\\text{TPOT} = \\frac{\\text{E2E Duration} - \\text{TTFT}}{\\text{Generated Tokens} - 1}$$\n"
             "  Calculates the **average** decode duration per token across the entire generation turn.\n"
@@ -530,7 +530,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Zero Bill-Shock Circuit Breaker Architecture",
         "answer": (
-            "### 🛡️ Zero Bill-Shock Protection\n\n"
+            "### Zero Bill-Shock Protection\n\n"
             "Running high-concurrency benchmarks on frontier models (e.g. GPT-4o, Claude 3.5 Sonnet) can quickly incur hundreds of dollars if left unchecked.\n\n"
             "1. **Sub-50ms Reactive Abort**:\n"
             "   - Every worker stream reports token usage in real time.\n"
@@ -554,7 +554,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Real-Time Benchmark Cost Model",
         "answer": (
-            "### 💵 Real-Time Cost Formula\n\n"
+            "### Real-Time Cost Formula\n\n"
             "$$\\text{Total Spend ($)} = \\sum_{i=1}^{N} \\left[ \\left(\\frac{\\text{Prompt Tokens}_i \\times P_{\\text{in}}}{10^6}\\right) + \\left(\\frac{\\text{Gen Tokens}_i \\times P_{\\text{out}}}{10^6}\\right) \\right]$$\n\n"
             "- $P_{\\text{in}}$: Cost per 1 Million prompt tokens (USD).\n"
             "- $P_{\\text{out}}$: Cost per 1 Million generation tokens (USD).\n"
@@ -576,7 +576,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "OpenAI vs. Anthropic Wire Protocol Differences",
         "answer": (
-            "### 🌐 OpenAI vs. Anthropic Wire Protocols\n\n"
+            "### OpenAI vs. Anthropic Wire Protocols\n\n"
             "| Dimension | OpenAI (`/v1/chat/completions`) | Anthropic (`/v1/messages`) |\n"
             "| :--- | :--- | :--- |\n"
             '| **Framing** | `data: {"choices": [{"delta": {"content": "..."}}]}` | `event: content_block_delta`<br>`data: {"delta": {"text": "..."}}` |\n'
@@ -600,7 +600,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Mixture-of-Experts (MoE) Inference Dynamics",
         "answer": (
-            "### 🧩 Mixture of Experts (MoE) Performance Dynamics\n\n"
+            "### Mixture of Experts (MoE) Performance Dynamics\n\n"
             "In MoE models (e.g. **DeepSeek-V3**, **Mixtral 8x22B**):\n\n"
             "1. **Sparse Activation**:\n"
             "   - Total model weights may be $671\\text{B}$, but each token dynamically routes to only $37\\text{B}$ active parameters.\n"
@@ -625,7 +625,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Quantization & Memory Bandwidth Scaling",
         "answer": (
-            "### ⚡ Quantization Impact on Inference Speed\n\n"
+            "### Quantization Impact on Inference Speed\n\n"
             "Autoregressive decode is strictly **memory bandwidth bound**:\n\n"
             "$$\\text{Speedup} \\approx \\frac{\\text{Original Precision (16-bit)}}{\\text{Quantized Precision (8-bit or 4-bit)}}$$\n\n"
             "- **FP8 Quantization**:\n"
@@ -651,7 +651,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Token Ratios & Workload Archetypes",
         "answer": (
-            "### ⚖️ Prefill vs. Decode Ratios in Benchmarking\n\n"
+            "### Prefill vs. Decode Ratios in Benchmarking\n\n"
             "LLM inference comprises two distinct compute regimes:\n\n"
             "1. **Prefill Phase (FLOP-Bound)**:\n"
             "   - Ingests the entire prompt in parallel using Tensor Cores.\n"
@@ -680,7 +680,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Sampling Parameter Rigor in Benchmarks",
         "answer": (
-            "### 🔬 Benchmark Calibration via Sampling Settings\n\n"
+            "### Benchmark Calibration via Sampling Settings\n\n"
             "1. **Temperature = 0.0 (Argmax / Greedy)**:\n"
             "   - Guarantees 100% deterministic output paths across all runs and providers.\n"
             "   - Eliminates stochastic token variance, ensuring that throughput comparisons reflect pure hardware differences.\n"
@@ -706,7 +706,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Concurrency Pool Sizing Strategy",
         "answer": (
-            "### 👥 Concurrency Pool Sizing Guidelines\n\n"
+            "### Concurrency Pool Sizing Guidelines\n\n"
             "1. **Baseline Single-Stream ($N = 1$)**:\n"
             "   - Captures minimal theoretical TTFT and maximum single-user token streaming speed.\n"
             "2. **Production Multi-Tenant ($N = 10\\text{--}32$)**:\n"
@@ -729,7 +729,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Saturation Knee Probe Architecture",
         "answer": (
-            "### 🔍 Saturation Knee Probe Architecture\n\n"
+            "### Saturation Knee Probe Architecture\n\n"
             "The **Saturation Knee Probe** runs a geometric load progression ($1 \\to 3 \\to 8 \\to 16 \\to 32 \\to 64$):\n\n"
             "- At each step, it records **TTFT P95**, **Goodput Yield**, and **HTTP 429 Rate Limits**.\n"
             "- It automatically calculates the second derivative $\\frac{d^2 \\text{TTFT}}{dN^2}$ to pinpoint the **inflection knee** $N_{\\text{knee}}$ where GPU VRAM is exhausted and queueing begins."
@@ -750,7 +750,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Cold GPU Prefill Measurement via Nonce",
         "answer": (
-            "### 🧊 Cold GPU Prefill via Nonce Injection\n\n"
+            "### Cold GPU Prefill via Nonce Injection\n\n"
             "Modern inference engines (vLLM, SGLang, OpenAI, Anthropic) reuse KV cache tensors across identical prompt prefixes.\n\n"
             "- When **Bypass KV Cache** is enabled, LLMark prefixes each prompt with a unique UUID timestamp `[nonce:1724758920-a8f1]`.\n"
             "- This forces the inference engine to compute full multi-head self-attention across every layer, measuring **cold hardware prefill latency and TFLOPS** rather than warm cache hits."
@@ -770,7 +770,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Model Parameter Sizing & Memory Physics",
         "answer": (
-            "### 🧠 Model Parameter Size & Memory Physics\n\n"
+            "### Model Parameter Size & Memory Physics\n\n"
             "- **Prefill (Compute-Bound)**:\n"
             "  $$\\text{Prefill FLOPs} \\approx 2 \\times P \\times T_{\\text{prompt}}$$\n"
             "  Larger models scale proportionally with parameter count $P$.\n"
@@ -794,7 +794,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "The 3-Stage Reliability Sieve",
         "answer": (
-            "### 🛡️ The 3-Stage Reliability Sieve\n\n"
+            "### The 3-Stage Reliability Sieve\n\n"
             "LLMark filters every completed request through 3 cascading gates:\n\n"
             "1. **Stage 1 (Transport & Integrity)**: Confirms HTTP 200, valid SSE framing, and zero truncated JSON payloads.\n"
             "2. **Stage 2 (Latency Budgets)**: Validates that $\\text{TTFT} \\le \\text{Threshold}$ and $\\text{TPOT} \\le \\text{Threshold}$.\n"
@@ -816,7 +816,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Spend Cap Trip Dynamics",
         "answer": (
-            "### 🛑 What Happens When the Spend Cap is Hit\n\n"
+            "### What Happens When the Spend Cap is Hit\n\n"
             "When accumulated token spend reaches your **Hard Spend Cap**:\n\n"
             "1. **Instant Reactive Abort**: Orchestrator sends an asynchronous cancellation signal to all active HTTP sockets within $\\le 50\\text{ms}$.\n"
             "2. **Clean Telemetry Flush**: All completed streams up to that millisecond are finalized and saved into benchmark history.\n"
@@ -837,7 +837,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Custom Token Pricing Configuration",
         "answer": (
-            "### 💲 Configuring Custom Token Pricing\n\n"
+            "### Configuring Custom Token Pricing\n\n"
             "In Step 4B (Spend Guardrails):\n\n"
             "- Toggle **Custom Pricing Override** ON.\n"
             "- Enter your contract prompt rate ($P_{\\text{in}}$ per 1M tokens) and completion rate ($P_{\\text{out}}$ per 1M tokens).\n"
@@ -858,7 +858,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Cloud Endpoint Connection Overhead Breakdown",
         "answer": (
-            "### ⚡ Anatomy of Cloud Connection Overhead\n\n"
+            "### Anatomy of Cloud Connection Overhead\n\n"
             "1. **DNS Resolution**: $10\\text{--}40\\text{ms}$ depending on resolver cache.\n"
             "2. **TCP Handshake**: $1\\text{ RTT}$ ($20\\text{--}50\\text{ms}$ based on cloud region distance).\n"
             "3. **TLS 1.3 Key Exchange**: $1\\text{ RTT}$ ($20\\text{--}50\\text{ms}$).\n"
@@ -880,7 +880,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "Self-Hosted vLLM & Ollama Configuration",
         "answer": (
-            "### 🛠️ Connecting Self-Hosted vLLM / Ollama\n\n"
+            "### Connecting Self-Hosted vLLM / Ollama\n\n"
             "1. In Step 1, select **OpenAI Compatible** provider.\n"
             "2. Set **Base URL**:\n"
             "   - **vLLM**: `http://localhost:8000/v1`\n"
@@ -903,7 +903,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "HTTP/2 & HTTP/3 Transport Multiplexing",
         "answer": (
-            "### 🚀 HTTP/2 & Multiplexing in LLM Streaming\n\n"
+            "### HTTP/2 & Multiplexing in LLM Streaming\n\n"
             "- **Head-of-Line Blocking Elimination**: Multiplexes dozens of concurrent SSE token streams over a single TLS connection.\n"
             "- **Socket Exhaustion Prevention**: Prevents running out of ephemeral client OS ports when running 100+ concurrent workers."
         ),
@@ -918,7 +918,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         "keywords": ["vram footprint 8b vs 70b", "8b vs 70b vram", "gpu memory requirements 70b"],
         "topic": "VRAM Footprint Comparison (8B vs 70B)",
         "answer": (
-            "### 💾 VRAM Sizing: 8B vs 70B Models\n\n"
+            "### VRAM Sizing: 8B vs 70B Models\n\n"
             "| Component | Llama-3-8B (FP16) | Llama-3-8B (FP8) | Llama-3-70B (FP16) | Llama-3-70B (FP8) |\n"
             "| :--- | :--- | :--- | :--- | :--- |\n"
             "| **Model Weights** | $16\\text{ GB}$ | $8\\text{ GB}$ | $140\\text{ GB}$ | $70\\text{ GB}$ |\n"
@@ -940,7 +940,7 @@ DEDICATED_QA_ITEMS: list[dict[str, Any]] = [
         ],
         "topic": "End-to-End Benchmark Optimization Playbook",
         "answer": (
-            "### ⚡ 4-Step Benchmark Optimization Playbook\n\n"
+            "### 4-Step Benchmark Optimization Playbook\n\n"
             "1. **Step 1 (Wire Protocol)**: Enable Warmup runs (1-3) to prime persistent TLS connections.\n"
             "2. **Step 2 (Workload & Sampling)**: Match input/output token ratio to your production scenario and set $\\text{Temperature} = 0.0$ for deterministic results.\n"
             "3. **Step 3 (Traffic & Knee)**: Use the Saturation Knee Probe to discover the cluster inflection limit $N_{\\text{knee}}$.\n"
@@ -971,7 +971,7 @@ TOPIC_ARTICLES: dict[str, dict[str, Any]] = {
         ],
         "topic": "Workload Scenarios & Prompt-to-Gen Ratios",
         "answer": (
-            "### 🧩 Workload Profiles & Token Ratios\n\n"
+            "### Workload Profiles & Token Ratios\n\n"
             "- **Prefill-Heavy (e.g. Enterprise RAG, Context Retrieval)**: High prompt tokens (3000-8000), low output tokens (100-300). Tests GPU compute density and memory transfer rate during the prefill phase.\n"
             "- **Decode-Heavy (e.g. Code Generation, CoT Reasoning)**: Moderate prompt tokens (100-500), high output tokens (800-2000). Tests memory bandwidth limitations during autoregressive single-token decode passes.\n"
             "- **Balanced Conversational (Chat)**: Low-to-moderate prompt (200) and generation (150). Focuses on human reading speed, low initial TTFT latency, and sustained ITL smoothness."
@@ -994,7 +994,7 @@ TOPIC_ARTICLES: dict[str, dict[str, Any]] = {
         ],
         "topic": "Sampling Hyperparameters & Output Entropy",
         "answer": (
-            "### 🌡️ Temperature & Top-P in LLM Benchmarking\n\n"
+            "### Temperature & Top-P in LLM Benchmarking\n\n"
             "- **Temperature = 0.0 (Argmax / Greedy Decoding)**: Best for reproducible throughput benchmarks. It forces the model to pick the highest probability token, eliminating entropy variance across runs.\n"
             "- **Temperature > 0.7 (Creative / High Entropy)**: Flattens the softmax probability distribution across the vocabulary. In autoregressive generation, this leads to variable output sequence lengths and slight decode jitter.\n"
             "- **Top-P (Nucleus Sampling)**: Dynamically truncates the probability mass to the top $P$ tokens (e.g., top 90%). Setting Top-P lower (e.g., 0.8) prevents low-probability outlier tokens.\n\n"
@@ -1012,7 +1012,7 @@ TOPIC_ARTICLES: dict[str, dict[str, Any]] = {
         "keywords": ["traffic", "concurrency", "worker", "pool", "queue", "saturation", "streams"],
         "topic": "Concurrency Workers & Queue Saturation",
         "answer": (
-            "### ⚡ Concurrency & Worker Streams\n\n"
+            "### Concurrency & Worker Streams\n\n"
             "**Concurrency ($N$)** represents the number of simultaneous active HTTP streaming connections hitting the model endpoint:\n\n"
             "$$\\text{Throughput (RPS)} = \\frac{\\text{Concurrency}}{\\text{Mean Latency (seconds)}}$$\n\n"
             "- **Under-saturation ($N < N_{\\text{knee}}$)**: GPU compute units are under-utilized. TTFT remains low and stable.\n"
@@ -1040,7 +1040,7 @@ TOPIC_ARTICLES: dict[str, dict[str, Any]] = {
         ],
         "topic": "Traffic Load Curves & Saturation Dynamics",
         "answer": (
-            "### 📈 Load Curve Geometries & Queue Saturation\n\n"
+            "### Load Curve Geometries & Queue Saturation\n\n"
             "1. **Constant / Flat**: Maintains a fixed number of concurrent worker streams. Ideal for measuring sustained decode throughput (tokens/sec) and identifying steady-state memory utilization.\n"
             "2. **Step Ramp (Staircase)**: Gradually increments concurrency in discrete steps (e.g. 5 → 10 → 25 → 50). This reveals the exact concurrency threshold where the GPU prefill/decode scheduler becomes saturated.\n"
             "3. **Poisson (Stochastic Arrival)**: Models real-world human arrival patterns where inter-arrival times follow exponential distribution $P(t) = \\lambda e^{-\\lambda t}$. Tests how well the inference gateway buffers bursts.\n"
@@ -1068,7 +1068,7 @@ TOPIC_ARTICLES: dict[str, dict[str, Any]] = {
         ],
         "topic": "Provider Wire Protocols & Connection Routing",
         "answer": (
-            "### 🌐 Provider Wire Protocols & Network Handshakes\n\n"
+            "### Provider Wire Protocols & Network Handshakes\n\n"
             "- **Server-Sent Events (SSE)**: Standard HTTP streaming mechanism used across OpenAI, Anthropic, and vLLM. Each token chunk is streamed as an SSE frame.\n"
             "- **TLS Handshake & Connection Pooling**: A fresh TLS 1.3 handshake adds 30-80ms of network overhead before the prompt reaches the GPU.\n"
             "- **Warmup Requests**: Always use warmup runs to establish persistent TCP/TLS keep-alive sockets before benchmarking raw inference speed."
@@ -1095,7 +1095,7 @@ TOPIC_ARTICLES: dict[str, dict[str, Any]] = {
         ],
         "topic": "Model Architecture & Parameter Sizing",
         "answer": (
-            "### 🧠 Model Architecture & Memory Bandwidth\n\n"
+            "### Model Architecture & Memory Bandwidth\n\n"
             "- **Dense Models (e.g. Llama-3-8B / 70B)**: Autoregressive decode must stream all active weights across the memory bus for every token generated. Speed is directly determined by GPU HBM bandwidth (TB/s).\n"
             "- **Mixture of Experts (MoE, e.g. DeepSeek-V3)**: Activates only a subset of total parameter experts per token, delivering higher decode throughput at lower compute cost.\n"
             "- **Quantization (FP8 / INT4)**: Cuts weight memory footprint in half, doubling effective memory bandwidth and increasing batch capacity."
@@ -1174,6 +1174,60 @@ GROQ_CHEAPEST_MODEL = "llama-3.1-8b-instant"  # $0.05 / 1M tokens, ultra-fast 80
 GROQ_BEST_MODEL = "llama-3.3-70b-versatile"  # Flagship 70B reasoning & accuracy
 
 
+def _clean_llm_markdown_and_latex(text: str) -> str:
+    """Sanitize and normalize markdown & LaTeX generated by LLM models."""
+    if not text:
+        return ""
+
+    # 0. Strip any stray emojis or decorative symbols
+    cleaned = re.sub(
+        r"[\U00010000-\U0010ffff\u2600-\u27bf\u2300-\u23ff\u2b50\u2b55\ufe0f\u200d]",
+        "",
+        text,
+    )
+
+    # 1. Convert code fences ```math, ```latex, or ```katex to standard $$ block equations
+    cleaned = re.sub(
+        r"```(?:math|latex|katex|tex)\s*\n([\s\S]*?)\n```",
+        r"$$\n\1\n$$",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+
+    # 2. Normalize display math \[ ... \] to $$ ... $$
+    cleaned = re.sub(
+        r"(?<!\\)\\\[([\s\S]*?)(?<!\\)\\\]",
+        r"$$\n\1\n$$",
+        cleaned,
+    )
+
+    # 3. Normalize inline math \( ... \) to $ ... $
+    cleaned = re.sub(
+        r"(?<!\\)\\\(([\s\S]*?)(?<!\\)\\\)",
+        r"$\1$",
+        cleaned,
+    )
+
+    # 4. Fix accidental double-escaped backslashes before common LaTeX commands (e.g. \\text -> \text)
+    cleaned = re.sub(
+        r"\\\\([a-zA-Z]+)",
+        r"\\\1",
+        cleaned,
+    )
+
+    # 5. Fix accidental double-escaped backslashes before common escaped symbols (e.g. \\_ -> \_)
+    cleaned = re.sub(
+        r"\\\\([_&%#{}$])",
+        r"\\\1",
+        cleaned,
+    )
+
+    # 6. Normalize double spaces
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+
+    return cleaned.strip()
+
+
 async def _query_groq_llm(
     api_key: str,
     query: str,
@@ -1228,14 +1282,21 @@ async def _query_groq_llm(
             models_to_try.append(m_str)
 
     if is_openai:
-        models_to_try.extend(["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"])
+        # Preferred OpenAI chat models
+        models_to_try.extend(
+            [
+                "gpt-4o-mini",
+                "gpt-4o",
+                "gpt-3.5-turbo",
+            ]
+        )
     else:
-        # Specifically prioritize the cheapest and best models
         if active_remote_models:
-            # 1. Cheapest & fastest model if accessible
+            # Sort dynamically discovered models: prioritize best/cheapest known
+            # 1. Flagship cheap instant
             if GROQ_CHEAPEST_MODEL in active_remote_models:
                 models_to_try.append(GROQ_CHEAPEST_MODEL)
-            # 2. Best quality model if accessible
+            # 2. Flagship best versatile
             if GROQ_BEST_MODEL in active_remote_models:
                 models_to_try.append(GROQ_BEST_MODEL)
             # 3. Known alternate chat models
@@ -1269,13 +1330,28 @@ async def _query_groq_llm(
     for target_model in models_to_try:
         try:
             system_prompt = (
-                "You are LLMark Inference Copilot, a world-class AI Systems & LLM Inference Architect.\n"
-                "Provide direct, concise, and easy-to-understand answers (under 160 words total). Keep responses punchy, scannable, and free of verbose filler.\n\n"
-                "Structure in 3 compact parts:\n"
-                "1. **💡 In Simple Terms**: 1-2 plain-English sentences capturing the core idea.\n"
-                "2. **🔬 Key Mechanics**: 2-3 concise bullet points with key formulas ($...$) or hardware metrics.\n"
-                "3. **🛠️ Benchmark Tip**: 1 actionable parameter or threshold recommendation for LLMark.\n\n"
+                "You are LLMark Inference Copilot, a Principal Systems Architect specializing in Large Language Model (LLM) serving infrastructure, continuous batching, memory physics, and distributed inference telemetry.\n"
+                "Deliver direct, highly technical, and concise answers (strictly under 180 words total). Adopt a clean, executive engineering style with high signal-to-noise ratio. Avoid conversational filler, introductory pleasantries, or speculative fluff.\n\n"
+                "CRITICAL STYLE REQUIREMENT:\n"
+                "- Do NOT use any emojis, emoticons, or decorative symbols anywhere in your response. Keep all headers, bullet points, and text strictly professional, minimal, and clean.\n\n"
+                "Structure your answer into exactly 3 compact sections:\n"
+                "1. **Conceptual Summary**: 1-2 sharp, precise sentences articulating the core architecture or trade-off.\n"
+                "2. **Key Mechanics**: 2-3 concise engineering bullet points incorporating exact mathematical formulas ($...$ or $$...$$) and hardware metrics (HBM bandwidth, FLOPs/byte, KV cache allocation, or queuing dynamics).\n"
+                "3. **Benchmark Recommendation**: 1 actionable configuration parameter, load curve profile, or SLO threshold for LLMark.\n\n"
                 f"Context: Vendor={vendor or 'cloud'}, Model={model or target_model}, Topic={context_topic or 'Inference'}\n\n"
+                "Mathematical & Markdown Formatting Requirements (CRITICAL):\n"
+                "- Format all formulas using standard KaTeX-compatible LaTeX.\n"
+                "- For INLINE math: use single dollar signs with NO whitespace right after opening $ or before closing $ (e.g. `$T_{\\text{prefill}} \\le 50\\text{ms}$`, NEVER `$ formula $`).\n"
+                "- For STANDALONE / BLOCK formulas: use double dollar signs on their own dedicated lines:\n"
+                "  $$\n"
+                "  \\text{Throughput} = \\frac{\\text{Concurrency}}{\\text{Mean Latency}}\n"
+                "  $$\n"
+                "- Wrap multi-character variable names, acronyms, and units in \\text{...} (e.g. \\text{TTFT}, \\text{TPOT}, \\text{RPS}, \\text{ITL}, \\text{VRAM}, \\text{ms}).\n"
+                "- Use standard KaTeX operators: \\frac{a}{b}, \\times, \\cdot, \\approx, \\le, \\ge, \\to, \\Delta, \\sum, \\min, \\max, \\lambda, \\mu, \\sigma.\n"
+                "- DO NOT wrap formulas in code blocks like ```math or ```latex; always use $$ or $ delimiters.\n"
+                "- DO NOT use \\[...\\] or \\(...\\) delimiters.\n"
+                "- When mentioning monetary costs or prices, write 'USD' or escaped '\\$' (e.g. '0.50 USD' or '\\$0.50 per 1M tokens'), never an unescaped '$' that collides with math delimiters.\n"
+                "- Avoid unsupported environments like \\begin{align}; write clean, self-contained equations.\n\n"
                 "Guidelines:\n"
                 "- Keep explanations compact, tight, and directly answering what was asked.\n"
                 "- End with exactly 3 short follow-up questions formatted as:\n"
@@ -1295,7 +1371,7 @@ async def _query_groq_llm(
                 model=target_model,
                 messages=formatted_messages,  # type: ignore[arg-type]
                 temperature=0.3,
-                max_tokens=400,
+                max_tokens=750,
             )
 
             raw_text = response.choices[0].message.content or ""
@@ -1304,7 +1380,8 @@ async def _query_groq_llm(
             followups = []
             answer_text = raw_text
 
-            followup_match = re.search(r"FOLLOWUP_QUESTIONS:\s*(\[.*?\])", raw_text, re.DOTALL)
+            # 1. Try JSON list format
+            followup_match = re.search(r"FOLLOWUP_QUESTIONS:\s*(\[.*?\])", raw_text, re.DOTALL | re.IGNORECASE)
             if followup_match:
                 try:
                     parsed = json.loads(followup_match.group(1))
@@ -1314,12 +1391,37 @@ async def _query_groq_llm(
                 except Exception:
                     pass
 
+            # 2. If not matched or failed, try numbered / bullet list format
+            if not followups:
+                followup_list_match = re.search(
+                    r"FOLLOWUP_QUESTIONS:\s*\n*((?:\s*[-*\d.]+\s*.+\n?)+)",
+                    raw_text,
+                    re.IGNORECASE,
+                )
+                if followup_list_match:
+                    lines = followup_list_match.group(1).strip().split("\n")
+                    extracted = [
+                        re.sub(r"^\s*[-*\d.]+\s*", "", line).strip(' "[]\'')
+                        for line in lines
+                        if line.strip()
+                    ]
+                    followups = [q for q in extracted if q][:3]
+                    answer_text = raw_text[: followup_list_match.start()].strip()
+
+            # Ensure FOLLOWUP_QUESTIONS header is never left in final answer
+            if "FOLLOWUP_QUESTIONS:" in answer_text:
+                header_idx = answer_text.find("FOLLOWUP_QUESTIONS:")
+                answer_text = answer_text[:header_idx].strip()
+
             if not followups:
                 followups = [
                     "How does concurrency impact TTFT vs TPOT?",
                     "What is the difference between Raw Throughput and Goodput?",
                     "How to calculate KV Cache memory requirements?",
                 ]
+
+            # Sanitize and normalize markdown & LaTeX blocks
+            answer_text = _clean_llm_markdown_and_latex(answer_text)
 
             return ExpertQueryResponse(
                 answer=answer_text,
@@ -1407,13 +1509,13 @@ async def ask_expert(payload: ExpertQueryRequest) -> ExpertQueryResponse:
 
     return ExpertQueryResponse(
         answer=(
-            "### ⚠️ Live AI Response Unavailable for Custom Question\n\n"
+            "### Live AI Response Unavailable for Custom Question\n\n"
             f'**Your Question**: *"{query}"*\n\n'
             "This is a custom, open-ended question that requires a live LLM endpoint to generate an answer.\n\n"
             "**To answer custom questions:**\n"
-            "1. Add your **Groq API Key** in `.env` (`GROQ_API_KEY=gsk_...`) or click the **Key icon (🔑)** in the top right of this drawer.\n"
+            "1. Add your **Groq API Key** in `.env` (`GROQ_API_KEY=gsk_...`) or click the **Key icon** in the top right of this drawer.\n"
             "2. Ensure the model ID (e.g. `gpt-oss-20b`, `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`) is supported by your endpoint.\n\n"
-            "💡 **Curated Presaved Questions Available Offline**:\n"
+            " **Curated Presaved Questions Available Offline**:\n"
             "You can click any of the verified suggested questions below to get instant architectural explanations without needing an API key."
         ),
         topic="Custom Question (Key Required)",

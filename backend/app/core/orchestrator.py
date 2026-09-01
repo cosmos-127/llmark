@@ -215,8 +215,16 @@ class BenchmarkOrchestrator:
                         if elapsed >= config.duration_seconds:
                             break
 
+                    # Cold vs Warm Prefix Cache Discovery
+                    is_this_cold = False
+                    preset_str = getattr(config.workload_preset, "value", str(config.workload_preset))
+                    if (config.measure_cache_speedup or preset_str in ("kv_cache_reuse", "long_context_retrieval")):
+                        async with counter_lock:
+                            if request_counter <= 1:
+                                is_this_cold = True
+
                     prompt = base_prompt
-                    if config.cache_bust:
+                    if config.cache_bust or is_this_cold:
                         prompt = f"{prompt} [Nonce: {uuid.uuid4().hex[:8]}]"
 
                     # Check spend cap circuit breaker
@@ -236,7 +244,7 @@ class BenchmarkOrchestrator:
 
                     # Stream single request
                     req_metric = await cls._stream_single_request(
-                        adapter, config, prompt, execution.waterfall_baseline, execution.start_time
+                        adapter, config, prompt, execution.waterfall_baseline, execution.start_time, is_this_cold
                     )
                     execution.metrics.append(req_metric)
                     execution.total_cost_usd += req_metric.cost_usd
@@ -375,6 +383,7 @@ class BenchmarkOrchestrator:
         prompt: str,
         baseline_waterfall: WaterfallTiming,
         start_time: float = 0.0,
+        is_cache_cold: bool = False,
     ) -> SingleRequestMetric:
         req_id = f"req_{uuid.uuid4().hex[:8]}"
         t_request_sent = time.perf_counter()
@@ -491,6 +500,7 @@ class BenchmarkOrchestrator:
                 status_code=200,
                 is_error=False,
                 is_rate_limit=False,
+                is_cache_cold=is_cache_cold,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
                 thinking_tokens=thinking_token_count,

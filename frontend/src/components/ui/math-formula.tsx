@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import katex from "katex";
+import { cleanLatex } from "@/components/common/MarkdownRenderer";
 
 interface MathFormulaProps {
   math: string;
@@ -13,14 +14,15 @@ export const MathFormula: React.FC<MathFormulaProps> = ({
   className = "",
 }) => {
   const html = useMemo(() => {
+    const cleaned = cleanLatex(math);
     try {
-      return katex.renderToString(math, {
+      return katex.renderToString(cleaned, {
         displayMode: block,
         throwOnError: false,
       });
     } catch (e) {
       console.error("KaTeX rendering error:", e);
-      return `<span class="text-rose-500">${math}</span>`;
+      return `<span class="text-rose-500">${cleaned}</span>`;
     }
   }, [math, block]);
 

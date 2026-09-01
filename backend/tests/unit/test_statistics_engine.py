@@ -184,3 +184,119 @@ def test_derived_metrics_workload_preset_variations():
     )
     assert kv_snapshot.cache_speedup_factor is not None
     assert kv_snapshot.cache_speedup_factor > 1.0
+
+
+def test_latency_distribution_histogram():
+    """Verify latency histogram bins, dispersion, and bimodal detection."""
+    values = [45.0, 48.0, 50.0, 52.0, 55.0, 480.0, 495.0, 510.0, 520.0, 530.0]
+    dist = StatisticsEngine.compute_distribution(values, "ttft", num_bins=6)
+    assert dist is not None
+    assert dist.metric == "ttft"
+    assert dist.count == 10
+    assert dist.min_ms == 45.0
+    assert dist.max_ms == 530.0
+    assert len(dist.bins) > 0
+    assert dist.bimodal_detected is True
+    assert dist.bimodal_description is not None
+    assert "Bimodal" in dist.bimodal_description
+
+
+def test_cold_vs_warm_cache_measurement():
+    """Verify measured cold vs warm prefix cache speedup and hit percentage."""
+    slo = SLOThresholds()
+    reqs = [
+        SingleRequestMetric(
+            request_id="req_cold",
+            status_code=200,
+            is_error=False,
+            is_cache_cold=True,
+            prompt_tokens=3000,
+            completion_tokens=100,
+            ttft_ms=600.0,
+            tpot_ms=20.0,
+            e2e_ms=2600.0,
+        ),
+        SingleRequestMetric(
+            request_id="req_warm_1",
+            status_code=200,
+            is_error=False,
+            is_cache_cold=False,
+            prompt_tokens=3000,
+            completion_tokens=100,
+            ttft_ms=60.0,
+            tpot_ms=20.0,
+            e2e_ms=2060.0,
+        ),
+        SingleRequestMetric(
+            request_id="req_warm_2",
+            status_code=200,
+            is_error=False,
+            is_cache_cold=False,
+            prompt_tokens=3000,
+            completion_tokens=100,
+            ttft_ms=50.0,
+            tpot_ms=20.0,
+            e2e_ms=2050.0,
+        ),
+    ]
+
+    snapshot = StatisticsEngine.calculate_snapshot(
+        benchmark_id="bmk_cache",
+        status="completed",
+        elapsed_seconds=5.0,
+        total_requests=3,
+        metrics=reqs,
+        slo=slo,
+        workload_preset="kv_cache_reuse",
+    )
+    assert snapshot.cold_ttft_ms == 600.0
+    assert snapshot.warm_ttft_p50_ms == 55.0
+    assert snapshot.cache_speedup_factor == round(600.0 / 55.0, 2)
+    assert snapshot.cache_hit_pct == 100.0
+    assert snapshot.cache_token_savings_pct == 50.0
+    assert snapshot.ttft_distribution is not None
+
+
+def test_preset_dependency_enforcement():
+    """Verify BenchmarkConfig automatic field locking and invariant enforcement."""
+    from app.models.schemas import BenchmarkConfig, WorkloadPreset
+
+    # 1. KV cache reuse preset locks cache_bust off and measure_cache_speedup on
+    cfg_kv = BenchmarkConfig(
+        name="KV Cache Test",
+        workload_preset=WorkloadPreset.KV_CACHE_REUSE,
+        cache_bust=True,  # Should be normalized to False
+        warmup_requests=3,  # Should be normalized to 0
+    )
+    assert cfg_kv.cache_bust is False
+    assert cfg_kv.measure_cache_speedup is True
+    assert cfg_kv.warmup_requests == 0
+    assert cfg_kv.max_tokens == 150
+
+    # 2. Cache bust defeats cache speedup
+    cfg_bust = BenchmarkConfig(
+        name="Cache Bust Test",
+        workload_preset=WorkloadPreset.CHAT,
+        cache_bust=True,
+        measure_cache_speedup=True,
+    )
+    assert cfg_bust.cache_bust is True
+    assert cfg_bust.measure_cache_speedup is False
+
+    # 3. Saturation knee curve locks concurrency to minimum 8
+    cfg_knee = BenchmarkConfig(
+        name="Knee Test",
+        workload_preset=WorkloadPreset.CHAT,
+        load_curve="saturation_knee",
+        concurrency=2,
+    )
+    assert cfg_knee.load_curve == "saturation_knee"
+    assert cfg_knee.concurrency >= 8
+
+    # 4. Prefill TTFT locks max_tokens to 10
+    cfg_ttft = BenchmarkConfig(
+        name="Prefill TTFT Test",
+        workload_preset=WorkloadPreset.PREFILL_TTFT,
+        max_tokens=500,
+    )
+    assert cfg_ttft.max_tokens == 10

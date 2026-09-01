@@ -69,10 +69,10 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
               </motion.div>
               <div>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  Ephemeral security vault
+                  API Key Configuration
                   {hasKey && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
                 </CardTitle>
-                <CardDescription className="text-xs">Zero persistence • Process memory only</CardDescription>
+                <CardDescription className="text-xs">Process memory only • Scrubbed on session end</CardDescription>
               </div>
             </div>
 
@@ -102,58 +102,145 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
         </CardHeader>
 
         <CardContent className="p-5 pt-2 space-y-4 font-sans">
-          {/* API Key Input */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="vault-api-key">
-                {vendor === "anthropic" ? "Anthropic API key" : "Provider API key"}
-              </Label>
-              <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-slate-400">
-                {hasKey ? "Key loaded" : "Required for live test"}
-              </span>
-            </div>
-            <div className="relative">
-              <Input
-                id="vault-api-key"
-                type={showKey ? "text" : "password"}
-                value={credential.api_key || ""}
-                onChange={(e) => onChange({ ...credential, api_key: e.target.value })}
-                placeholder={vendor === "anthropic" ? "sk-ant-api03-..." : "sk-proj-..."}
-                className="pr-10 font-sans text-xs"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowKey(!showKey)}
-                className="absolute right-1 top-0.5 h-8 w-8 text-[#2C2C2C]/50 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
-              >
-                {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              </Button>
-            </div>
-          </div>
+          {/* Special GCP / Gemini 2-Option Vault View */}
+          {vendor === "gcp_vertex" ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...credential, gcp_auth_mode: "api_key" })}
+                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                    (credential.gcp_auth_mode || "api_key") === "api_key"
+                      ? "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/50 dark:border-[#E05284]/50 text-[#853953] dark:text-[#F06A9A] ring-1 ring-[#853953]/30 shadow-xs"
+                      : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10 dark:border-white/10 hover:bg-[#F3F4F4] text-[#2C2C2C] dark:text-white"
+                  }`}
+                >
+                  <span className="text-xs font-semibold block">Gemini API Key</span>
+                  <span className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400">Google AI Studio</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...credential, gcp_auth_mode: "vertex_ai" })}
+                  className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                    credential.gcp_auth_mode === "vertex_ai"
+                      ? "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/50 dark:border-[#E05284]/50 text-[#853953] dark:text-[#F06A9A] ring-1 ring-[#853953]/30 shadow-xs"
+                      : "bg-white dark:bg-[#0F0F13] border-[#2C2C2C]/10 dark:border-white/10 hover:bg-[#F3F4F4] text-[#2C2C2C] dark:text-white"
+                  }`}
+                >
+                  <span className="text-xs font-semibold block">GCP Project ID</span>
+                  <span className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400">Vertex AI VPC</span>
+                </button>
+              </div>
 
-          {/* Base URL (for vLLM/Groq/Together/Ollama) */}
-          {isCustomUrlAllowed && (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="vault-base-url">
-                  Endpoint base URL <span className="text-[#2C2C2C]/50 dark:text-slate-400 font-normal lowercase">(optional)</span>
-                </Label>
-                <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-slate-400">vLLM / Ollama / Groq</span>
-              </div>
-              <div className="relative">
-                <Input
-                  id="vault-base-url"
-                  type="text"
-                  value={credential.base_url || ""}
-                  onChange={(e) => onChange({ ...credential, base_url: e.target.value })}
-                  placeholder="e.g. http://localhost:8000/v1 or https://api.groq.com/openai/v1"
-                  className="pr-9"
-                />
-                <Server className="absolute right-3 top-2.5 h-4 w-4 text-[#2C2C2C]/40 dark:text-slate-500 pointer-events-none" />
-              </div>
+              {(credential.gcp_auth_mode || "api_key") === "api_key" ? (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="vault-gemini-key">Gemini API key</Label>
+                    <span className="text-xs text-[#853953] dark:text-[#F06A9A] font-medium font-sans">
+                      aistudio.google.com
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="vault-gemini-key"
+                      type={showKey ? "text" : "password"}
+                      value={credential.api_key || ""}
+                      onChange={(e) => onChange({ ...credential, api_key: e.target.value })}
+                      placeholder="AIzaSy..."
+                      className="pr-10 font-sans text-xs"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowKey(!showKey)}
+                      className="absolute right-1 top-0.5 h-8 w-8 text-[#2C2C2C]/50 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                    >
+                      {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="vault-gcp-proj">GCP Project ID</Label>
+                    <Input
+                      id="vault-gcp-proj"
+                      value={credential.gcp_project_id || ""}
+                      onChange={(e) => onChange({ ...credential, gcp_project_id: e.target.value })}
+                      placeholder="my-gcp-project-123"
+                      className="font-sans text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="vault-gcp-loc">GCP Region</Label>
+                    <Input
+                      id="vault-gcp-loc"
+                      value={credential.gcp_location || "us-central1"}
+                      onChange={(e) => onChange({ ...credential, gcp_location: e.target.value })}
+                      placeholder="us-central1"
+                      className="font-sans text-xs"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
+          ) : (
+            <>
+              {/* API Key Input */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="vault-api-key">
+                    {vendor === "anthropic" ? "Anthropic API key" : "Provider API key"}
+                  </Label>
+                  <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-slate-400">
+                    {hasKey ? "Key loaded" : "Required for live test"}
+                  </span>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="vault-api-key"
+                    type={showKey ? "text" : "password"}
+                    value={credential.api_key || ""}
+                    onChange={(e) => onChange({ ...credential, api_key: e.target.value })}
+                    placeholder={vendor === "anthropic" ? "sk-ant-api03-..." : "sk-proj-..."}
+                    className="pr-10 font-sans text-xs"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-1 top-0.5 h-8 w-8 text-[#2C2C2C]/50 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-[#F3F4F4]"
+                  >
+                    {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Base URL (for vLLM/Groq/Together/Ollama) */}
+              {isCustomUrlAllowed && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="vault-base-url">
+                      Endpoint base URL <span className="text-[#2C2C2C]/50 dark:text-slate-400 font-normal lowercase">(optional)</span>
+                    </Label>
+                    <span className="text-xs font-sans text-[#2C2C2C]/50 dark:text-slate-400">vLLM / Ollama / Groq</span>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="vault-base-url"
+                      type="text"
+                      value={credential.base_url || ""}
+                      onChange={(e) => onChange({ ...credential, base_url: e.target.value })}
+                      placeholder="e.g. http://localhost:8000/v1 or https://api.groq.com/openai/v1"
+                      className="pr-9"
+                    />
+                    <Server className="absolute right-3 top-2.5 h-4 w-4 text-[#2C2C2C]/40 dark:text-slate-500 pointer-events-none" />
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <Separator className="my-2" />

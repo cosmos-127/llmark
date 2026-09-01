@@ -85,3 +85,84 @@ async def test_expert_ask_custom_question_without_key(async_client: AsyncClient)
     assert data["source"] == "key_required"
     assert "Live AI Response Unavailable" in data["answer"]
     assert len(data["suggested_followups"]) > 0
+
+
+def test_clean_llm_markdown_and_latex_unit():
+    """Verify backend Markdown & LaTeX sanitizer fixes common LLM generation issues."""
+    from app.api.routes.expert import _clean_llm_markdown_and_latex
+
+    # 1. Convert ```latex or ```math fences to $$ blocks
+    input_fenced = (
+        "Here is the formula:\n"
+        "```latex\n"
+        "\\text{TTFT} = \\frac{N}{\\text{Latency}}\n"
+        "```\n"
+    )
+    cleaned = _clean_llm_markdown_and_latex(input_fenced)
+    assert "$$\n\\text{TTFT} = \\frac{N}{\\text{Latency}}\n$$" in cleaned
+    assert "```latex" not in cleaned
+
+    # 2. Convert \[ ... \] display brackets to $$ ... $$
+    input_brackets = "Formula:\n\\[\n\\text{Goodput} = \\text{RPS} \\times \\text{Yield}\n\\]"
+    cleaned_brackets = _clean_llm_markdown_and_latex(input_brackets)
+    assert "$$\n\n\\text{Goodput} = \\text{RPS} \\times \\text{Yield}\n\n$$" in cleaned_brackets
+    assert "\\[" not in cleaned_brackets
+
+    # 3. Convert \( ... \) inline brackets to $ ... $
+    input_inline = "Where \\(\\lambda = 10\\) requests/sec."
+    cleaned_inline = _clean_llm_markdown_and_latex(input_inline)
+    assert "Where $\\lambda = 10$ requests/sec." == cleaned_inline
+
+    # 4. Fix double-escaped commands like \\\\text -> \text
+    input_escaped = "Metric: \\\\text{TPOT} \\le 30\\\\text{ms}"
+    cleaned_escaped = _clean_llm_markdown_and_latex(input_escaped)
+    assert "\\text{TPOT} \\le 30\\text{ms}" in cleaned_escaped
+
+
+@pytest.mark.asyncio
+async def test_expert_ask_with_latex_and_list_followups(async_client: AsyncClient):
+    """Test asking expert when model returns LaTeX in ```math block and followups in bullet list."""
+    from unittest.mock import MagicMock
+
+    mock_choice = MagicMock()
+    mock_choice.message.content = (
+        "### 💡 In Simple Terms\n"
+        "Prefill throughput measures how quickly initial tokens are processed.\n\n"
+        "### 🔬 Key Mechanics\n"
+        "```math\n"
+        "\\text{Throughput} = \\frac{\\text{Tokens}}{\\Delta t}\n"
+        "```\n\n"
+        "### 🛠️ Benchmark Tip\n"
+        "Use concurrency = 16 for saturation probing.\n\n"
+        "FOLLOWUP_QUESTIONS:\n"
+        "- What is the optimal batch size?\n"
+        "- How to measure P99 latency?\n"
+        "- When does queue saturation occur?"
+    )
+    mock_response = MagicMock()
+    mock_response.choices = [mock_choice]
+
+    with patch(
+        "openai.resources.chat.completions.AsyncCompletions.create", new_callable=AsyncMock
+    ) as mock_create:
+        mock_create.return_value = mock_response
+        response = await async_client.post(
+            "/api/expert/ask",
+            json={
+                "query": "How is throughput calculated in prefill?",
+                "groq_api_key": "gsk_test_mock_key_987654",
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["source"] == "groq_llm"
+        # Verify ```math fence was converted to $$ block
+        assert "$$\n\\text{Throughput} = \\frac{\\text{Tokens}}{\\Delta t}\n$$" in data["answer"]
+        assert "```math" not in data["answer"]
+        # Verify FOLLOWUP_QUESTIONS was stripped from answer text
+        assert "FOLLOWUP_QUESTIONS:" not in data["answer"]
+        # Verify followups were extracted from bullet list
+        assert len(data["suggested_followups"]) == 3
+        assert "What is the optimal batch size?" in data["suggested_followups"]
+        assert "When does queue saturation occur?" in data["suggested_followups"]
+

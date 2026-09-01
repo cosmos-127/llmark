@@ -13,8 +13,9 @@ const DEFAULT_CONFIG: BenchmarkConfig = {
   vendor: "mock",
   model: "gpt-4o",
   credential: {},
-  workload_preset: "chat_interactive",
+  workload_preset: undefined,
   test_mode: "duration",
+
   total_requests: 50,
   max_tokens: 256,
   temperature: 0.7,

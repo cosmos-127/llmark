@@ -1521,3 +1521,368 @@ class ReportExporter:
         # Build document with NumberedCanvas
         doc.build(story, canvasmaker=NumberedCanvas)
         return buffer.getvalue()
+
+    @classmethod
+    def generate_diff_pdf(
+        cls,
+        run_a: BenchmarkRun,
+        run_b: BenchmarkRun,
+        run_c: BenchmarkRun | None = None,
+    ) -> bytes:
+        """Generate a professional, executive multi-model differential comparison PDF report."""
+        from app.core.diff_engine import DiffEngine
+
+        diff = DiffEngine.compare_runs(run_a, run_b, run_c)
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=letter,
+            rightMargin=36,
+            leftMargin=36,
+            topMargin=42,
+            bottomMargin=42,
+        )
+        story = []
+
+        # Color Palette
+        c_plum = colors.HexColor("#612D53")
+        c_wine = colors.HexColor("#853953")
+        c_rose = colors.HexColor("#E05284")
+        c_dark = colors.HexColor("#18181B")
+        c_muted = colors.HexColor("#71717A")
+        c_border = colors.HexColor("#E4E4E7")
+        c_light = colors.HexColor("#FAFAFA")
+        c_green = colors.HexColor("#059669")
+        c_red = colors.HexColor("#DC2626")
+        c_callout_bg = colors.HexColor("#F8F9FA")
+
+        styles = getSampleStyleSheet()
+
+        title_style = ParagraphStyle(
+            "DiffTitle",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=16,
+            leading=20,
+            textColor=c_plum,
+            spaceAfter=3,
+        )
+        subtitle_style = ParagraphStyle(
+            "DiffSubtitle",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=8.5,
+            leading=11.5,
+            textColor=c_muted,
+            spaceAfter=10,
+        )
+        section_style = ParagraphStyle(
+            "DiffSection",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=10.5,
+            leading=13.5,
+            textColor=c_wine,
+            spaceBefore=10,
+            spaceAfter=4,
+        )
+        cell_bold = ParagraphStyle(
+            "DiffCellBold",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=8,
+            leading=10.5,
+            textColor=c_dark,
+        )
+        cell_regular = ParagraphStyle(
+            "DiffCellRegular",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=8,
+            leading=10.5,
+            textColor=c_dark,
+        )
+        cell_muted = ParagraphStyle(
+            "DiffCellMuted",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=7.5,
+            leading=9.5,
+            textColor=c_muted,
+        )
+
+        preset_str = (diff.workload_preset or run_a.workload_preset or "chat").replace("_", " ").upper()
+
+        # 1. Header & Title Banner
+        story.append(Paragraph("LLMark Multi-Model Benchmark Comparison Report", title_style))
+        models_summary = f"<b>Baseline A:</b> {run_a.name or run_a.model} ({run_a.vendor}) &nbsp;|&nbsp; <b>Candidate B:</b> {run_b.name or run_b.model} ({run_b.vendor})"
+        if run_c:
+            models_summary += f" &nbsp;|&nbsp; <b>Candidate C:</b> {run_c.name or run_c.model} ({run_c.vendor})"
+        story.append(
+            Paragraph(
+                f"Workload Preset: <b>{preset_str}</b> &nbsp;•&nbsp; Standardized Statistical Differential &nbsp;•&nbsp; {models_summary}",
+                subtitle_style,
+            )
+        )
+
+        # 2. Executive Decision Brief & Verdict Box
+        find_delta = lambda name: next((d for d in diff.deltas if name in d.metric_name), None)
+        ttft_d = find_delta("TTFT P95")
+        tps_d = find_delta("Decode TPS")
+        cost_d = find_delta("Total Cost") or find_delta("Cost / 1K")
+        gp_d = find_delta("Goodput")
+
+        ttft_a = run_a.ttft_p95 or 0.0
+        ttft_b = run_b.ttft_p95 or 0.0
+        ttft_c = run_c.ttft_p95 if run_c else 99999.0
+        min_ttft = min(ttft_a, ttft_b, ttft_c)
+        lat_leader = f"{run_b.model} (Candidate B)" if min_ttft == ttft_b else (f"{run_c.model} (Candidate C)" if run_c and min_ttft == ttft_c else f"{run_a.model} (Baseline A)")
+
+        tps_a = run_a.tps_decode or 0.0
+        tps_b = run_b.tps_decode or 0.0
+        tps_c = (run_c.tps_decode or 0.0) if run_c else 0.0
+        max_tps = max(tps_a, tps_b, tps_c)
+        tps_leader = f"{run_b.model} (Candidate B)" if max_tps == tps_b else (f"{run_c.model} (Candidate C)" if run_c and max_tps == tps_c else f"{run_a.model} (Baseline A)")
+
+        gp_a = run_a.goodput_pct or 0.0
+        gp_b = run_b.goodput_pct or 0.0
+        gp_c = (run_c.goodput_pct or 0.0) if run_c else 0.0
+        max_gp = max(gp_a, gp_b, gp_c)
+        gp_leader = f"{run_b.model} (Candidate B)" if max_gp == gp_b else (f"{run_c.model} (Candidate C)" if run_c and max_gp == gp_c else f"{run_a.model} (Baseline A)")
+
+        cost_a = run_a.total_cost_usd or 0.0
+        cost_b = run_b.total_cost_usd or 0.0
+        cost_c = (run_c.total_cost_usd or 0.0) if run_c else 99999.0
+        min_cost = min(cost_a, cost_b, cost_c)
+        cost_leader = f"{run_b.model} (Candidate B)" if min_cost == cost_b else (f"{run_c.model} (Candidate C)" if run_c and min_cost == cost_c else f"{run_a.model} (Baseline A)")
+
+        b_faster = (ttft_d.delta_pct if ttft_d else 0) < 0
+        b_cheaper = (cost_d.delta_pct if cost_d else 0) < 0
+        b_gp_gain = (gp_d.delta_pct if gp_d else 0) >= 0
+
+        if b_faster and b_cheaper and b_gp_gain:
+            verdict_headline = "Strict Pareto Dominance Detected"
+            verdict_body = (
+                f"Candidate B ({run_b.model}) achieves <b>{abs(ttft_d.delta_pct if ttft_d else 0):.1f}% faster TTFT P95</b> "
+                f"while reducing inference spend by <b>{abs(cost_d.delta_pct if cost_d else 0):.1f}%</b> "
+                f"with equal or higher SLO Goodput compliance ({run_b.goodput_pct:.1f}% vs {run_a.goodput_pct:.1f}%). "
+                "Strong upgrade recommendation."
+            )
+            verdict_bg = colors.HexColor("#ECFDF5")
+            verdict_border = colors.HexColor("#6EE7B7")
+        elif b_faster and not b_cheaper:
+            verdict_headline = "Speed Specialist with Cost Premium"
+            verdict_body = (
+                f"Candidate B ({run_b.model}) delivers <b>{abs(ttft_d.delta_pct if ttft_d else 0):.1f}% lower TTFT tail latency</b> "
+                f"at a <b>{cost_d.delta_pct if cost_d else 0:.1f}% higher cost</b>. "
+                "Recommended for real-time interactive user-facing workflows prioritizing response latency over cost per token."
+            )
+            verdict_bg = colors.HexColor("#EFF6FF")
+            verdict_border = colors.HexColor("#93C5FD")
+        elif not b_faster and b_cheaper:
+            verdict_headline = "High-Efficiency Cost Optimizer"
+            verdict_body = (
+                f"Baseline A maintains lower tail latency, but Candidate B reduces total financial spend by "
+                f"<b>{abs(cost_d.delta_pct if cost_d else 0):.1f}%</b>. "
+                "Recommended for asynchronous background batch processing, distillation, and embedding pipelines."
+            )
+            verdict_bg = colors.HexColor("#FEF3C7")
+            verdict_border = colors.HexColor("#FCD34D")
+        else:
+            verdict_headline = "Balanced Competitors & Close Parity"
+            verdict_body = (
+                f"Both models demonstrate closely matched performance curves on preset <b>{preset_str}</b>. "
+                "Refer to the granular tail percentiles and token economics below for specialized SLA requirements."
+            )
+            verdict_bg = colors.HexColor("#F4F4F5")
+            verdict_border = colors.HexColor("#D4D4D8")
+
+        verdict_content = f"<b><font size=9.5 color='#18181B'>🎯 {verdict_headline}</font></b><br/><font size=8 color='#3F3F46'>{verdict_body}</font>"
+        verdict_table = Table([[Paragraph(verdict_content, cell_regular)]], colWidths=[540])
+        verdict_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), verdict_bg),
+                    ("BOX", (0, 0), (-1, -1), 1, verdict_border),
+                    ("PADDING", (0, 0), (-1, -1), 8),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ]
+            )
+        )
+        story.append(verdict_table)
+        story.append(Spacer(1, 6))
+
+        # 3. Four-Pillar Leader Cards Table
+        leaders_data = [
+            [
+                Paragraph(f"<b>⚡ TTFT Leader</b><br/><font color='{c_plum}'>{lat_leader}</font>", cell_regular),
+                Paragraph(f"<b>🚀 Throughput Leader</b><br/><font color='{c_plum}'>{tps_leader}</font>", cell_regular),
+                Paragraph(f"<b>🛡️ SLO Yield Leader</b><br/><font color='{c_plum}'>{gp_leader}</font>", cell_regular),
+                Paragraph(f"<b>💰 Cost Leader</b><br/><font color='{c_plum}'>{cost_leader}</font>", cell_regular),
+            ]
+        ]
+        leaders_table = Table(leaders_data, colWidths=[135, 135, 135, 135])
+        leaders_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FAFAFA")),
+                    ("BOX", (0, 0), (-1, -1), 0.5, c_border),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.5, c_border),
+                    ("PADDING", (0, 0), (-1, -1), 5),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ]
+            )
+        )
+        story.append(leaders_table)
+        story.append(Spacer(1, 8))
+
+        # 4. Model Specification & Workload Summary Table
+        story.append(Paragraph("1. Benchmark Execution Profiles & Specifications", section_style))
+        if run_c:
+            spec_headers = ["Attribute", f"Baseline A ({run_a.model})", f"Candidate B ({run_b.model})", f"Candidate C ({run_c.model})"]
+            col_w = [120, 140, 140, 140]
+            spec_rows = [
+                spec_headers,
+                ["Provider / Engine", f"{run_a.vendor}", f"{run_b.vendor}", f"{run_c.vendor}"],
+                ["Model Identifier", f"{run_a.model}", f"{run_b.model}", f"{run_c.model}"],
+                ["Concurrency & Curve", f"{run_a.concurrency} streams ({run_a.load_curve})", f"{run_b.concurrency} streams ({run_b.load_curve})", f"{run_c.concurrency} streams ({run_c.load_curve})"],
+                ["Completed Requests", f"{run_a.completed_requests or 0}", f"{run_b.completed_requests or 0}", f"{run_c.completed_requests or 0}"],
+                ["Goodput Yield (SLO %)", f"{run_a.goodput_pct:.1f}%" if run_a.goodput_pct is not None else "—", f"{run_b.goodput_pct:.1f}%" if run_b.goodput_pct is not None else "—", f"{run_c.goodput_pct:.1f}%" if run_c.goodput_pct is not None else "—"],
+                ["Total Financial Cost", f"${run_a.total_cost_usd:.4f}" if run_a.total_cost_usd is not None else "—", f"${run_b.total_cost_usd:.4f}" if run_b.total_cost_usd is not None else "—", f"${run_c.total_cost_usd:.4f}" if run_c.total_cost_usd is not None else "—"],
+            ]
+        else:
+            spec_headers = ["Attribute", f"Baseline A ({run_a.model})", f"Candidate B ({run_b.model})", "Variance / State"]
+            col_w = [140, 140, 140, 120]
+            spec_rows = [
+                spec_headers,
+                ["Provider / Engine", f"{run_a.vendor}", f"{run_b.vendor}", "Cross-Engine" if run_a.vendor != run_b.vendor else "Identical Provider"],
+                ["Model Identifier", f"{run_a.model}", f"{run_b.model}", "A/B Model Diff"],
+                ["Concurrency & Curve", f"{run_a.concurrency} streams ({run_a.load_curve})", f"{run_b.concurrency} streams ({run_b.load_curve})", "Matched Load Curve"],
+                ["Completed Requests", f"{run_a.completed_requests or 0}", f"{run_b.completed_requests or 0}", "Equal Volume"],
+                ["Goodput Yield (SLO %)", f"{run_a.goodput_pct:.1f}%" if run_a.goodput_pct is not None else "—", f"{run_b.goodput_pct:.1f}%" if run_b.goodput_pct is not None else "—", f"{diff.goodput_delta_pct:+.1f}% shift"],
+                ["Total Financial Cost", f"${run_a.total_cost_usd:.4f}" if run_a.total_cost_usd is not None else "—", f"${run_b.total_cost_usd:.4f}" if run_b.total_cost_usd is not None else "—", f"{diff.cost_delta_pct:+.1f}% spend shift"],
+            ]
+
+        spec_flowable = [[Paragraph(f"<b>{c}</b>" if idx == 0 else c, cell_bold if idx == 0 else cell_regular) for c in row] for idx, row in enumerate(spec_rows)]
+        spec_table = Table(spec_flowable, colWidths=col_w)
+        spec_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F4F4F5")),
+                    ("BOX", (0, 0), (-1, -1), 0.5, c_border),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.5, c_border),
+                    ("PADDING", (0, 0), (-1, -1), 4),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_light]),
+                ]
+            )
+        )
+        story.append(spec_table)
+        story.append(Spacer(1, 8))
+
+        # 5. Granular Multi-Model Metrics Matrix Table
+        story.append(Paragraph("2. Granular Telemetry Deltas & Statistical Shifts", section_style))
+
+        if run_c:
+            matrix_headers = ["Metric Dimension", "Category", f"A ({run_a.model})", f"B ({run_b.model})", "B vs A Δ", f"C ({run_c.model})", "C vs A Δ"]
+            m_col_w = [130, 75, 65, 65, 70, 65, 70]
+        else:
+            matrix_headers = ["Metric Dimension", "Category", f"Run A ({run_a.model})", f"Run B ({run_b.model})", "B vs A Delta (%)", "Evaluation"]
+            m_col_w = [140, 85, 80, 80, 75, 80]
+
+        matrix_rows = [matrix_headers]
+
+        for d in diff.deltas:
+            # Color-coded delta formatting
+            if d.delta_pct == 0:
+                delta_str = "0.0%"
+                eval_str = "Parity"
+            elif d.is_improvement:
+                delta_str = f"<font color='#059669'><b>{d.delta_pct:+.1f}%</b></font>"
+                eval_str = "<font color='#059669'><b>Improvement</b></font>"
+            else:
+                delta_str = f"<font color='#DC2626'><b>{d.delta_pct:+.1f}%</b></font>"
+                eval_str = "<font color='#DC2626'>Regression</font>"
+
+            if run_c:
+                if d.delta_c_pct is None or d.delta_c_pct == 0:
+                    delta_c_str = "0.0%"
+                elif d.is_improvement_c:
+                    delta_c_str = f"<font color='#059669'><b>{d.delta_c_pct:+.1f}%</b></font>"
+                else:
+                    delta_c_str = f"<font color='#DC2626'><b>{d.delta_c_pct:+.1f}%</b></font>"
+
+                matrix_rows.append([
+                    d.metric_name,
+                    d.category or "General",
+                    f"{d.run_a_value:g}",
+                    f"{d.run_b_value:g}",
+                    delta_str,
+                    f"{d.run_c_value:g}" if d.run_c_value is not None else "—",
+                    delta_c_str if d.delta_c_value is not None else "—",
+                ])
+            else:
+                matrix_rows.append([
+                    d.metric_name,
+                    d.category or "General",
+                    f"{d.run_a_value:g}",
+                    f"{d.run_b_value:g}",
+                    delta_str,
+                    eval_str,
+                ])
+
+        matrix_flowable = []
+        for idx, row in enumerate(matrix_rows):
+            formatted_row = []
+            for col_idx, cell in enumerate(row):
+                if idx == 0:
+                    formatted_row.append(Paragraph(f"<b>{cell}</b>", cell_bold))
+                elif col_idx == 0:
+                    formatted_row.append(Paragraph(f"<b>{cell}</b>", cell_bold))
+                elif col_idx == 1:
+                    formatted_row.append(Paragraph(cell, cell_muted))
+                else:
+                    formatted_row.append(Paragraph(cell, cell_regular))
+            matrix_flowable.append(formatted_row)
+
+        matrix_table = Table(matrix_flowable, colWidths=m_col_w)
+        matrix_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F4F4F5")),
+                    ("BOX", (0, 0), (-1, -1), 0.5, c_border),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.5, c_border),
+                    ("PADDING", (0, 0), (-1, -1), 3.5),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_light]),
+                ]
+            )
+        )
+        story.append(matrix_table)
+        story.append(Spacer(1, 8))
+
+        # 6. Production & Deployment Recommendations Callout
+        story.append(Paragraph("3. Production Routing & SLA Guidance", section_style))
+        rec_text = (
+            f"<b>Architectural Takeaway:</b> When selecting between <b>{run_a.model}</b> and <b>{run_b.model}</b> for <b>{preset_str}</b> workloads, "
+            f"consider that {run_b.model} delivers {abs(diff.goodput_delta_pct):.1f}% {'higher' if diff.goodput_delta_pct >= 0 else 'lower'} Goodput yield "
+            f"at a {diff.cost_delta_pct:+.1f}% spend delta. Ensure concurrency scaling is configured within measured GPU saturation limits."
+        )
+        rec_table = Table([[Paragraph(rec_text, cell_regular)]], colWidths=[540])
+        rec_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
+                    ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+                    ("PADDING", (0, 0), (-1, -1), 6),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ]
+            )
+        )
+        story.append(rec_table)
+
+        # Build PDF with NumberedCanvas
+        doc.build(story, canvasmaker=NumberedCanvas)
+        return buffer.getvalue()
+

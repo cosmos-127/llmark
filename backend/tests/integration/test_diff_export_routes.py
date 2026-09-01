@@ -79,7 +79,44 @@ async def test_diff_route(async_client: AsyncClient, create_sample_runs):
     data = resp.json()
     assert data["run_a_id"] == "run_test_a"
     assert data["run_b_id"] == "run_test_b"
+    assert data["workload_preset"] == "chat"
     assert len(data["deltas"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_diff_route_preset_mismatch(async_client: AsyncClient):
+    """Test GET /api/diff returns 400 when comparing runs with different workload presets."""
+    async with async_session_factory() as session:
+        run_chat = BenchmarkRun(
+            id="run_preset_chat",
+            name="Chat Run",
+            vendor="openai",
+            model="gpt-4o",
+            workload_preset="chat_interactive",
+            load_curve="constant",
+            concurrency=2,
+            duration_seconds=10,
+            status="completed",
+            config_snapshot={},
+        )
+        run_prefill = BenchmarkRun(
+            id="run_preset_prefill",
+            name="Prefill Run",
+            vendor="groq",
+            model="llama-3.3-70b",
+            workload_preset="prefill_ttft",
+            load_curve="constant",
+            concurrency=2,
+            duration_seconds=10,
+            status="completed",
+            config_snapshot={},
+        )
+        session.add_all([run_chat, run_prefill])
+        await session.commit()
+
+    resp = await async_client.get("/api/diff?run_a=run_preset_chat&run_b=run_preset_prefill")
+    assert resp.status_code == 400
+    assert "Workload preset mismatch" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio
@@ -108,9 +145,20 @@ async def test_export_pdf_route(async_client: AsyncClient, create_sample_runs):
 
 
 @pytest.mark.asyncio
+async def test_export_diff_pdf_route(async_client: AsyncClient, create_sample_runs):
+    """Test GET /api/export/diff/pdf route for 2-model comparison."""
+    resp = await async_client.get("/api/export/diff/pdf?run_a=run_test_a&run_b=run_test_b")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "application/pdf"
+    assert resp.content.startswith(b"%PDF")
+    assert len(resp.content) > 1000
+
+
+@pytest.mark.asyncio
 async def test_export_bundle_route(async_client: AsyncClient, create_sample_runs):
     """Test GET /api/export/bundle/{id} route."""
     resp = await async_client.get("/api/export/bundle/run_test_a")
     assert resp.status_code == 200
     assert resp.headers["content-type"] == "application/gzip"
     assert len(resp.content) > 0
+

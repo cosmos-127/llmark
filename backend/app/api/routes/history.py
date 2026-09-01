@@ -125,6 +125,7 @@ async def get_benchmark_run_details(
             "tls_p50": run.tls_p50,
         },
         "config": run.config_snapshot,
+        "raw_telemetry": run.raw_telemetry,
         "created_at": run.created_at.isoformat() if run.created_at else None,
         "completed_at": run.completed_at.isoformat() if run.completed_at else None,
     }

@@ -67,8 +67,9 @@ export interface BenchmarkConfig {
   vendor: VendorType;
   model: string;
   credential?: VendorCredential;
-  workload_preset: WorkloadPreset;
+  workload_preset?: WorkloadPreset;
   test_mode: TestMode;
+
   total_requests?: number;
   dataset_type?: "synthetic" | "jsonl";
   custom_dataset?: string[];
@@ -85,6 +86,7 @@ export interface BenchmarkConfig {
   duration_seconds: number;
   warmup_requests: number;
   cache_bust: boolean;
+  measure_cache_speedup?: boolean;
   hard_spend_cap?: number;
   custom_prompt_price_per_1m?: number;
   custom_completion_price_per_1m?: number;
@@ -110,11 +112,37 @@ export interface WaterfallTiming {
   total_e2e_ms: number;
 }
 
+export interface LatencyBin {
+  bin_start_ms: number;
+  bin_end_ms: number;
+  bin_label: string;
+  count: number;
+  percentage: number;
+}
+
+export interface LatencyDistribution {
+  metric: string;
+  count: number;
+  min_ms: number;
+  max_ms: number;
+  mean_ms: number;
+  std_dev_ms: number;
+  cv: number;
+  p50_ms: number;
+  p75_ms: number;
+  p95_ms: number;
+  p99_ms: number;
+  bimodal_detected: boolean;
+  bimodal_description?: string | null;
+  bins: LatencyBin[];
+}
+
 export interface SingleRequestMetric {
   request_id: string;
   status_code: number;
   is_error: boolean;
   is_rate_limit?: boolean;
+  is_cache_cold?: boolean;
   retry_after_ms?: number;
   error_message?: string;
   prompt_tokens: number;
@@ -190,11 +218,19 @@ export interface MetricsSnapshot {
   itl_jitter_cv?: number | null;
   prefill_slope_ms_per_1k?: number | null;
   cache_speedup_factor?: number | null;
+  cold_ttft_ms?: number | null;
+  warm_ttft_p50_ms?: number | null;
+  cache_hit_pct?: number | null;
+  cache_token_savings_pct?: number | null;
   thinking_wait_multiplier?: number | null;
   thinking_cost_share_pct?: number | null;
   grammar_penalty_pct?: number | null;
   concurrency_scaling_efficiency_pct?: number | null;
   cost_per_1k_goodput_usd?: number | null;
+
+  // Latency Distribution Histograms
+  ttft_distribution?: LatencyDistribution | null;
+  e2e_distribution?: LatencyDistribution | null;
 
   profile_metrics?: string[];
   workload_preset?: string;
@@ -217,6 +253,7 @@ export interface CostEstimate {
 
 export interface MetricDelta {
   metric_name: string;
+  category?: string | null;
   run_a_value: number;
   run_b_value: number;
   run_c_value?: number | null;
@@ -241,6 +278,10 @@ export interface RunDiffResponse {
   run_a_model?: string | null;
   run_b_model?: string | null;
   run_c_model?: string | null;
+  run_a_preset?: string | null;
+  run_b_preset?: string | null;
+  run_c_preset?: string | null;
+  workload_preset?: string | null;
   deltas: MetricDelta[];
   goodput_delta_pct: number;
   cost_delta_pct: number;
@@ -313,6 +354,7 @@ export interface HistoricalRunDetails {
     tls_p50: number;
   };
   config: BenchmarkConfig;
+  raw_telemetry?: MetricsSnapshot | null;
   created_at: string | null;
   completed_at: string | null;
 }

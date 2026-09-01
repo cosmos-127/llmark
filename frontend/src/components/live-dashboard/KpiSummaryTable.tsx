@@ -6,8 +6,6 @@ import {
   AlertTriangle,
   DollarSign,
   Activity,
-  Globe,
-  Coins,
   ShieldCheck,
   Clock,
   Layers,
@@ -15,8 +13,10 @@ import {
   Braces,
   Copy,
   Check,
-  Download,
-  Info,
+  Network,
+  FileCode,
+  MessagesSquare,
+  BookOpen,
 } from "lucide-react";
 import { BenchmarkConfig, MetricsSnapshot } from "@/lib/types";
 import { formatMs, formatPct, formatUsd } from "@/lib/utils";
@@ -31,16 +31,27 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface KpiSummaryTableProps {
   snapshot: MetricsSnapshot | null;
   config: BenchmarkConfig;
 }
 
+interface MetricRowData {
+  dimension: string;
+  dimensionIcon: React.ElementType;
+  metric: string;
+  description: string;
+  p50: string | React.ReactNode;
+  tail: string | React.ReactNode;
+  slo: string;
+  badgeText: string;
+  badgeVariant: "emerald" | "destructive" | "secondary" | "default" | "violet";
+}
+
 export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, config }) => {
   const [copied, setCopied] = useState(false);
-  const preset = (snapshot?.workload_preset || config.workload_preset || "chat") as string;
+  const preset = (snapshot?.workload_preset || config.workload_preset || "chat_interactive") as string;
 
   const ttftP95 = snapshot?.ttft_p95 || 0;
   const maxTtftSLO = config.slo.max_ttft_ms;
@@ -64,38 +75,859 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
   const hardCap = config.hard_spend_cap || 2.0;
   const isSpendProtected = currentSpend <= hardCap;
 
-  const handleCopyTable = async () => {
-    let markdownTable = "";
-
+  // Build strictly preset-relevant rows
+  const buildMetricRows = (): MetricRowData[] => {
+    // 1. Rate Limit & Quota Probing
     if (preset === "rate_limit_probe") {
-      markdownTable = `
-| Category | Metric | Measured Value | Quota / Ceiling | Compliance |
-| :--- | :--- | :--- | :--- | :--- |
-| **Rate Limit** | HTTP 429 Rate Limit % | ${formatPct(snapshot?.rate_limit_pct || 0)} | ${snapshot?.rate_limit_count || 0} throttled requests | ${snapshot?.rate_limit_count ? "THROTTLED" : "OPTIMAL"} |
-| **Rate Limit** | Request Rate Saturation (RPM) | ${(snapshot?.current_rpm || (snapshot?.current_rps || 0) * 60).toFixed(0)} req/min | Ceiling: ${snapshot?.estimated_rpm_limit ? `${snapshot.estimated_rpm_limit} RPM` : "Unbounded"} | ACTIVE |
-| **Rate Limit** | Token Rate Saturation (TPM) | ${Math.round(snapshot?.current_tpm || 0).toLocaleString()} tok/min | Ceiling: ${snapshot?.estimated_tpm_limit ? `${snapshot.estimated_tpm_limit} TPM` : "Unbounded"} | ACTIVE |
-| **Rate Limit** | Status Code Distribution | 200 OK: ${snapshot?.status_distribution?.["200"] || snapshot?.completed_requests || 0} | 429: ${snapshot?.status_distribution?.["429"] || snapshot?.rate_limit_count || 0} | 5xx: ${snapshot?.status_distribution?.["500"] || 0} |
-| **Reliability** | Non-Throttled Goodput | ${formatPct(snapshot?.goodput_pct)} | ${snapshot?.completed_requests} passed / ${snapshot?.failed_requests} failed | ${isGoodputOptimal ? "OPTIMAL" : "THROTTLED"} |
-| **Economics** | Micro-Probing Total Spend | ${formatUsd(snapshot?.current_spend_usd)} | Hard Cap: ${formatUsd(hardCap)} | ${isSpendProtected ? "PROTECTED" : "CAP REACHED"} |
-`.trim();
-    } else {
-      markdownTable = `
-| Category | Metric | P50 / Nominal | P95 / Tail | SLO Target | Compliance |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Latency** | Time to First Token (TTFT) | ${formatMs(snapshot?.ttft_p50)} | ${formatMs(snapshot?.ttft_p95)} (P99: ${formatMs(snapshot?.ttft_p99)}) | ≤ ${formatMs(maxTtftSLO)} | ${isTtftPass ? "PASSED" : "EXCEEDED"} |
-| **Latency** | Time Per Output Token (TPOT) | ${formatMs(snapshot?.tpot_mean)} / tok | Mean decode speed | ≤ ${formatMs(maxTpotSLO)} | ${isTpotPass ? "PASSED" : "EXCEEDED"} |
-| **Latency** | Inter-Token Latency (ITL) | ${formatMs(snapshot?.itl_p50)} | ${formatMs(snapshot?.itl_p95)} (P99: ${formatMs(snapshot?.itl_p99)}) | — | ${isItlSmooth ? "SMOOTH" : "JITTER"} |
-| **Latency** | Max Token Stream Freeze | ${formatMs(snapshot?.max_itl)} | Worst single pause | ≤ 200 ms | ${isItlSmooth ? "OPTIMAL" : "DEGRADED"} |
-| **Throughput** | Output Token Velocity (TPS) | ${(snapshot?.current_tps || 0).toFixed(1)} tok/s | Cluster aggregate | — | ACTIVE |
-| **Throughput** | Request Rate (RPS) | ${(snapshot?.current_rps || 0).toFixed(1)} req/s | Across ${config.concurrency} streams | — | STEADY |
-| **Reliability** | Goodput (SLO Yield) | ${formatPct(snapshot?.goodput_pct)} | ${snapshot?.completed_requests} passed / ${snapshot?.failed_requests} failed | ≥ 99.0% | ${isGoodputOptimal ? "OPTIMAL" : "BELOW SLO"} |
-| **Reliability** | Error Rate | ${formatPct(snapshot?.error_rate_pct)} | ${snapshot?.failed_requests} dropped | ≤ ${formatPct(maxErrorSLO)} | ${isErrorPass ? "PASSED" : "FAILED"} |
-| **Waterfall** | DNS Resolution | ${formatMs(snapshot?.waterfall_avg?.dns_ms)} | Socket lookup | — | OPTIMAL |
-| **Waterfall** | TCP Handshake | ${formatMs(snapshot?.waterfall_avg?.tcp_ms)} | Round-trip SYN/ACK | — | OPTIMAL |
-| **Waterfall** | TLS Crypto Handshake | ${formatMs(snapshot?.waterfall_avg?.tls_ms)} | TLS 1.3 negotiation | — | OPTIMAL |
-| **Economics** | Total Billed Spend | ${formatUsd(snapshot?.current_spend_usd)} | Hard Cap: ${formatUsd(hardCap)} | ≤ ${formatUsd(hardCap)} | ${isSpendProtected ? "PROTECTED" : "CAP REACHED"} |
-`.trim();
+      const rateLimitCount = snapshot?.rate_limit_count || 0;
+      const rateLimitPct = snapshot?.rate_limit_pct || 0;
+      return [
+        {
+          dimension: "Rate Limiting & Quota Saturation",
+          dimensionIcon: ShieldCheck,
+          metric: "HTTP 429 Rate Limit %",
+          description: "Proportion of probing requests throttled by provider rate limiters",
+          p50: formatPct(rateLimitPct),
+          tail: `${rateLimitCount} throttled / ${snapshot?.total_requests || 0} calls`,
+          slo: "0.0% (Zero Throttling)",
+          badgeText: rateLimitCount === 0 ? "Passed" : "Throttled",
+          badgeVariant: rateLimitCount === 0 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Rate Limiting & Quota Saturation",
+          dimensionIcon: ShieldCheck,
+          metric: "Saturated Request Rate (RPM)",
+          description: "Probed request frequency per minute under concurrent load",
+          p50: `${(snapshot?.current_rpm || (snapshot?.current_rps || 0) * 60).toFixed(0)} req/min`,
+          tail: snapshot?.estimated_rpm_limit ? `Ceiling ~${snapshot.estimated_rpm_limit.toFixed(0)} RPM` : "Unbounded",
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "secondary",
+        },
+        {
+          dimension: "Rate Limiting & Quota Saturation",
+          dimensionIcon: ShieldCheck,
+          metric: "Saturated Token Rate (TPM)",
+          description: "Aggregate token volume consumed per minute",
+          p50: `${Math.round(snapshot?.current_tpm || 0).toLocaleString()} tok/min`,
+          tail: snapshot?.estimated_tpm_limit ? `Ceiling ~${snapshot.estimated_tpm_limit.toFixed(0)} TPM` : "Probing volume",
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "secondary",
+        },
+        {
+          dimension: "Rate Limiting & Quota Saturation",
+          dimensionIcon: ShieldCheck,
+          metric: "HTTP Response Distribution",
+          description: "Response status code distribution across all probing requests",
+          p50: `200 OK: ${snapshot?.status_distribution?.["200"] || snapshot?.completed_requests || 0}`,
+          tail: `429: ${snapshot?.status_distribution?.["429"] || rateLimitCount} • 5xx: ${snapshot?.status_distribution?.["500"] || 0}`,
+          slo: "200 OK Only",
+          badgeText: rateLimitCount === 0 ? "Clean 200s" : "429 Detected",
+          badgeVariant: rateLimitCount === 0 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Availability",
+          dimensionIcon: CheckCircle2,
+          metric: "Non-Throttled Goodput Yield",
+          description: "Percentage of micro-calls succeeding without HTTP 429 backoff",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} dropped`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Degraded",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Economics",
+          dimensionIcon: DollarSign,
+          metric: "Micro-Probing Total Spend",
+          description: "Accumulated dollar cost across micro-token probing pings",
+          p50: formatUsd(currentSpend),
+          tail: `Hard Cap: ${formatUsd(hardCap)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
     }
+
+    // 2. Prefill Scaling & TTFT
+    if (preset === "prefill_ttft") {
+      return [
+        {
+          dimension: "KV Cache Prefill Scaling",
+          dimensionIcon: Layers,
+          metric: "Time to First Token (TTFT)",
+          description: "Heavy prompt ingestion latency before first token stream begins",
+          p50: formatMs(snapshot?.ttft_p50),
+          tail: `P95: ${formatMs(snapshot?.ttft_p95)} (P99: ${formatMs(snapshot?.ttft_p99)})`,
+          slo: `≤ ${formatMs(maxTtftSLO)}`,
+          badgeText: isTtftPass ? "Passed" : "Breached",
+          badgeVariant: isTtftPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "KV Cache Prefill Scaling",
+          dimensionIcon: Layers,
+          metric: "Prefill Processing Velocity",
+          description: "KV cache prompt ingestion throughput in prompt tokens per second",
+          p50: snapshot?.prefill_tps_p50 ? `${snapshot.prefill_tps_p50.toFixed(0)} tok/s` : "Computing...",
+          tail: snapshot?.prefill_tps_p95 ? `P95: ${snapshot.prefill_tps_p95.toFixed(0)} tok/s` : "—",
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "KV Cache Prefill Scaling",
+          dimensionIcon: Layers,
+          metric: "Prefill Latency Scaling Slope",
+          description: "Incremental TTFT growth per 1,000 prompt tokens",
+          p50: snapshot?.prefill_slope_ms_per_1k ? `${snapshot.prefill_slope_ms_per_1k.toFixed(1)} ms/1K` : "Computing...",
+          tail: "Linear KV growth rate",
+          slo: "≤ 50.0 ms/1K",
+          badgeText: (snapshot?.prefill_slope_ms_per_1k || 0) <= 50 ? "Linear" : "Super-linear",
+          badgeVariant: (snapshot?.prefill_slope_ms_per_1k || 0) <= 50 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Network Connection Overhead",
+          dimensionIcon: Network,
+          metric: "Network Handshake (DNS + TCP + TLS)",
+          description: "Transport connection setup before upstream server ingestion",
+          p50: formatMs((snapshot?.waterfall_avg?.dns_ms || 0) + (snapshot?.waterfall_avg?.tcp_ms || 0) + (snapshot?.waterfall_avg?.tls_ms || 0)),
+          tail: `DNS: ${formatMs(snapshot?.waterfall_avg?.dns_ms)} • TLS: ${formatMs(snapshot?.waterfall_avg?.tls_ms)}`,
+          slo: "≤ 100 ms",
+          badgeText: "Optimal",
+          badgeVariant: "secondary",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Prefill Goodput SLO Yield",
+          description: "Percentage of heavy-prompt requests satisfying target TTFT",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Prompt Ingestion Total Spend",
+          description: "Accumulated dollar cost for large context prefill volume",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 3. Streaming Decode & Generation Jitter
+    if (preset === "decode_throughput") {
+      const itlCv = snapshot?.itl_jitter_cv;
+      return [
+        {
+          dimension: "Streaming Decode & Jitter",
+          dimensionIcon: Zap,
+          metric: "Decode Throughput (TPS)",
+          description: "Output token generation velocity across all streaming workers",
+          p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+          tail: `${(snapshot?.current_rps || 0).toFixed(1)} req/s concurrent streams`,
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Streaming Decode & Jitter",
+          dimensionIcon: Activity,
+          metric: "Inter-Token Latency (ITL)",
+          description: "Time elapsed between consecutive streaming output tokens",
+          p50: formatMs(snapshot?.itl_p50),
+          tail: `P95: ${formatMs(snapshot?.itl_p95)} (P99: ${formatMs(snapshot?.itl_p99)})`,
+          slo: "≤ 40 ms",
+          badgeText: (snapshot?.itl_p95 || 0) <= 40 ? "Smooth" : "Jitter",
+          badgeVariant: (snapshot?.itl_p95 || 0) <= 40 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Streaming Decode & Jitter",
+          dimensionIcon: Activity,
+          metric: "Stream Smoothness Index (CV)",
+          description: "Coefficient of variation of inter-token delays (<0.30 indicates fluid UI typing)",
+          p50: itlCv !== undefined && itlCv !== null ? itlCv.toFixed(2) : "Computing...",
+          tail: itlCv !== undefined && itlCv !== null && itlCv < 0.30 ? "Glass Smooth" : "Standard",
+          slo: "≤ 0.35 CV",
+          badgeText: itlCv !== undefined && itlCv !== null && itlCv < 0.35 ? "Fluid" : "Variable",
+          badgeVariant: itlCv !== undefined && itlCv !== null && itlCv < 0.35 ? "emerald" : "secondary",
+        },
+        {
+          dimension: "Streaming Decode & Jitter",
+          dimensionIcon: AlertTriangle,
+          metric: "Max Token Stream Freeze",
+          description: "The worst single pause experienced between any two output tokens",
+          p50: formatMs(snapshot?.max_itl),
+          tail: "Worst decode pause",
+          slo: "≤ 150 ms",
+          badgeText: isItlSmooth ? "Optimal" : "Degraded",
+          badgeVariant: isItlSmooth ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Streaming Decode & Jitter",
+          dimensionIcon: Gauge,
+          metric: "Time Per Output Token (TPOT)",
+          description: "Mean duration required to compute and emit each individual token",
+          p50: `${formatMs(snapshot?.tpot_mean)} / tok`,
+          tail: "Hardware generation speed",
+          slo: `≤ ${formatMs(maxTpotSLO)}`,
+          badgeText: isTpotPass ? "Passed" : "Exceeded",
+          badgeVariant: isTpotPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Decode Goodput SLO Yield",
+          description: "Percentage of long decode streams satisfying TPOT thresholds",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Output Generation Spend",
+          description: "Total dollar spend for long output token generation",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 4. Reasoning & CoT Deep-Dive
+    if (preset === "reasoning_cot") {
+      const ttfaP95 = snapshot?.ttfa_p95 || snapshot?.ttft_p95 || 0;
+      const ttfaP50 = snapshot?.ttfa_p50 || snapshot?.ttft_p50 || 0;
+      const thinkingTokens = snapshot?.thinking_tokens_avg || 0;
+      const cotRatio = snapshot?.thinking_token_ratio_pct || 0;
+      const waitMult = snapshot?.thinking_wait_multiplier || 1.0;
+
+      return [
+        {
+          dimension: "Reasoning & Chain-of-Thought",
+          dimensionIcon: Sparkles,
+          metric: "Time to First Answer (TTFA)",
+          description: "Total elapsed duration until thinking trace completes and visible answer begins",
+          p50: formatMs(ttfaP50),
+          tail: `P95: ${formatMs(ttfaP95)}`,
+          slo: "≤ 5000 ms",
+          badgeText: ttfaP95 <= 5000 ? "Acceptable" : "Long Wait",
+          badgeVariant: ttfaP95 <= 5000 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reasoning & Chain-of-Thought",
+          dimensionIcon: Sparkles,
+          metric: "Thinking Tokens per Query",
+          description: "Average volume of internal reasoning tokens emitted prior to final answer",
+          p50: `${thinkingTokens.toFixed(0)} tokens`,
+          tail: `${cotRatio.toFixed(1)}% of total output tokens`,
+          slo: "—",
+          badgeText: "Measured",
+          badgeVariant: "violet",
+        },
+        {
+          dimension: "Reasoning & Chain-of-Thought",
+          dimensionIcon: Clock,
+          metric: "Thinking Wait Multiplier",
+          description: "Ratio of time spent in CoT reasoning vs nominal TTFT",
+          p50: `${waitMult.toFixed(1)}x Wait Tax`,
+          tail: "vs initial socket TTFT",
+          slo: "—",
+          badgeText: "CoT Tax",
+          badgeVariant: "secondary",
+        },
+        {
+          dimension: "Reasoning & Chain-of-Thought",
+          dimensionIcon: Layers,
+          metric: "Time to First Token (TTFT)",
+          description: "Latency before first internal reasoning token starts streaming",
+          p50: formatMs(snapshot?.ttft_p50),
+          tail: `P95: ${formatMs(snapshot?.ttft_p95)}`,
+          slo: `≤ ${formatMs(maxTtftSLO)}`,
+          badgeText: isTtftPass ? "Passed" : "Breached",
+          badgeVariant: isTtftPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reasoning & Chain-of-Thought",
+          dimensionIcon: Zap,
+          metric: "Answer Generation Speed (TPS)",
+          description: "Post-thinking final answer token emission throughput",
+          p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+          tail: `${(snapshot?.current_rps || 0).toFixed(1)} queries/s`,
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Reasoning Goodput SLO Yield",
+          description: "Percentage of reasoning queries meeting end-to-end latency targets",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 95.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Reasoning Token Spend",
+          description: "Total cost accounting for combined thinking and answer tokens",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 5. Agentic Tool Calling
+    if (preset === "agentic_tool_calling" || preset === "tool_calling") {
+      const validityPct = snapshot?.schema_validity_pct ?? 100;
+      const syntaxErrors = snapshot?.schema_error_count || 0;
+      return [
+        {
+          dimension: "Agentic Tool Execution",
+          dimensionIcon: Braces,
+          metric: "Tool Call Schema Validity %",
+          description: "Percentage of function call invocations strictly matching tool arguments schema",
+          p50: formatPct(validityPct),
+          tail: `${syntaxErrors} parse failures / ${snapshot?.completed_requests || 0} parsed`,
+          slo: "100.0% Valid",
+          badgeText: syntaxErrors === 0 ? "100% Valid" : "Errors",
+          badgeVariant: syntaxErrors === 0 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Agentic Tool Execution",
+          dimensionIcon: Clock,
+          metric: "Tool Definition Ingestion TTFT",
+          description: "Time to process complex tool signatures and emit first tool call",
+          p50: formatMs(snapshot?.ttft_p50),
+          tail: `P95: ${formatMs(snapshot?.ttft_p95)}`,
+          slo: `≤ ${formatMs(maxTtftSLO)}`,
+          badgeText: isTtftPass ? "Passed" : "Breached",
+          badgeVariant: isTtftPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Agentic Tool Execution",
+          dimensionIcon: Zap,
+          metric: "Constrained Tool Calling TPS",
+          description: "Execution throughput during guided argument serialization",
+          p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+          tail: `${(snapshot?.current_rps || 0).toFixed(1)} tool calls/s`,
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Agentic Tool Execution",
+          dimensionIcon: Gauge,
+          metric: "Time Per Output Token (TPOT)",
+          description: "Mean decode duration per token under tool schema constraints",
+          p50: `${formatMs(snapshot?.tpot_mean)} / tok`,
+          tail: "Argument generation pace",
+          slo: `≤ ${formatMs(maxTpotSLO)}`,
+          badgeText: isTpotPass ? "Passed" : "Exceeded",
+          badgeVariant: isTpotPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Agentic Goodput SLO Yield",
+          description: "Percentage of tool invocations meeting latency and schema requirements",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Tool Invocation Spend",
+          description: "Total financial spend for multi-tool signature testing",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 6. Code Generation
+    if (preset === "code_generation" || preset === "code") {
+      return [
+        {
+          dimension: "Code Syntax & Generation",
+          dimensionIcon: FileCode,
+          metric: "Code Decode Throughput (TPS)",
+          description: "Sustained programming code token emission rate",
+          p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+          tail: `${(snapshot?.current_rps || 0).toFixed(1)} completions/s`,
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Code Syntax & Generation",
+          dimensionIcon: Activity,
+          metric: "Inter-Token Latency (ITL)",
+          description: "Latency between consecutive code tokens during multi-line generation",
+          p50: formatMs(snapshot?.itl_p50),
+          tail: `P95: ${formatMs(snapshot?.itl_p95)}`,
+          slo: "≤ 40 ms",
+          badgeText: (snapshot?.itl_p95 || 0) <= 40 ? "Smooth" : "Jitter",
+          badgeVariant: (snapshot?.itl_p95 || 0) <= 40 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Code Syntax & Generation",
+          dimensionIcon: AlertTriangle,
+          metric: "Syntax Freeze Max ITL",
+          description: "Worst pause between tokens (e.g. indentation, bracket balancing stalls)",
+          p50: formatMs(snapshot?.max_itl),
+          tail: "Worst decode stall",
+          slo: "≤ 150 ms",
+          badgeText: isItlSmooth ? "Optimal" : "Stall",
+          badgeVariant: isItlSmooth ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Code Syntax & Generation",
+          dimensionIcon: Gauge,
+          metric: "Time Per Output Token (TPOT)",
+          description: "Mean decode latency per generated code token",
+          p50: `${formatMs(snapshot?.tpot_mean)} / tok`,
+          tail: "Code token generation speed",
+          slo: `≤ ${formatMs(maxTpotSLO)}`,
+          badgeText: isTpotPass ? "Passed" : "Exceeded",
+          badgeVariant: isTpotPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Code Generation Goodput Yield",
+          description: "Percentage of code generation streams satisfying TPOT and error SLOs",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Code Generation Spend",
+          description: "Total dollar cost for code syntax benchmark calls",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 7. Enterprise RAG Synthesis
+    if (preset === "rag_synthesis") {
+      return [
+        {
+          dimension: "Enterprise RAG Synthesis",
+          dimensionIcon: BookOpen,
+          metric: "Document Context Ingestion TTFT",
+          description: "Time to ingest retrieved chunks before answer generation starts",
+          p50: formatMs(snapshot?.ttft_p50),
+          tail: `P95: ${formatMs(snapshot?.ttft_p95)}`,
+          slo: `≤ ${formatMs(maxTtftSLO)}`,
+          badgeText: isTtftPass ? "Passed" : "Breached",
+          badgeVariant: isTtftPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Enterprise RAG Synthesis",
+          dimensionIcon: Zap,
+          metric: "Synthesis Generation Speed (TPS)",
+          description: "Rate of emitting answer tokens grounded in retrieved chunks",
+          p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+          tail: `${(snapshot?.current_rps || 0).toFixed(1)} RAG queries/s`,
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Enterprise RAG Synthesis",
+          dimensionIcon: Gauge,
+          metric: "Time Per Output Token (TPOT)",
+          description: "Mean decode duration per token during synthesis",
+          p50: `${formatMs(snapshot?.tpot_mean)} / tok`,
+          tail: "Answer decode pace",
+          slo: `≤ ${formatMs(maxTpotSLO)}`,
+          badgeText: isTpotPass ? "Passed" : "Exceeded",
+          badgeVariant: isTpotPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "RAG Goodput SLO Yield",
+          description: "Percentage of synthesis calls meeting latency and quality bounds",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: AlertTriangle,
+          metric: "RAG Retrieval Error Rate",
+          description: "Percentage of requests failing during context processing",
+          p50: formatPct(errorRate),
+          tail: `${snapshot?.failed_requests || 0} dropped queries`,
+          slo: `≤ ${formatPct(maxErrorSLO)}`,
+          badgeText: isErrorPass ? "Passed" : "Failed",
+          badgeVariant: isErrorPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "RAG Synthesis Spend",
+          description: "Total dollar spend accounting for large context ingestion + output",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 8. Long-Context & Needle Retrieval
+    if (preset === "long_context_retrieval" || preset === "long_context") {
+      return [
+        {
+          dimension: "Massive Context Prefill",
+          dimensionIcon: Layers,
+          metric: "Massive Context TTFT (16K+ tokens)",
+          description: "Initial prompt processing latency under massive KV memory pressure",
+          p50: formatMs(snapshot?.ttft_p50),
+          tail: `P95: ${formatMs(snapshot?.ttft_p95)} (P99: ${formatMs(snapshot?.ttft_p99)})`,
+          slo: `≤ ${formatMs(maxTtftSLO)}`,
+          badgeText: isTtftPass ? "Passed" : "Breached",
+          badgeVariant: isTtftPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Massive Context Prefill",
+          dimensionIcon: Layers,
+          metric: "Memory Ingestion Velocity",
+          description: "Prompt tokens processed per second across large KV memory blocks",
+          p50: snapshot?.prefill_tps_p50 ? `${snapshot.prefill_tps_p50.toFixed(0)} tok/s` : "Computing...",
+          tail: snapshot?.prefill_tps_p95 ? `P95: ${snapshot.prefill_tps_p95.toFixed(0)} tok/s` : "—",
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Network Connection Overhead",
+          dimensionIcon: Network,
+          metric: "Large Payload Network Handshake",
+          description: "Connection establishment overhead transmitting multi-megabyte payload",
+          p50: formatMs((snapshot?.waterfall_avg?.dns_ms || 0) + (snapshot?.waterfall_avg?.tcp_ms || 0) + (snapshot?.waterfall_avg?.tls_ms || 0)),
+          tail: `DNS: ${formatMs(snapshot?.waterfall_avg?.dns_ms)} • TLS: ${formatMs(snapshot?.waterfall_avg?.tls_ms)}`,
+          slo: "≤ 150 ms",
+          badgeText: "Optimal",
+          badgeVariant: "secondary",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Long-Context Goodput SLO Yield",
+          description: "Percentage of heavy-context requests meeting latency thresholds",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 95.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Massive Context Token Spend",
+          description: "Total dollar cost for multi-thousand token prompts",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 9. Document Summarization & Distillation
+    if (preset === "summarization_distill") {
+      return [
+        {
+          dimension: "Document Distillation",
+          dimensionIcon: Layers,
+          metric: "Document Compression TTFT",
+          description: "Time to ingest document context before compressed summary starts",
+          p50: formatMs(snapshot?.ttft_p50),
+          tail: `P95: ${formatMs(snapshot?.ttft_p95)}`,
+          slo: `≤ ${formatMs(maxTtftSLO)}`,
+          badgeText: isTtftPass ? "Passed" : "Breached",
+          badgeVariant: isTtftPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Document Distillation",
+          dimensionIcon: Zap,
+          metric: "Distillation Output Speed (TPS)",
+          description: "Generation velocity of synthesized summary tokens",
+          p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+          tail: `${(snapshot?.current_rps || 0).toFixed(1)} docs/s`,
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Document Distillation",
+          dimensionIcon: Gauge,
+          metric: "Time Per Output Token (TPOT)",
+          description: "Mean decode duration per token emitted in the summary",
+          p50: `${formatMs(snapshot?.tpot_mean)} / tok`,
+          tail: "Summary decode speed",
+          slo: `≤ ${formatMs(maxTpotSLO)}`,
+          badgeText: isTpotPass ? "Passed" : "Exceeded",
+          badgeVariant: isTpotPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Summarization Goodput SLO Yield",
+          description: "Percentage of distillation requests meeting quality and latency bounds",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Distillation Processing Spend",
+          description: "Total dollar spend for document reduction passes",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 10. Structured JSON & Grammar
+    if (preset === "structured_json" || preset === "json_schema") {
+      const validityPct = snapshot?.schema_validity_pct ?? 100;
+      const syntaxErrors = snapshot?.schema_error_count || 0;
+      return [
+        {
+          dimension: "Constrained JSON Decoding",
+          dimensionIcon: Braces,
+          metric: "JSON Schema Validity %",
+          description: "Percentage of generated responses that strictly match valid JSON syntax",
+          p50: formatPct(validityPct),
+          tail: `${syntaxErrors} parse failures / ${snapshot?.completed_requests || 0} parsed`,
+          slo: "100.0% Valid",
+          badgeText: syntaxErrors === 0 ? "100% Valid" : "Errors",
+          badgeVariant: syntaxErrors === 0 ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Constrained JSON Decoding",
+          dimensionIcon: Zap,
+          metric: "Guided Decode Speed (TPS)",
+          description: "Throughput under grammar state transition and FSM logit masking",
+          p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+          tail: `${(snapshot?.current_rps || 0).toFixed(1)} JSON calls/s`,
+          slo: "—",
+          badgeText: "Active",
+          badgeVariant: "emerald",
+        },
+        {
+          dimension: "Constrained JSON Decoding",
+          dimensionIcon: Gauge,
+          metric: "Grammar Penalty (TPOT)",
+          description: "Mean decode duration per token under guided JSON decoding",
+          p50: `${formatMs(snapshot?.tpot_mean)} / tok`,
+          tail: "Includes regex mask overhead",
+          slo: `≤ ${formatMs(maxTpotSLO)}`,
+          badgeText: isTpotPass ? "Passed" : "Exceeded",
+          badgeVariant: isTpotPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Constrained JSON Decoding",
+          dimensionIcon: Clock,
+          metric: "Time to First Token (TTFT)",
+          description: "Time to first token including JSON schema prompt compilation",
+          p50: formatMs(snapshot?.ttft_p50),
+          tail: `P95: ${formatMs(snapshot?.ttft_p95)}`,
+          slo: `≤ ${formatMs(maxTtftSLO)}`,
+          badgeText: isTtftPass ? "Passed" : "Breached",
+          badgeVariant: isTtftPass ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: CheckCircle2,
+          metric: "Structured Goodput SLO Yield",
+          description: "Percentage of structured requests satisfying syntax and latency targets",
+          p50: formatPct(goodput),
+          tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+          slo: "≥ 99.0%",
+          badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+          badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+        },
+        {
+          dimension: "Reliability & Economics",
+          dimensionIcon: DollarSign,
+          metric: "Structured Output Spend",
+          description: "Accumulated dollar cost across structured JSON calls",
+          p50: formatUsd(currentSpend),
+          tail: `Cost/1K: ${formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}`,
+          slo: `≤ ${formatUsd(hardCap)}`,
+          badgeText: isSpendProtected ? "Protected" : "Breached",
+          badgeVariant: isSpendProtected ? "emerald" : "destructive",
+        },
+      ];
+    }
+
+    // 11. Default / Interactive Conversational / Custom
+    return [
+      {
+        dimension: "Conversational Latency",
+        dimensionIcon: Clock,
+        metric: "Time to First Token (TTFT)",
+        description: "Initial response turnaround before streaming begins",
+        p50: formatMs(snapshot?.ttft_p50),
+        tail: `P95: ${formatMs(snapshot?.ttft_p95)} (P99: ${formatMs(snapshot?.ttft_p99)})`,
+        slo: `≤ ${formatMs(maxTtftSLO)}`,
+        badgeText: isTtftPass ? "Passed" : "Breached",
+        badgeVariant: isTtftPass ? "emerald" : "destructive",
+      },
+      {
+        dimension: "Conversational Latency",
+        dimensionIcon: Activity,
+        metric: "Inter-Token Latency (ITL)",
+        description: "Delay between consecutive streaming words during decode",
+        p50: formatMs(snapshot?.itl_p50),
+        tail: `P95: ${formatMs(snapshot?.itl_p95)}`,
+        slo: "≤ 40 ms",
+        badgeText: (snapshot?.itl_p95 || 0) <= 40 ? "Smooth" : "Jitter",
+        badgeVariant: (snapshot?.itl_p95 || 0) <= 40 ? "emerald" : "destructive",
+      },
+      {
+        dimension: "Streaming Throughput",
+        dimensionIcon: Zap,
+        metric: "Output Token Velocity (TPS)",
+        description: "Active aggregate output tokens generated per second across streams",
+        p50: `${(snapshot?.current_tps || 0).toFixed(1)} tok/s`,
+        tail: `${(snapshot?.current_rps || 0).toFixed(1)} req/s across ${config.concurrency} streams`,
+        slo: "—",
+        badgeText: "Active",
+        badgeVariant: "emerald",
+      },
+      {
+        dimension: "Streaming Throughput",
+        dimensionIcon: Gauge,
+        metric: "Time Per Output Token (TPOT)",
+        description: "Mean duration required to compute each output token",
+        p50: `${formatMs(snapshot?.tpot_mean)} / tok`,
+        tail: "Hardware generation speed",
+        slo: `≤ ${formatMs(maxTpotSLO)}`,
+        badgeText: isTpotPass ? "Passed" : "Exceeded",
+        badgeVariant: isTpotPass ? "emerald" : "destructive",
+      },
+      {
+        dimension: "Reliability & Economics",
+        dimensionIcon: CheckCircle2,
+        metric: "Goodput (SLO Yield %)",
+        description: "Proportion of requests successfully satisfying all defined latency SLOs",
+        p50: formatPct(goodput),
+        tail: `${snapshot?.completed_requests || 0} passed / ${snapshot?.failed_requests || 0} failed`,
+        slo: "≥ 99.0%",
+        badgeText: isGoodputOptimal ? "Optimal" : "Below SLO",
+        badgeVariant: isGoodputOptimal ? "emerald" : "destructive",
+      },
+      {
+        dimension: "Reliability & Economics",
+        dimensionIcon: AlertTriangle,
+        metric: "Stream Error Rate",
+        description: "Percentage of requests encountering socket timeouts or HTTP errors",
+        p50: formatPct(errorRate),
+        tail: `${snapshot?.failed_requests || 0} dropped calls`,
+        slo: `≤ ${formatPct(maxErrorSLO)}`,
+        badgeText: isErrorPass ? "Passed" : "Failed",
+        badgeVariant: isErrorPass ? "emerald" : "destructive",
+      },
+      {
+        dimension: "Reliability & Economics",
+        dimensionIcon: DollarSign,
+        metric: "Total Billed Spend",
+        description: "Accumulated dollar cost for this benchmark run",
+        p50: formatUsd(currentSpend),
+        tail: `Hard Cap: ${formatUsd(hardCap)}`,
+        slo: `≤ ${formatUsd(hardCap)}`,
+        badgeText: isSpendProtected ? "Protected" : "Breached",
+        badgeVariant: isSpendProtected ? "emerald" : "destructive",
+      },
+      {
+        dimension: "Network Connection Overhead",
+        dimensionIcon: Network,
+        metric: "Network Handshake Baseline",
+        description: "Transport setup duration (DNS + TCP + TLS)",
+        p50: formatMs((snapshot?.waterfall_avg?.dns_ms || 0) + (snapshot?.waterfall_avg?.tcp_ms || 0) + (snapshot?.waterfall_avg?.tls_ms || 0)),
+        tail: `DNS: ${formatMs(snapshot?.waterfall_avg?.dns_ms)} • TLS: ${formatMs(snapshot?.waterfall_avg?.tls_ms)}`,
+        slo: "≤ 100 ms",
+        badgeText: "Optimal",
+        badgeVariant: "secondary",
+      },
+    ];
+  };
+
+  const rows = buildMetricRows();
+
+  // Group rows by dimension for clean section headers
+  const groupedDimensions = rows.reduce<Record<string, { icon: React.ElementType; rows: MetricRowData[] }>>(
+    (acc, row) => {
+      if (!acc[row.dimension]) {
+        acc[row.dimension] = { icon: row.dimensionIcon, rows: [] };
+      }
+      acc[row.dimension].rows.push(row);
+      return acc;
+    },
+    {}
+  );
+
+  const handleCopyTable = async () => {
+    let markdownTable = `
+| Category | Metric | P50 / Nominal | Tail / Measured | Target | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+`.trim();
+
+    rows.forEach((r) => {
+      const p50Str = typeof r.p50 === "string" ? r.p50 : "—";
+      const tailStr = typeof r.tail === "string" ? r.tail : "—";
+      markdownTable += `\n| **${r.dimension}** | ${r.metric} | ${p50Str} | ${tailStr} | ${r.slo} | ${r.badgeText.toUpperCase()} |`;
+    });
 
     await navigator.clipboard.writeText(markdownTable);
     setCopied(true);
@@ -103,7 +935,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden shadow-xs">
       <CardHeader className="p-4 sm:p-5 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -112,15 +944,19 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
             </div>
             <div>
               <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-white">
-                Executive KPI Benchmark Telemetry Matrix
+                Preset-Targeted KPI Benchmark Matrix
               </CardTitle>
               <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
-                Workload-targeted metrics telemetry profile: {preset.replace("_", " ")}
+                Filtered strictly to target metrics relevant for workload preset: <strong className="font-semibold text-[#853953] dark:text-[#F06A9A]">{preset.replace("_", " ")}</strong>
               </CardDescription>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            <Badge variant="outline" className="font-mono text-[10.5px] uppercase tracking-wider bg-white dark:bg-[#14141B] border-[#853953]/30 text-[#853953] dark:text-[#F06A9A] font-semibold">
+              {rows.length} Relevant Metrics
+            </Badge>
+
             <Button
               type="button"
               variant="outline"
@@ -156,7 +992,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                   P50 / Nominal
                 </TableHead>
                 <TableHead className="w-[22%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
-                  Tail / Saturated Rate
+                  Tail / Measured
                 </TableHead>
                 <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
                   SLO Target
@@ -168,810 +1004,53 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
             </TableHeader>
 
             <TableBody className="text-xs">
-              {/* ========================================================================= */}
-              {/* SPECIALIZED PROFILE 1: RATE LIMIT & CAPACITY PROBING                      */}
-              {/* ========================================================================= */}
-              {preset === "rate_limit_probe" && (
-                <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                      <div className="flex items-center gap-1.5">
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                        <span>1. Rate Limiting & Quota Saturation Probing</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+              {Object.entries(groupedDimensions).map(([dimName, dimData], gIdx) => {
+                const DimIcon = dimData.icon;
+                return (
+                  <React.Fragment key={gIdx}>
+                    <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
+                      <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
+                        <div className="flex items-center gap-1.5">
+                          <DimIcon className="h-3.5 w-3.5" />
+                          <span>{dimName}</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
 
-                  {/* 429 Rate */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">HTTP 429 Rate Limit %</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Proportion of probing requests throttled by provider rate limiters
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {formatPct(snapshot?.rate_limit_pct || 0)}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      {snapshot?.rate_limit_count || 0} throttled requests
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                      0.0% (Zero Throttling)
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={(snapshot?.rate_limit_count || 0) === 0 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {(snapshot?.rate_limit_count || 0) === 0 ? "Passed" : "Throttled"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
+                    {dimData.rows.map((row, rIdx) => (
+                      <TableRow key={rIdx} className="hover:bg-[#F3F4F4]/50 dark:hover:bg-white/[0.03] transition-colors">
+                        <TableCell className="font-medium pl-4">
+                          <div className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
+                            <span className="font-medium text-[#2C2C2C] dark:text-white">{row.metric}</span>
+                          </div>
+                          <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
+                            {row.description}
+                          </p>
+                        </TableCell>
 
-                  {/* Saturated RPM */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Saturated Request Rate (RPM)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Probed request frequency per minute under concurrent load
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {(snapshot?.current_rpm || (snapshot?.current_rps || 0) * 60).toFixed(0)} req/min
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      {snapshot?.estimated_rpm_limit ? `Ceiling ~${snapshot.estimated_rpm_limit.toFixed(0)} RPM` : "Unbounded capacity"}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">Active</Badge>
-                    </TableCell>
-                  </TableRow>
+                        <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
+                          {row.p50}
+                        </TableCell>
 
-                  {/* Saturated TPM */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Saturated Token Rate (TPM)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Aggregate prompt + generation token volume consumed per minute
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {Math.round(snapshot?.current_tpm || 0).toLocaleString()} tok/min
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      {snapshot?.estimated_tpm_limit ? `Ceiling ~${snapshot.estimated_tpm_limit.toFixed(0)} TPM` : "Probing volume"}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">Active</Badge>
-                    </TableCell>
-                  </TableRow>
+                        <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
+                          {row.tail}
+                        </TableCell>
 
-                  {/* Status Code Breakdown */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Status Code Matrix</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        HTTP response status code distribution across all probing pings
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      200 OK: {snapshot?.status_distribution?.["200"] || snapshot?.completed_requests || 0}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      429: {snapshot?.status_distribution?.["429"] || snapshot?.rate_limit_count || 0} • 5xx: {snapshot?.status_distribution?.["500"] || 0}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                      200 OK Only
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={(snapshot?.rate_limit_count || 0) === 0 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {(snapshot?.rate_limit_count || 0) === 0 ? "Clean 200s" : "429 Detected"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
+                        <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
+                          {row.slo}
+                        </TableCell>
 
-              {/* ========================================================================= */}
-              {/* SPECIALIZED PROFILE 2: PREFILL & TTFT                                      */}
-              {/* ========================================================================= */}
-              {preset === "prefill_ttft" && (
-                <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                      <div className="flex items-center gap-1.5">
-                        <Layers className="h-3.5 w-3.5" />
-                        <span>1. KV Cache Prefill & Time to First Token</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* TTFT */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time to First Token (TTFT)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Heavy prompt ingestion + socket handshake before first token stream begins
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {formatMs(snapshot?.ttft_p50)}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      <span>P95: <strong>{formatMs(snapshot?.ttft_p95)}</strong></span>
-                      <span className="text-[#2C2C2C]/40 dark:text-slate-500 mx-1.5">|</span>
-                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">P99: {formatMs(snapshot?.ttft_p99)}</span>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                      ≤ {formatMs(maxTtftSLO)}
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={isTtftPass ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {isTtftPass ? "Passed" : "Breached"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Prefill TPS */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Prefill Processing Velocity</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        KV cache memory ingestion speed in prompt tokens per second
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
-                      {snapshot?.prefill_tps_p50 ? `${snapshot.prefill_tps_p50.toFixed(0)} tok/s` : "Computing..."}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      P95: {snapshot?.prefill_tps_p95 ? `${snapshot.prefill_tps_p95.toFixed(0)} tok/s` : "—"}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant="emerald" className="text-[11px] font-sans font-semibold tabular-nums">Hardware Prefill</Badge>
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
-
-              {/* ========================================================================= */}
-              {/* SPECIALIZED PROFILE 3: REASONING & COT                                     */}
-              {/* ========================================================================= */}
-              {preset === "reasoning_cot" && (
-                <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                      <div className="flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span>1. Reasoning & Chain-of-Thought Dynamics</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* TTFA */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#612D53] dark:bg-[#C57BB2]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time to First Answer (TTFA)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Elapsed latency until thinking reasoning trace concludes & user answer starts
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#612D53] dark:text-[#E270BB]">
-                      {formatMs(snapshot?.ttfa_p50 || snapshot?.ttft_p50)}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      P95: <strong>{formatMs(snapshot?.ttfa_p95 || snapshot?.ttft_p95)}</strong>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">User Wait</Badge>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Thinking Tokens */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Thinking Tokens per Query</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Average internal Chain-of-Thought tokens allocated before response output
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {snapshot?.thinking_tokens_avg ? `${snapshot.thinking_tokens_avg.toFixed(0)} tok` : "—"}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      {snapshot?.thinking_token_ratio_pct ? `${snapshot.thinking_token_ratio_pct.toFixed(1)}% of total output` : "Measuring..."}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">CoT Budget</Badge>
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
-
-              {/* ========================================================================= */}
-              {/* SPECIALIZED PROFILE 4: STRUCTURED JSON                                     */}
-              {/* ========================================================================= */}
-              {(preset === "structured_json" || preset === "json_schema") && (
-                <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                      <div className="flex items-center gap-1.5">
-                        <Braces className="h-3.5 w-3.5" />
-                        <span>1. Structured JSON & Guided Grammar Compliance</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Schema Validity */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">JSON Schema Syntax Validity</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Proportion of output responses that strictly parsed as valid JSON
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
-                      {formatPct(snapshot?.schema_validity_pct ?? 100)}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      {snapshot?.schema_error_count || 0} syntax parsing errors
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                      100.0% (Zero Errors)
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={(snapshot?.schema_error_count || 0) === 0 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {(snapshot?.schema_error_count || 0) === 0 ? "Valid Schema" : "Parse Failures"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
-
-              {/* ========================================================================= */}
-              {/* DEFAULT / STANDARD PROFILES (CHAT, DECODE, RAG, CUSTOM)                   */}
-              {/* ========================================================================= */}
-              {preset !== "rate_limit_probe" && preset !== "prefill_ttft" && preset !== "reasoning_cot" && (
-                <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                      <div className="flex items-center gap-1.5">
-                        <Gauge className="h-3.5 w-3.5" />
-                        <span>1. Latency & Responsiveness Dynamics</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* TTFT */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time to First Token (TTFT)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Prefill computation + socket handshake before first token stream arrives
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {formatMs(snapshot?.ttft_p50)}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      <span>P95: <strong>{formatMs(snapshot?.ttft_p95)}</strong></span>
-                      <span className="text-[#2C2C2C]/40 dark:text-slate-500 mx-1.5">|</span>
-                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">P99: {formatMs(snapshot?.ttft_p99)}</span>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                      ≤ {formatMs(maxTtftSLO)}
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={isTtftPass ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {isTtftPass ? "Passed" : "Breached"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* TPOT */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Time Per Output Token (TPOT)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Hardware decode cycle duration (inverse of single-stream generation speed)
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {formatMs(snapshot?.tpot_mean)} / tok
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      Mean decode throughput
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                      ≤ {formatMs(maxTpotSLO)}
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={isTpotPass ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {isTpotPass ? "Passed" : "Breached"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* ITL */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Inter-Token Latency (ITL / Jitter)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Delta spacing between consecutive streaming chunks (delivery smoothness)
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {formatMs(snapshot?.itl_p50)}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                      <span>P95: <strong>{formatMs(snapshot?.itl_p95)}</strong></span>
-                      <span className="text-[#2C2C2C]/40 dark:text-slate-500 mx-1.5">|</span>
-                      <span className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">P99: {formatMs(snapshot?.itl_p99)}</span>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={isItlSmooth ? "emerald" : "violet"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {isItlSmooth ? "Smooth" : "Jitter"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Max ITL Freeze */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Max Token Stream Freeze</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        The single longest latency freeze/stall experienced between any two tokens
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                      {formatMs(snapshot?.max_itl)}
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/60 dark:text-slate-400">
-                      Peak worst pause
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                      ≤ 200.0 ms
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant={isItlSmooth ? "secondary" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                        {isItlSmooth ? "No Stall" : "Stall Detected"}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
-
-              {/* ========================================================================= */}
-              {/* THROUGHPUT & CLUSTER CAPACITY (FOR DECODE & MULTI-STREAM RUNS)            */}
-              {/* ========================================================================= */}
-              {preset !== "rate_limit_probe" && (
-                <>
-                  <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                    <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                      <div className="flex items-center gap-1.5">
-                        <Zap className="h-3.5 w-3.5" />
-                        <span>2. Throughput & Cluster Capacity</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* TPS */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Decode Token Velocity (TPS)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Cluster-wide aggregate generation output tokens per second across all workers
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
-                      {(snapshot?.current_tps || 0).toFixed(1)} tok/s
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
-                      Active aggregate
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant="emerald" className="text-[11px] font-sans font-semibold tabular-nums">Active</Badge>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* RPS */}
-                  <TableRow>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="font-medium text-[#2C2C2C] dark:text-white">Request Throughput (RPS)</span>
-                      </div>
-                      <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                        Completed transactional volume per elapsed wall-clock second
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white tabular-nums">
-                      {(snapshot?.current_rps || 0).toFixed(1)} req/s
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
-                      {config.concurrency} concurrent streams
-                    </TableCell>
-                    <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/40 dark:text-slate-500">
-                      —
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">Sustained</Badge>
-                    </TableCell>
-                  </TableRow>
-                </>
-              )}
-
-              {/* ========================================================================= */}
-              {/* COMMON SECTION: RELIABILITY & STRICT SLO YIELD                            */}
-              {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>3. Reliability & Strict SLO Compliance</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-
-              {/* Goodput */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-white">Goodput % (SLO Yield Rate)</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                    Percentage of total requests strictly satisfying latency, syntax & error thresholds
-                  </p>
-                </TableCell>
-                <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400 tabular-nums">
-                  {formatPct(snapshot?.goodput_pct)}
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
-                  {snapshot?.completed_requests || 0} passed / {snapshot?.failed_requests || 0} failed
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300 tabular-nums">
-                  ≥ 99.0%
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant={isGoodputOptimal ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                    {isGoodputOptimal ? "100% Meets" : "SLA Missed"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* Error Rate */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-white">Transaction Error Rate</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                    Network drops, rate limits (429), gateway timeouts (504), or dropped connections
-                  </p>
-                </TableCell>
-                <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white tabular-nums">
-                  {formatPct(snapshot?.error_rate_pct)}
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200 tabular-nums">
-                  {snapshot?.failed_requests || 0} failed requests
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300 tabular-nums">
-                  ≤ {formatPct(maxErrorSLO)}
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant={isErrorPass ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                    {isErrorPass ? "Zero Errors" : "Failures"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* ========================================================================= */}
-              {/* COMMON SECTION: FINANCIAL SPEND & TOKEN ECONOMICS                         */}
-              {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                  <div className="flex items-center gap-1.5">
-                    <Coins className="h-3.5 w-3.5" />
-                    <span>4. Financial Spend & Token Economics</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-
-              {/* Spend */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-white">Total Incurred Financial Spend</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                    Accumulated dollar spend tracked in ephemeral process memory
-                  </p>
-                </TableCell>
-                <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
-                  {formatUsd(snapshot?.current_spend_usd)}
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                  Hard Cap: {formatUsd(hardCap)}
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                  ≤ {formatUsd(hardCap)}
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant={isSpendProtected ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                    {isSpendProtected ? "Protected" : "Cap Hit"}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* Cost / 1K Goodput */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                    <span className="font-medium text-[#2C2C2C] dark:text-white">Cost / 1K SLO-Satisfied Calls</span>
-                  </div>
-                  <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                    True unit production cost per 1,000 successful responses meeting all SLO targets
-                  </p>
-                </TableCell>
-                <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                  {formatUsd(snapshot?.cost_per_1k_goodput_usd || 0)}
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                  Per 1,000 valid calls
-                </TableCell>
-                <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                  Unit Economics
-                </TableCell>
-                <TableCell className="text-right pr-4">
-                  <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">ROI Metric</Badge>
-                </TableCell>
-              </TableRow>
-
-              {/* ========================================================================= */}
-              {/* SECTION 5: WORKLOAD-SPECIFIC DERIVED PERFORMANCE INDICATORS               */}
-              {/* ========================================================================= */}
-              <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>5. Workload-Specific Derived Indicators</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-
-              {/* ITL Jitter CV */}
-              {snapshot?.itl_jitter_cv !== undefined && snapshot?.itl_jitter_cv !== null && (
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-white">ITL Jitter Coefficient ($CV_{"{ITL}"}$)</span>
-                    </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                      Stream smoothness index: standard deviation / mean of inter-token deltas
-                    </p>
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                    {snapshot.itl_jitter_cv.toFixed(3)}
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                    {snapshot.itl_jitter_cv < 0.30 ? "Glass Smooth (<0.30)" : (snapshot.itl_jitter_cv > 0.70 ? "High Stutter (>0.70)" : "Standard Stream")}
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                    &lt; 0.35
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <Badge variant={snapshot.itl_jitter_cv < 0.35 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                      {snapshot.itl_jitter_cv < 0.35 ? "Smooth Stream" : "Jittery"}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {/* Prefill Slope */}
-              {snapshot?.prefill_slope_ms_per_1k !== undefined && snapshot?.prefill_slope_ms_per_1k !== null && (
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-white">Prefill Latency Slope</span>
-                    </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                      Compute latency scaling rate per 1,000 prompt tokens
-                    </p>
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                    {snapshot.prefill_slope_ms_per_1k.toFixed(2)} ms / 1K
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                    Per 1,000 input tokens
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                    Linear Scaling
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">Prefill Slope</Badge>
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {/* Cache Speedup Factor */}
-              {snapshot?.cache_speedup_factor !== undefined && snapshot?.cache_speedup_factor !== null && (
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-white">Prompt Cache Speedup Factor</span>
-                    </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                      TTFT acceleration ratio achieved via warm KV prefix cache hit vs cold prefill
-                    </p>
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-emerald-700 dark:text-emerald-400">
-                    {snapshot.cache_speedup_factor.toFixed(2)}x
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                    {((1 - (1 / snapshot.cache_speedup_factor)) * 100).toFixed(0)}% TTFT reduction
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                    ≥ 2.0x
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <Badge variant={snapshot.cache_speedup_factor >= 2.0 ? "emerald" : "secondary"} className="text-[11px] font-sans font-semibold tabular-nums">
-                      {snapshot.cache_speedup_factor >= 2.0 ? "Cache Accelerated" : "Modest Hit"}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {/* Thinking Wait Multiplier */}
-              {snapshot?.thinking_wait_multiplier !== undefined && snapshot?.thinking_wait_multiplier !== null && (
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-white">Thinking Wait Multiplier (TTFA/TTFT)</span>
-                    </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                      User wait time multiplier before reasoning finishes and readable answer begins
-                    </p>
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                    {snapshot.thinking_wait_multiplier.toFixed(2)}x
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                    CoT reasoning wait tax
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                    Reasoning Multiplier
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <Badge variant="secondary" className="text-[11px] font-sans font-semibold tabular-nums">CoT Overhead</Badge>
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {/* Grammar Penalty */}
-              {snapshot?.grammar_penalty_pct !== undefined && snapshot?.grammar_penalty_pct !== null && (
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-white">Grammar Logit-Masking Penalty</span>
-                    </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                      TPOT decode throughput penalty under constrained JSON schema / regex masking
-                    </p>
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                    +{snapshot.grammar_penalty_pct.toFixed(1)}%
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                    Guided decoding overhead
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                    &lt; 15.0%
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <Badge variant={snapshot.grammar_penalty_pct < 15.0 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                      {snapshot.grammar_penalty_pct < 15.0 ? "Low Overhead" : "Masking Stall"}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              )}
-
-              {/* Parallel Scaling Efficiency */}
-              {snapshot?.concurrency_scaling_efficiency_pct !== undefined && snapshot?.concurrency_scaling_efficiency_pct !== null && (
-                <TableRow>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span className="font-medium text-[#2C2C2C] dark:text-white">Parallel Scaling Efficiency</span>
-                    </div>
-                    <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
-                      Aggregate throughput achieved relative to linear single-stream theoretical ceiling
-                    </p>
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
-                    {snapshot.concurrency_scaling_efficiency_pct.toFixed(1)}%
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
-                    Parallel scaling efficiency
-                  </TableCell>
-                  <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
-                    ≥ 75.0%
-                  </TableCell>
-                  <TableCell className="text-right pr-4">
-                    <Badge variant={snapshot.concurrency_scaling_efficiency_pct >= 75.0 ? "emerald" : "destructive"} className="text-[11px] font-sans font-semibold tabular-nums">
-                      {snapshot.concurrency_scaling_efficiency_pct >= 75.0 ? "Linear Scaling" : "Saturating"}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              )}
+                        <TableCell className="text-right pr-4">
+                          <Badge variant={row.badgeVariant} className="text-[11px] font-sans font-semibold tabular-nums">
+                            {row.badgeText}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

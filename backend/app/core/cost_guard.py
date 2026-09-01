@@ -4,29 +4,29 @@ from app.models.schemas import BenchmarkConfig, CostEstimate, TestMode, Workload
 # Approximate token profiles for presets
 PRESET_TOKEN_PROFILES = {
     WorkloadPreset.RATE_LIMIT_PROBE: (5, 2),
-    WorkloadPreset.PREFILL_TTFT: (4000, 2),
-    WorkloadPreset.DECODE_THROUGHPUT: (40, 800),
-    WorkloadPreset.REASONING_COT: (300, 800),
-    WorkloadPreset.AGENTIC_TOOL_CALLING: (1200, 150),
-    WorkloadPreset.CODE_GENERATION: (1500, 800),
-    WorkloadPreset.RAG_SYNTHESIS: (3500, 400),
-    WorkloadPreset.LONG_CONTEXT_RETRIEVAL: (16000, 300),
-    WorkloadPreset.SUMMARIZATION_DISTILL: (4500, 300),
-    WorkloadPreset.STRUCTURED_JSON: (600, 300),
-    WorkloadPreset.CHAT_INTERACTIVE: (200, 150),
-    WorkloadPreset.FEWSHOT_CLASSIFICATION: (1200, 10),
-    WorkloadPreset.MULTIMODAL_VISION: (1800, 200),
-    WorkloadPreset.MULTITURN_AGENTIC: (2500, 350),
-    WorkloadPreset.KV_CACHE_REUSE: (3200, 150),
-    WorkloadPreset.TOOL_CALLING: (1200, 150),
-    WorkloadPreset.CODE: (1500, 800),
-    WorkloadPreset.LONG_CONTEXT: (16000, 300),
-    WorkloadPreset.SUMMARIZATION: (4500, 300),
-    WorkloadPreset.CHAT: (200, 150),
-    WorkloadPreset.RAG: (3500, 400),
-    WorkloadPreset.VISION: (1600, 300),
-    WorkloadPreset.JSON_SCHEMA: (800, 400),
-    WorkloadPreset.CUSTOM: (500, 500),
+    WorkloadPreset.PREFILL_TTFT: (4280, 2),
+    WorkloadPreset.DECODE_THROUGHPUT: (139, 800),
+    WorkloadPreset.REASONING_COT: (383, 800),
+    WorkloadPreset.AGENTIC_TOOL_CALLING: (1220, 150),
+    WorkloadPreset.CODE_GENERATION: (787, 800),
+    WorkloadPreset.RAG_SYNTHESIS: (3151, 400),
+    WorkloadPreset.LONG_CONTEXT_RETRIEVAL: (16284, 300),
+    WorkloadPreset.SUMMARIZATION_DISTILL: (3642, 300),
+    WorkloadPreset.STRUCTURED_JSON: (675, 300),
+    WorkloadPreset.CHAT_INTERACTIVE: (123, 150),
+    WorkloadPreset.FEWSHOT_CLASSIFICATION: (1111, 10),
+    WorkloadPreset.MULTIMODAL_VISION: (1412, 200),
+    WorkloadPreset.MULTITURN_AGENTIC: (1314, 350),
+    WorkloadPreset.KV_CACHE_REUSE: (3389, 150),
+    WorkloadPreset.TOOL_CALLING: (1220, 150),
+    WorkloadPreset.CODE: (787, 800),
+    WorkloadPreset.LONG_CONTEXT: (16284, 300),
+    WorkloadPreset.SUMMARIZATION: (3642, 300),
+    WorkloadPreset.CHAT: (123, 150),
+    WorkloadPreset.RAG: (3151, 400),
+    WorkloadPreset.VISION: (1412, 200),
+    WorkloadPreset.JSON_SCHEMA: (675, 300),
+    WorkloadPreset.CUSTOM: (43, 500),
 }
 
 
@@ -112,9 +112,16 @@ class CostGuard:
     @classmethod
     def estimate_benchmark_cost(cls, config: BenchmarkConfig) -> CostEstimate:
         """Generate a pre-flight cost estimate for a configured benchmark run."""
-        prompt_tokens, expected_gen_tokens = PRESET_TOKEN_PROFILES.get(
-            config.workload_preset, (500, min(config.max_tokens, 500))
-        )
+        if config.custom_prompt and config.custom_prompt.strip():
+            from app.core.fallback_tokenizer import FallbackTokenizer
+            prompt_tokens = FallbackTokenizer.count_tokens(config.custom_prompt.strip())
+            _, expected_gen_tokens = PRESET_TOKEN_PROFILES.get(
+                config.workload_preset, (500, min(config.max_tokens, 500))
+            )
+        else:
+            prompt_tokens, expected_gen_tokens = PRESET_TOKEN_PROFILES.get(
+                config.workload_preset, (500, min(config.max_tokens, 500))
+            )
         gen_tokens = min(config.max_tokens, expected_gen_tokens)
 
         # Mode calculation: Fixed Request Count vs Continuous Time Duration

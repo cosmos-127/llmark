@@ -54,10 +54,12 @@ def test_estimate_benchmark_cost_request_mode():
         hard_spend_cap=2.0,
     )
 
+    from app.core.cost_guard import PRESET_TOKEN_PROFILES
+
     estimate = CostGuard.estimate_benchmark_cost(config)
     assert estimate.estimated_requests == 40
-    # Chat preset: 200 prompt, 150 gen -> 350 tokens/req * 40 = 14,000 tokens
-    assert estimate.estimated_total_tokens == 14000
+    prompt_p, gen_p = PRESET_TOKEN_PROFILES[WorkloadPreset.CHAT]
+    assert estimate.estimated_total_tokens == (prompt_p + gen_p) * 40
     assert estimate.estimated_cost_usd > 0
 
 

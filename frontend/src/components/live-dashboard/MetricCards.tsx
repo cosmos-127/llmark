@@ -1,5 +1,11 @@
 import React from "react";
-import {
+import { Icons } from "@/components/common/HugeIcons";
+import { MetricsSnapshot, WorkloadPreset } from "@/lib/types";
+import { formatMs, formatPct, formatUsd } from "@/lib/utils";
+import { KpiCard } from "@/components/tremor/KpiCard";
+import { Badge } from "@/components/ui/badge";
+
+const {
   Gauge,
   Zap,
   CheckCircle2,
@@ -15,11 +21,7 @@ import {
   Eye,
   Database,
   MessagesSquare,
-} from "lucide-react";
-import { MetricsSnapshot, WorkloadPreset } from "@/lib/types";
-import { formatMs, formatPct, formatUsd } from "@/lib/utils";
-import { KpiCard } from "@/components/tremor/KpiCard";
-import { Badge } from "@/components/ui/badge";
+} = Icons;
 
 interface MetricCardsProps {
   snapshot: MetricsSnapshot | null;

@@ -12,6 +12,24 @@ class DiffEngine:
         run_b: BenchmarkRun,
         run_c: BenchmarkRun | None = None,
     ) -> RunDiffResponse:
+        # 1. Enforce comparison between runs sharing the SAME workload preset
+        preset_a = getattr(run_a, "workload_preset", None)
+        preset_b = getattr(run_b, "workload_preset", None)
+        preset_c = getattr(run_c, "workload_preset", None) if run_c else None
+
+        if preset_a and preset_b and preset_a != preset_b:
+            raise ValueError(
+                f"Workload preset mismatch: cannot compare Run A ('{preset_a}') with Run B ('{preset_b}'). "
+                "Benchmark comparisons require identical workload presets for statistically valid deltas."
+            )
+        if run_c and preset_a and preset_c and preset_a != preset_c:
+            raise ValueError(
+                f"Workload preset mismatch: cannot compare Run A ('{preset_a}') with Run C ('{preset_c}'). "
+                "Benchmark comparisons require identical workload presets for statistically valid deltas."
+            )
+
+        common_preset = preset_a or preset_b or (preset_c if run_c else None)
+
         deltas: list[MetricDelta] = []
 
         def add_delta(
@@ -19,6 +37,7 @@ class DiffEngine:
             val_a: float,
             val_b: float,
             val_c: float | None = None,
+            category: str = "Latency Tail",
             lower_is_better: bool = True,
         ):
             diff_b = val_b - val_a
@@ -39,6 +58,7 @@ class DiffEngine:
             deltas.append(
                 MetricDelta(
                     metric_name=name,
+                    category=category,
                     run_a_value=round(val_a, 2),
                     run_b_value=round(val_b, 2),
                     run_c_value=val_c_rounded,
@@ -51,12 +71,23 @@ class DiffEngine:
                 )
             )
 
-        # Latency metrics (lower is better)
+        # -------------------------------------------------------------------------
+        # 1. Latency Tail Metrics (lower is better)
+        # -------------------------------------------------------------------------
         add_delta(
             "TTFT P50 (ms)",
             run_a.ttft_p50 or 0.0,
             run_b.ttft_p50 or 0.0,
             run_c.ttft_p50 if run_c else None,
+            category="Latency Tail",
+            lower_is_better=True,
+        )
+        add_delta(
+            "TTFT P75 (ms)",
+            run_a.ttft_p75 or 0.0,
+            run_b.ttft_p75 or 0.0,
+            run_c.ttft_p75 if run_c else None,
+            category="Latency Tail",
             lower_is_better=True,
         )
         add_delta(
@@ -64,6 +95,7 @@ class DiffEngine:
             run_a.ttft_p95 or 0.0,
             run_b.ttft_p95 or 0.0,
             run_c.ttft_p95 if run_c else None,
+            category="Latency Tail",
             lower_is_better=True,
         )
         add_delta(
@@ -71,13 +103,43 @@ class DiffEngine:
             run_a.ttft_p99 or 0.0,
             run_b.ttft_p99 or 0.0,
             run_c.ttft_p99 if run_c else None,
+            category="Latency Tail",
             lower_is_better=True,
         )
+
+        # TTFA (Time to First Answer for reasoning/CoT models if recorded)
+        if (run_a.ttfa_p95 and run_a.ttfa_p95 > 0) or (run_b.ttfa_p95 and run_b.ttfa_p95 > 0):
+            add_delta(
+                "TTFA P50 (ms)",
+                run_a.ttfa_p50 or 0.0,
+                run_b.ttfa_p50 or 0.0,
+                run_c.ttfa_p50 if run_c else None,
+                category="Latency Tail",
+                lower_is_better=True,
+            )
+            add_delta(
+                "TTFA P95 (ms)",
+                run_a.ttfa_p95 or 0.0,
+                run_b.ttfa_p95 or 0.0,
+                run_c.ttfa_p95 if run_c else None,
+                category="Latency Tail",
+                lower_is_better=True,
+            )
+
         add_delta(
             "ITL P50 (ms)",
             run_a.itl_p50 or 0.0,
             run_b.itl_p50 or 0.0,
             run_c.itl_p50 if run_c else None,
+            category="Latency Tail",
+            lower_is_better=True,
+        )
+        add_delta(
+            "ITL P75 (ms)",
+            run_a.itl_p75 or 0.0,
+            run_b.itl_p75 or 0.0,
+            run_c.itl_p75 if run_c else None,
+            category="Latency Tail",
             lower_is_better=True,
         )
         add_delta(
@@ -85,6 +147,15 @@ class DiffEngine:
             run_a.itl_p95 or 0.0,
             run_b.itl_p95 or 0.0,
             run_c.itl_p95 if run_c else None,
+            category="Latency Tail",
+            lower_is_better=True,
+        )
+        add_delta(
+            "ITL P99 (ms)",
+            run_a.itl_p99 or 0.0,
+            run_b.itl_p99 or 0.0,
+            run_c.itl_p99 if run_c else None,
+            category="Latency Tail",
             lower_is_better=True,
         )
         add_delta(
@@ -92,6 +163,7 @@ class DiffEngine:
             run_a.max_itl or 0.0,
             run_b.max_itl or 0.0,
             run_c.max_itl if run_c else None,
+            category="Latency Tail",
             lower_is_better=True,
         )
         add_delta(
@@ -99,33 +171,133 @@ class DiffEngine:
             run_a.tpot_mean or 0.0,
             run_b.tpot_mean or 0.0,
             run_c.tpot_mean if run_c else None,
+            category="Latency Tail",
             lower_is_better=True,
         )
 
-        # Throughput & SLO metrics (higher is better)
+        # -------------------------------------------------------------------------
+        # 2. Throughput & Capacity Metrics (higher is better)
+        # -------------------------------------------------------------------------
         add_delta(
             "Decode TPS (tok/s)",
             run_a.tps_decode or 0.0,
             run_b.tps_decode or 0.0,
             run_c.tps_decode if run_c else None,
+            category="Throughput & Capacity",
             lower_is_better=False,
         )
+
+        rps_a = (run_a.completed_requests or 0) / max(1, run_a.duration_seconds or 1)
+        rps_b = (run_b.completed_requests or 0) / max(1, run_b.duration_seconds or 1)
+        rps_c = ((run_c.completed_requests or 0) / max(1, run_c.duration_seconds or 1)) if run_c else None
+        add_delta(
+            "Request Rate (RPS)",
+            rps_a,
+            rps_b,
+            rps_c,
+            category="Throughput & Capacity",
+            lower_is_better=False,
+        )
+
+        add_delta(
+            "Completed Requests",
+            float(run_a.completed_requests or 0),
+            float(run_b.completed_requests or 0),
+            float(run_c.completed_requests or 0) if run_c else None,
+            category="Throughput & Capacity",
+            lower_is_better=False,
+        )
+
+        # Token counts
+        add_delta(
+            "Prompt Tokens",
+            float(run_a.total_prompt_tokens or 0),
+            float(run_b.total_prompt_tokens or 0),
+            float(run_c.total_prompt_tokens or 0) if run_c else None,
+            category="Throughput & Capacity",
+            lower_is_better=False,
+        )
+        add_delta(
+            "Generated Tokens",
+            float(run_a.total_gen_tokens or 0),
+            float(run_b.total_gen_tokens or 0),
+            float(run_c.total_gen_tokens or 0) if run_c else None,
+            category="Throughput & Capacity",
+            lower_is_better=False,
+        )
+
+        # -------------------------------------------------------------------------
+        # 3. Reliability & SLO Metrics
+        # -------------------------------------------------------------------------
         add_delta(
             "Goodput (SLO Yield %)",
             run_a.goodput_pct or 0.0,
             run_b.goodput_pct or 0.0,
             run_c.goodput_pct if run_c else None,
+            category="Reliability & SLO",
             lower_is_better=False,
         )
+        add_delta(
+            "Error Rate (%)",
+            run_a.error_rate_pct or 0.0,
+            run_b.error_rate_pct or 0.0,
+            run_c.error_rate_pct if run_c else None,
+            category="Reliability & SLO",
+            lower_is_better=True,
+        )
 
-        # Cost metric (lower is better)
+        # -------------------------------------------------------------------------
+        # 4. Economic Metrics (lower is better)
+        # -------------------------------------------------------------------------
         add_delta(
             "Total Cost ($)",
             run_a.total_cost_usd or 0.0,
             run_b.total_cost_usd or 0.0,
             run_c.total_cost_usd if run_c else None,
+            category="Economics",
             lower_is_better=True,
         )
+
+        cost_1k_a = (run_a.total_cost_usd / max(1, run_a.completed_requests or 1)) * 1000.0 if (run_a.total_cost_usd and run_a.completed_requests) else 0.0
+        cost_1k_b = (run_b.total_cost_usd / max(1, run_b.completed_requests or 1)) * 1000.0 if (run_b.total_cost_usd and run_b.completed_requests) else 0.0
+        cost_1k_c = ((run_c.total_cost_usd / max(1, run_c.completed_requests or 1)) * 1000.0 if (run_c.total_cost_usd and run_c.completed_requests) else 0.0) if run_c else None
+        add_delta(
+            "Cost / 1K Calls ($)",
+            cost_1k_a,
+            cost_1k_b,
+            cost_1k_c,
+            category="Economics",
+            lower_is_better=True,
+        )
+
+        # -------------------------------------------------------------------------
+        # 5. Network Connection Overhead (lower is better)
+        # -------------------------------------------------------------------------
+        if (run_a.dns_p50 or 0) > 0 or (run_b.dns_p50 or 0) > 0 or (run_a.tcp_p50 or 0) > 0 or (run_b.tcp_p50 or 0) > 0:
+            add_delta(
+                "DNS Resolution (ms)",
+                run_a.dns_p50 or 0.0,
+                run_b.dns_p50 or 0.0,
+                run_c.dns_p50 if run_c else None,
+                category="Network Connection",
+                lower_is_better=True,
+            )
+            add_delta(
+                "TCP Handshake (ms)",
+                run_a.tcp_p50 or 0.0,
+                run_b.tcp_p50 or 0.0,
+                run_c.tcp_p50 if run_c else None,
+                category="Network Connection",
+                lower_is_better=True,
+            )
+            add_delta(
+                "TLS Handshake (ms)",
+                run_a.tls_p50 or 0.0,
+                run_b.tls_p50 or 0.0,
+                run_c.tls_p50 if run_c else None,
+                category="Network Connection",
+                lower_is_better=True,
+            )
 
         goodput_diff = (run_b.goodput_pct or 0.0) - (run_a.goodput_pct or 0.0)
         goodput_delta_pct = round((goodput_diff / max(0.01, run_a.goodput_pct or 0.0)) * 100.0, 2)
@@ -156,6 +328,10 @@ class DiffEngine:
             run_a_model=run_a.model,
             run_b_model=run_b.model,
             run_c_model=run_c.model if run_c else None,
+            run_a_preset=preset_a,
+            run_b_preset=preset_b,
+            run_c_preset=preset_c,
+            workload_preset=common_preset,
             deltas=deltas,
             goodput_delta_pct=goodput_delta_pct,
             cost_delta_pct=cost_delta_pct,

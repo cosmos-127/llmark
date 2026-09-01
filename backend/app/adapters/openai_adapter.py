@@ -24,6 +24,15 @@ class OpenAICompatAdapter(VendorAdapter):
         api_key = credential.api_key if credential and credential.api_key else "EMPTY"
         base_url = credential.base_url if credential and credential.base_url else None
 
+        # Automatic Google AI Studio / GCP Vertex AI URL resolution
+        if config.vendor.value == "gcp_vertex" and not base_url:
+            if credential and credential.gcp_auth_mode == "vertex_ai":
+                loc = credential.gcp_location or "us-central1"
+                proj = credential.gcp_project_id or "default"
+                base_url = f"https://{loc}-aiplatform.googleapis.com/v1beta1/projects/{proj}/locations/{loc}/endpoints/openapi"
+            else:
+                base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
         client = AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
@@ -119,6 +128,19 @@ class OpenAICompatAdapter(VendorAdapter):
         if not base_url and (
             not credential or not credential.api_key or not credential.api_key.strip()
         ):
+            if credential and (
+                credential.gcp_auth_mode == "vertex_ai"
+                or bool(credential.gcp_project_id)
+            ):
+                return [
+                    "gemini-2.5-pro",
+                    "gemini-2.0-flash",
+                    "gemini-2.0-flash-thinking-exp",
+                    "gemini-2.0-pro-exp-02-05",
+                    "gemini-1.5-pro",
+                    "gemini-1.5-flash",
+                    "gemini-1.5-flash-8b",
+                ]
             return [
                 "gpt-4o",
                 "gpt-4o-mini",
@@ -128,6 +150,15 @@ class OpenAICompatAdapter(VendorAdapter):
                 "gpt-4",
                 "gpt-3.5-turbo",
             ]
+
+        # Automatic Google AI Studio / GCP Vertex AI URL resolution for list_models
+        if credential and credential.gcp_auth_mode and not base_url:
+            if credential.gcp_auth_mode == "vertex_ai":
+                loc = credential.gcp_location or "us-central1"
+                proj = credential.gcp_project_id or "default"
+                base_url = f"https://{loc}-aiplatform.googleapis.com/v1beta1/projects/{proj}/locations/{loc}/endpoints/openapi"
+            elif credential.gcp_auth_mode == "api_key":
+                base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
         # For OpenRouter or custom JSON endpoints, query via HTTP to extract raw dynamic pricing schema
         if base_url and "openrouter.ai" in base_url.lower():

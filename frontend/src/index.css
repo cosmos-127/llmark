@@ -16,7 +16,7 @@
     letter-spacing: -0.006em;
     background-color: var(--bg-app);
     color: var(--text-main);
-    overflow-x: hidden;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;

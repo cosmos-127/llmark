@@ -81,19 +81,6 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
 
           {/* Security & Engine Status Badges */}
           <div className="hidden sm:flex items-center gap-2.5 font-sans">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="cursor-pointer">
-                  <Badge variant="emerald" className="gap-1.5 py-1 px-3 text-xs font-medium shadow-xs">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Ephemeral vault</span>
-                  </Badge>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>API keys are held in memory only and never written to disk.</p>
-              </TooltipContent>
-            </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>

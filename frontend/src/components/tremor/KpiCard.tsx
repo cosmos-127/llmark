@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ArrowUpRight, ArrowDownRight, Minus, type LucideIcon } from "lucide-react";
+import { Icons } from "@/components/common/HugeIcons";
 import { cn } from "@/lib/utils";
 
 export interface KpiCardProps {
@@ -14,7 +14,7 @@ export interface KpiCardProps {
   tooltip?: string;
   badge?: string;
   badgeVariant?: "default" | "secondary" | "destructive" | "outline" | "emerald" | "sky" | "violet";
-  icon?: LucideIcon;
+  icon?: React.ComponentType<{ className?: string }>;
   delta?: {
     value: string;
     isIncrease: boolean;
@@ -182,9 +182,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 )}
               >
                 {delta.isIncrease ? (
-                  <ArrowUpRight className="h-3 w-3" />
+                  <Icons.ArrowUpRight className="h-3 w-3" />
                 ) : (
-                  <ArrowDownRight className="h-3 w-3" />
+                  <Icons.ArrowDownRight className="h-3 w-3" />
                 )}
                 {delta.value}
               </span>

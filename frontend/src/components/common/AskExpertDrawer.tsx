@@ -425,7 +425,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                   <p className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 mt-1.5 leading-tight flex items-center justify-between">
                     <span>
                       {backendGroqStatus.has_groq_key
-                        ? "✨ Key loaded from .env. Powered by Llama 3.3 70B at 500+ tok/s."
+                        ? "Key loaded from .env. Powered by Llama 3.3 70B at 500+ tok/s."
                         : "Key is stored in browser. You can also add GROQ_API_KEY in .env."}
                     </span>
                   </p>
@@ -520,23 +520,23 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                               {msg.source === "groq_llm" || msg.source === "openai_llm" ? (
                                 <Badge
                                   variant="outline"
-                                  className="text-[9px] py-0 px-1 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                                  className="text-[9px] py-0 px-1.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 font-medium"
                                 >
-                                  ⚡ {msg.model || "Live LLM"}
+                                  {msg.model || "Live LLM"}
                                 </Badge>
                               ) : msg.source === "key_required" ? (
                                 <Badge
                                   variant="outline"
-                                  className="text-[9px] py-0 px-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                                  className="text-[9px] py-0 px-1.5 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 font-medium"
                                 >
-                                  🔑 Key Required
+                                  Key Required
                                 </Badge>
                               ) : (
                                 <Badge
                                   variant="outline"
-                                  className="text-[9px] py-0 px-1 border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/10"
+                                  className="text-[9px] py-0 px-1.5 border-purple-500/30 text-purple-600 dark:text-purple-400 bg-purple-500/10 font-medium"
                                 >
-                                  📚 Curated Guide
+                                  Curated Guide
                                 </Badge>
                               )}
                               <span>•</span>

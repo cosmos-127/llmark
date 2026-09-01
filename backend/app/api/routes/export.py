@@ -163,6 +163,37 @@ async def export_pdf(
     )
 
 
+@router.get("/diff/pdf")
+async def export_diff_pdf(
+    run_a: str,
+    run_b: str,
+    run_c: str | None = None,
+    db: AsyncSession = Depends(get_db),
+) -> Response:
+    """Export multi-model differential comparison results as a professional PDF report."""
+    run_a_obj = await _get_run_or_active(run_a, db)
+    run_b_obj = await _get_run_or_active(run_b, db)
+    run_c_obj = await _get_run_or_active(run_c, db) if run_c and run_c.strip() else None
+
+    try:
+        pdf_bytes = ReportExporter.generate_diff_pdf(run_a_obj, run_b_obj, run_c_obj)
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(val_err),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate differential PDF report: {exc}",
+        )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=llmark_diff_{run_a}_vs_{run_b}.pdf"},
+    )
+
+
 @router.get("/bundle/{run_id}")
 async def export_bundle(
     run_id: str,
@@ -182,3 +213,4 @@ async def export_bundle(
         media_type="application/gzip",
         headers={"Content-Disposition": f"attachment; filename=benchmark_{run_id}.llmark"},
     )
+

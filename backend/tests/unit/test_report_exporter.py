@@ -262,3 +262,113 @@ def test_pdf_export_structured_json_preset():
     md = ReportExporter.generate_markdown(run)
     assert "Grammar Masking Penalty" in md
     assert "Schema / Grammar Validity" in md
+
+
+def test_generate_diff_pdf_two_runs():
+    """Verify generate_diff_pdf produces a valid multi-model PDF comparing 2 benchmark runs."""
+    run_a = BenchmarkRun(
+        id="bmk_a",
+        name="GPT-4o Baseline",
+        vendor="openai",
+        model="gpt-4o",
+        workload_preset="chat",
+        load_curve="constant",
+        concurrency=5,
+        duration_seconds=30,
+        status="completed",
+        total_requests=50,
+        completed_requests=50,
+        failed_requests=0,
+        total_cost_usd=0.02,
+        ttft_p50=200.0,
+        ttft_p95=300.0,
+        tps_decode=100.0,
+        goodput_pct=92.0,
+    )
+    run_b = BenchmarkRun(
+        id="bmk_b",
+        name="Llama-3.3-70B Candidate",
+        vendor="groq",
+        model="llama-3.3-70b",
+        workload_preset="chat",
+        load_curve="constant",
+        concurrency=5,
+        duration_seconds=30,
+        status="completed",
+        total_requests=50,
+        completed_requests=50,
+        failed_requests=0,
+        total_cost_usd=0.01,
+        ttft_p50=100.0,
+        ttft_p95=150.0,
+        tps_decode=250.0,
+        goodput_pct=98.0,
+    )
+    pdf_bytes = ReportExporter.generate_diff_pdf(run_a, run_b)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+
+
+def test_generate_diff_pdf_three_runs():
+    """Verify generate_diff_pdf produces a valid multi-model PDF comparing 3 benchmark runs."""
+    run_a = BenchmarkRun(
+        id="bmk_a",
+        name="GPT-4o Baseline",
+        vendor="openai",
+        model="gpt-4o",
+        workload_preset="chat",
+        load_curve="constant",
+        concurrency=5,
+        duration_seconds=30,
+        status="completed",
+        total_requests=50,
+        completed_requests=50,
+        failed_requests=0,
+        total_cost_usd=0.02,
+        ttft_p50=200.0,
+        ttft_p95=300.0,
+        tps_decode=100.0,
+        goodput_pct=92.0,
+    )
+    run_b = BenchmarkRun(
+        id="bmk_b",
+        name="Llama-3.3-70B Candidate",
+        vendor="groq",
+        model="llama-3.3-70b",
+        workload_preset="chat",
+        load_curve="constant",
+        concurrency=5,
+        duration_seconds=30,
+        status="completed",
+        total_requests=50,
+        completed_requests=50,
+        failed_requests=0,
+        total_cost_usd=0.01,
+        ttft_p50=100.0,
+        ttft_p95=150.0,
+        tps_decode=250.0,
+        goodput_pct=98.0,
+    )
+    run_c = BenchmarkRun(
+        id="bmk_c",
+        name="Claude 3.5 Sonnet",
+        vendor="anthropic",
+        model="claude-3-5-sonnet",
+        workload_preset="chat",
+        load_curve="constant",
+        concurrency=5,
+        duration_seconds=30,
+        status="completed",
+        total_requests=50,
+        completed_requests=50,
+        failed_requests=0,
+        total_cost_usd=0.03,
+        ttft_p50=180.0,
+        ttft_p95=240.0,
+        tps_decode=130.0,
+        goodput_pct=96.0,
+    )
+    pdf_bytes = ReportExporter.generate_diff_pdf(run_a, run_b, run_c)
+    assert len(pdf_bytes) > 1000
+    assert pdf_bytes.startswith(b"%PDF")
+

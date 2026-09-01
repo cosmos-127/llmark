@@ -68,30 +68,30 @@ export const DiagnosticsPipelineModal: React.FC<DiagnosticsPipelineModalProps> =
               </div>
               <div>
                 <DialogTitle className="text-base sm:text-lg font-bold text-[#2C2C2C] dark:text-white">
-                  Pre-Flight Diagnostics & Production Reliability Sieve
+                  Diagnostics & Reliability Preview
                 </DialogTitle>
                 <DialogDescription className="text-xs sm:text-sm text-[#2C2C2C]/65 dark:text-white/65">
-                  Inspect multi-stage SLA gate dropoffs, percentile distributions, streaming waterfall timelines, and cost guardrails.
+                  Inspect latency pass rates, percentile distributions, streaming timeline breakdowns, and cost guardrails.
                 </DialogDescription>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="purple" className="text-xs font-sans py-0.5 px-2.5">
-                Step 4 Deep Analysis
+                Diagnostics
               </Badge>
               <Badge variant="outline" className="text-xs font-sans font-semibold py-0.5 px-2.5">
-                SLO TTFT ≤ {maxTtftMs}ms • TPOT ≤ {maxTpotMs}ms
+                TTFT ≤ {maxTtftMs}ms • TPOT ≤ {maxTpotMs}ms
               </Badge>
               {onOpenExpert && (
                 <button
                   type="button"
                   onClick={() => {
                     if (activeTab === "sieve" || activeTab === "distribution") {
-                      onOpenExpert("slo-goodput", "Goodput & Reliability Sieve", "What is Goodput and why is it superior to Raw Throughput?");
+                      onOpenExpert("slo-goodput", "Goodput & Reliability", "What is Goodput and why is it superior to Raw Throughput?");
                     } else if (activeTab === "waterfall") {
-                      onOpenExpert("provider-routing", "Latency Waterfall Breakdown", "What causes connection latency overhead in cloud endpoints?");
+                      onOpenExpert("provider-routing", "Latency Breakdown", "What causes connection latency overhead in cloud endpoints?");
                     } else {
-                      onOpenExpert("spend-guardrails", "Spend Trajectory & Guardrails", "How does the zero bill-shock circuit breaker protect against runaway cloud costs?");
+                      onOpenExpert("spend-guardrails", "Spend & Cost Guardrails", "How does the zero bill-shock circuit breaker protect against runaway cloud costs?");
                     }
                   }}
                   className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-xl text-xs font-semibold bg-[#853953]/10 dark:bg-[#D84577]/15 text-[#853953] dark:text-[#F06A9A] hover:bg-[#853953]/20 border border-[#853953]/30 dark:border-[#E05284]/40 transition-all cursor-pointer shadow-2xs"
@@ -106,10 +106,10 @@ export const DiagnosticsPipelineModal: React.FC<DiagnosticsPipelineModalProps> =
           {/* Tab Selector */}
           <div className="flex items-center gap-2 pt-4 flex-wrap">
             {[
-              { id: "sieve", label: "3-Gate Reliability Sieve Pipeline", icon: Target },
-              { id: "distribution", label: "Log-Normal Goodput Yield Graph", icon: Activity },
-              { id: "waterfall", label: "End-to-End Latency Waterfall", icon: Clock },
-              { id: "spend", label: "Spend Accumulation & Circuit Breaker", icon: DollarSign },
+              { id: "sieve", label: "Latency Pass Rates (SLOs)", icon: Target },
+              { id: "distribution", label: "Goodput Yield Distribution", icon: Activity },
+              { id: "waterfall", label: "Latency Breakdown (Waterfall)", icon: Clock },
+              { id: "spend", label: "Spend & Cost Cap", icon: DollarSign },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;

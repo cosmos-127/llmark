@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Network, Globe, Shield, Cpu, Zap } from "lucide-react";
+import { Icons } from "@/components/common/HugeIcons";
 import { WaterfallTiming } from "@/lib/types";
 import { formatMs } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -13,6 +13,8 @@ interface WaterfallBarProps {
 }
 
 export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
+  const [activeHoverId, setActiveHoverId] = React.useState<string | null>(null);
+
   const dns = waterfall?.dns_ms && waterfall.dns_ms > 0 ? waterfall.dns_ms : 8.4;
   const tcp = waterfall?.tcp_ms && waterfall.tcp_ms > 0 ? waterfall.tcp_ms : 18.2;
   const tls = waterfall?.tls_ms && waterfall.tls_ms > 0 ? waterfall.tls_ms : 24.6;
@@ -46,7 +48,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       dotColor: "bg-[#2D1223] dark:bg-[#521D42]",
       badgeBg: "bg-[#2D1223]/10 dark:bg-[#3D1A31]/40 text-[#2D1223] dark:text-[#E88EC4] border-[#2D1223]/20 dark:border-[#E88EC4]/30",
       textColor: "text-[#2D1223] dark:text-[#E88EC4]",
-      icon: Globe,
+      icon: Icons.Globe,
       desc: "Hostname to IP resolution",
       category: "Transport",
     },
@@ -60,7 +62,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       dotColor: "bg-[#4D1C3D] dark:bg-[#682453]",
       badgeBg: "bg-[#4D1C3D]/10 dark:bg-[#682453]/40 text-[#4D1C3D] dark:text-[#DDA0B8] border-[#4D1C3D]/20 dark:border-[#DDA0B8]/30",
       textColor: "text-[#4D1C3D] dark:text-[#DDA0B8]",
-      icon: Network,
+      icon: Icons.Network,
       desc: "SYN/ACK socket handshake",
       category: "Transport",
     },
@@ -74,7 +76,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       dotColor: "bg-[#73275B] dark:bg-[#8F3372]",
       badgeBg: "bg-[#73275B]/10 dark:bg-[#8F3372]/40 text-[#73275B] dark:text-[#E270BB] border-[#73275B]/20 dark:border-[#C57BB2]/30",
       textColor: "text-[#73275B] dark:text-[#E270BB]",
-      icon: Shield,
+      icon: Icons.Shield,
       desc: "TLS 1.3 session crypto",
       category: "Transport",
     },
@@ -88,7 +90,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       dotColor: "bg-[#9A3579] dark:bg-[#B34590]",
       badgeBg: "bg-[#9A3579]/10 dark:bg-[#B34590]/40 text-[#9A3579] dark:text-[#F06A9A] border-[#9A3579]/20 dark:border-[#E05284]/30",
       textColor: "text-[#9A3579] dark:text-[#F06A9A]",
-      icon: Cpu,
+      icon: Icons.Cpu,
       desc: "Prompt encode & KV init",
       category: "GPU Compute",
     },
@@ -102,7 +104,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       dotColor: "bg-[#C4559E] dark:bg-[#D972B5]",
       badgeBg: "bg-[#C4559E]/10 dark:bg-[#D972B5]/40 text-[#853953] dark:text-white border-[#C4559E]/20 dark:border-white/15",
       textColor: "text-[#853953] dark:text-white",
-      icon: Zap,
+      icon: Icons.Zap,
       desc: "Autoregressive token decode",
       category: "GPU Compute",
     },
@@ -150,6 +152,9 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
             <div className="h-8 w-full rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] flex overflow-hidden border border-[#2C2C2C]/10 dark:border-white/10 shadow-inner p-1 gap-1">
               {stages.map((stage, idx) => {
                 const StageIcon = stage.icon;
+                const isHighlighted = activeHoverId === stage.id;
+                const isFaded = activeHoverId !== null && !isHighlighted;
+
                 return (
                   <Tooltip key={stage.id}>
                     <TooltipTrigger asChild>
@@ -157,7 +162,15 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                         initial={{ width: 0 }}
                         animate={{ width: `${stage.pct}%` }}
                         transition={{ duration: 0.45, ease: "easeOut" }}
-                        className={`h-full ${stage.bgBar} rounded-lg flex items-center justify-between px-2 text-white font-sans text-xs select-none cursor-pointer hover:brightness-110 transition-all overflow-hidden`}
+                        onMouseEnter={() => setActiveHoverId(stage.id)}
+                        onMouseLeave={() => setActiveHoverId(null)}
+                        className={`h-full ${stage.bgBar} rounded-lg flex items-center justify-between px-2 text-white font-sans text-xs select-none cursor-pointer transition-all duration-200 overflow-hidden ${
+                          isHighlighted
+                            ? "ring-2 ring-white/90 scale-y-105 shadow-md brightness-125 z-10"
+                            : isFaded
+                            ? "opacity-45 scale-95"
+                            : "hover:brightness-110"
+                        }`}
                       >
                         <div className="flex items-center gap-1 min-w-0">
                           <StageIcon className="h-3.5 w-3.5 shrink-0 opacity-85" />
@@ -192,12 +205,21 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {stages.map((st) => {
               const Icon = st.icon;
+              const isCardHighlighted = activeHoverId === st.id;
+              const isCardFaded = activeHoverId !== null && !isCardHighlighted;
+
               return (
-                <motion.div
+                <div
                   key={st.id}
-                  whileHover={{ y: -2 }}
-                  transition={{ duration: 0.15 }}
-                  className="rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] p-3.5 border border-[#2C2C2C]/10 dark:border-white/10 flex flex-col justify-between gap-2.5 cursor-pointer hover:bg-white dark:hover:bg-[#14141B] hover:border-[#853953]/35 dark:hover:border-[#E05284]/40 transition-all font-sans shadow-2xs hover:shadow-xs"
+                  onMouseEnter={() => setActiveHoverId(st.id)}
+                  onMouseLeave={() => setActiveHoverId(null)}
+                  className={`rounded-xl p-3.5 border transition-all duration-200 font-sans shadow-2xs cursor-pointer flex flex-col justify-between gap-2.5 ${
+                    isCardHighlighted
+                      ? "bg-white dark:bg-[#181822] border-[#853953] dark:border-[#E05284] shadow-md -translate-y-1"
+                      : isCardFaded
+                      ? "bg-[#F3F4F4]/50 dark:bg-[#0B0B0E]/50 border-[#2C2C2C]/5 dark:border-white/5 opacity-55"
+                      : "bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border-[#2C2C2C]/10 dark:border-white/10 hover:bg-white dark:hover:bg-[#14141B] hover:border-[#853953]/35 dark:hover:border-[#E05284]/40"
+                  }`}
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between gap-1">
@@ -225,7 +247,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                   <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 line-clamp-1 border-t border-[#2C2C2C]/5 dark:border-white/[0.06] pt-1.5">
                     {st.desc}
                   </p>
-                </motion.div>
+                </div>
               );
             })}
           </div>

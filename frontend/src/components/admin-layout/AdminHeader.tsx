@@ -1,14 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
-import {
-  Zap,
-  GitCompare,
-  History,
-  Sparkles,
-  ShieldCheck,
-} from "lucide-react";
+import { Icons } from "@/components/common/HugeIcons";
+import { LLMarkLogo } from "@/components/common/BrandLogos";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeToggle } from "@/lib/theme";
 import { NavTab } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -23,10 +18,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   setActiveTab,
 }) => {
   const navTabs = [
-    { id: "landing" as NavTab, label: "Home", shortLabel: "Home", icon: Sparkles },
-    { id: "benchmark" as NavTab, label: "Benchmark Studio", shortLabel: "Studio", icon: Zap },
-    { id: "diff" as NavTab, label: "Diff Matrix", shortLabel: "Diff", icon: GitCompare },
-    { id: "history" as NavTab, label: "History Explorer", shortLabel: "History", icon: History },
+    { id: "landing" as NavTab, label: "Overview", shortLabel: "Home", Icon: Icons.Home },
+    { id: "benchmark" as NavTab, label: "Studio", shortLabel: "Studio", Icon: Icons.Benchmark },
+    { id: "diff" as NavTab, label: "Compare", shortLabel: "Compare", Icon: Icons.Diff },
+    { id: "history" as NavTab, label: "Runs", shortLabel: "Runs", Icon: Icons.History },
   ];
 
   return (
@@ -41,23 +36,23 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             onClick={() => setActiveTab("landing")}
             title="Return to Landing Page"
           >
-            <div className="relative flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#853953] via-[#743663] to-[#612D53] dark:from-[#D84577] dark:via-[#B33E87] dark:to-[#8E2869] shadow-sm ring-1 ring-[#853953]/30 dark:ring-[#E05284]/40 group-hover:scale-105 transition-transform">
-              <Zap className="h-4.5 w-4.5 text-white fill-white" />
+            <div className="relative flex h-9.5 w-9.5 shrink-0 items-center justify-center rounded-xl group-hover:shadow-md group-hover:shadow-[#853953]/20 dark:group-hover:shadow-[#E05284]/25 transition-all">
+              <LLMarkLogo className="h-9 w-9" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-base font-bold tracking-tight text-[#2C2C2C] dark:text-white font-sans">
                   LLMark
                 </span>
-                <span className="text-[#853953] dark:text-[#F06A9A] text-xs font-semibold tracking-wide">
-                  Stream
+                <span className="text-[#853953] dark:text-[#F06A9A] text-[10px] font-semibold tracking-wider uppercase font-mono px-1.5 py-0.5 rounded-md bg-[#853953]/10 dark:bg-[#E05284]/15 border border-[#853953]/20 dark:border-[#E05284]/30">
+                  Profiler
                 </span>
-                <Badge variant="default" className="text-[11px] px-1.5 py-0 font-medium">
-                  v0.1.0-alpha
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono font-medium border-[#2C2C2C]/15 dark:border-white/10 text-[#2C2C2C]/60 dark:text-slate-400">
+                  v0.1.0
                 </Badge>
               </div>
               <p className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400 font-sans hidden md:block">
-                Microsecond Inference Telemetry
+                Inference Telemetry & Load Profiling
               </p>
             </div>
           </motion.div>
@@ -65,7 +60,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           {/* Center: Sticky Top Nav Tab Switcher (The 4 core options) */}
           <nav className="flex items-center gap-1 bg-[#F3F4F4] dark:bg-[#0F0F13] p-1 rounded-xl border border-[#2C2C2C]/10 dark:border-white/10 font-sans text-xs shadow-inner">
             {navTabs.map((tab) => {
-              const Icon = tab.icon;
+              const Icon = tab.Icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
@@ -93,23 +88,15 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             })}
           </nav>
 
-          {/* Right: Security Badge & Theme Toggle */}
+          {/* Right: Status indicator & Theme Toggle */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-            {/* Ephemeral Security Badge with Dual Ripple */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/80 text-[11px] text-emerald-800 dark:text-emerald-300 font-medium cursor-pointer shadow-xs select-none">
-                  <div className="relative flex h-2 w-2 items-center justify-center">
-                    <span className="absolute h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                    <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  </div>
-                  <span>Ephemeral Vault Active</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Tokens scrubbed on disconnect • Process memory only</p>
-              </TooltipContent>
-            </Tooltip>
+            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-400 font-mono font-medium">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span>100Hz Telemetry</span>
+            </div>
 
             {/* Theme Toggle Button */}
             <ThemeToggle variant="icon" />

@@ -197,7 +197,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <div className="flex items-center justify-between text-[#2C2C2C]/80 dark:text-slate-200">
                 <span className="flex items-center gap-1.5 font-medium">
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  Ephemeral vault
+                  In-memory session
                 </span>
                 <Badge variant="emerald" className="text-[11px] py-0 px-1.5 font-medium">
                   Active
@@ -226,7 +226,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>System online: Ephemeral vault & SQLite WAL active</p>
+                <p>System online: In-memory session & SQLite WAL active</p>
               </TooltipContent>
             </Tooltip>
           )}

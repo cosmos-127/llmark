@@ -100,15 +100,17 @@ class MockVendorAdapter(VendorAdapter):
             return
 
         # 2. Simulate TTFT (Prefill delay: based on prompt length, with prefix cache reduction if applicable)
+        is_nonce_cold = "[Nonce:" in prompt
         is_kv_cached = (
-            preset_val in ("kv_cache_reuse", WorkloadPreset.KV_CACHE_REUSE.value)
+            (preset_val in ("kv_cache_reuse", WorkloadPreset.KV_CACHE_REUSE.value) or config.measure_cache_speedup)
             and not config.cache_bust
+            and not is_nonce_cold
         )
         if is_kv_cached:
-            # 65% faster TTFT due to warm KV prefix cache hit
-            base_ttft = 0.022 + (len(prompt) / 250000.0)
+            # ~80% faster TTFT due to warm KV prefix cache hit
+            base_ttft = 0.015 + (len(prompt) / 320000.0)
         else:
-            base_ttft = 0.065 + (len(prompt) / 45000.0)
+            base_ttft = 0.080 + (len(prompt) / 42000.0)
 
         # Realistic queueing delay + concurrency pressure + load jitter
         concurrency_load_factor = 1.0 + (max(1, config.concurrency) - 1) * 0.028

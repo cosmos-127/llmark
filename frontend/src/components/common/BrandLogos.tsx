@@ -1,11 +1,20 @@
 import React from "react";
-import awsBedrockIcon from "@/assets/svg/aws-bedrock-icon.svg";
-import azureIcon from "@/assets/svg/azure-icon.svg";
-import claudeAiIcon from "@/assets/svg/claude-ai-icon.svg";
-import deepseekLogoIcon from "@/assets/svg/deepseek-logo-icon.svg";
-import googleCloudIcon from "@/assets/svg/google-cloud-icon.svg";
-import googleGeminiIcon from "@/assets/svg/google-gemini-svg.svg";
-import openaiIcon from "@/assets/svg/openai-icon.svg";
+import Openai from "@thesvg/react/openai";
+import Anthropic from "@thesvg/react/anthropic";
+import ClaudeAi from "@thesvg/react/claude-ai";
+import GoogleGemini from "@thesvg/react/google-gemini";
+import GoogleCloud from "@thesvg/react/google-cloud";
+import MicrosoftAzure from "@thesvg/react/microsoft-azure";
+import AwsAmazonBedrock from "@thesvg/react/aws-amazon-bedrock";
+import Deepseek from "@thesvg/react/deepseek";
+import Groq from "@thesvg/react/groq";
+import Ollama from "@thesvg/react/ollama";
+import Openrouter from "@thesvg/react/openrouter";
+import TogetherAi from "@thesvg/react/together-ai";
+import Vllm from "@thesvg/react/vllm";
+import MistralAi from "@thesvg/react/mistral-ai";
+import Meta from "@thesvg/react/meta";
+import HuggingFace from "@thesvg/react/hugging-face";
 
 export interface BrandLogoProps {
   className?: string;
@@ -14,182 +23,187 @@ export interface BrandLogoProps {
 }
 
 /**
- * Official OpenAI Spiral Swirl Logo SVG (Tier 1 AI Wire Protocol & Frontier Driver)
+ * Official OpenAI Spiral Swirl Logo from @thesvg/react (thesvg)
  */
-export const OpenAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "OpenAI" }) => (
-  <img
-    src={openaiIcon}
-    alt={alt}
-    className={`inline-block object-contain shrink-0 select-none dark:invert ${className}`}
-    style={size ? { width: size, height: size } : undefined}
-    draggable={false}
+export const OpenAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <Openai
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="OpenAI"
   />
 );
 
 /**
- * Official Claude / Anthropic Logo SVG (Tier 1 Frontier Model & Messages Protocol)
+ * Official Anthropic / Claude Logo from @thesvg/react (thesvg)
  */
-export const AnthropicLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Anthropic Claude" }) => (
-  <img
-    src={claudeAiIcon}
-    alt={alt}
-    className={`inline-block object-contain shrink-0 select-none rounded-xs ${className}`}
-    style={size ? { width: size, height: size } : undefined}
-    draggable={false}
+export const AnthropicLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <ClaudeAi
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="Anthropic Claude"
   />
 );
 
 export const ClaudeLogo = AnthropicLogo;
 
 /**
- * Official Google Gemini Multi-Color Sparkle Star SVG (Tier 1 Frontier AI Protocol)
+ * Official Google Gemini Multi-Color Sparkle Star from @thesvg/react (thesvg)
  */
-export const GeminiLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Google Gemini" }) => (
-  <img
-    src={googleGeminiIcon}
-    alt={alt}
-    className={`inline-block object-contain shrink-0 select-none ${className}`}
-    style={size ? { width: size, height: size } : undefined}
-    draggable={false}
+export const GeminiLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <GoogleGemini
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="Google Gemini"
   />
 );
 
 /**
- * Official Google Cloud Platform / Vertex AI Cloud Logo SVG (Tier 1 Cloud Enterprise Protocol)
+ * Official Google Cloud Platform / Vertex AI from @thesvg/react (thesvg)
  */
-export const VertexAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Google Cloud Vertex AI" }) => (
-  <img
-    src={googleCloudIcon}
-    alt={alt}
-    className={`inline-block object-contain shrink-0 select-none ${className}`}
-    style={size ? { width: size, height: size } : undefined}
-    draggable={false}
+export const VertexAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <GoogleCloud
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="Google Cloud Vertex AI"
   />
 );
 
 export const GoogleCloudLogo = VertexAILogo;
 
 /**
- * Official Microsoft Azure Cloud Logo SVG (Tier 1 Enterprise Cloud Protocol)
+ * Official Microsoft Azure Cloud Logo from @thesvg/react (thesvg)
  */
-export const AzureLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "Microsoft Azure" }) => (
-  <img
-    src={azureIcon}
-    alt={alt}
-    className={`inline-block object-contain shrink-0 select-none ${className}`}
-    style={size ? { width: size, height: size } : undefined}
-    draggable={false}
+export const AzureLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <MicrosoftAzure
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="Microsoft Azure"
   />
 );
 
 /**
- * Official AWS Bedrock Silicon Cube Logo SVG (Tier 1 Cloud Enterprise SigV4 Protocol)
+ * Official AWS Bedrock Silicon Cube Logo from @thesvg/react (thesvg)
  */
-export const AWSBedrockLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "AWS Bedrock" }) => (
-  <img
-    src={awsBedrockIcon}
-    alt={alt}
-    className={`inline-block object-contain shrink-0 select-none ${className}`}
-    style={size ? { width: size, height: size } : undefined}
-    draggable={false}
+export const AWSBedrockLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <AwsAmazonBedrock
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="AWS Bedrock"
   />
 );
 
 /**
- * Official DeepSeek Logo SVG (Tier 1 Frontier Reasoning & AI Model Protocol)
+ * Official DeepSeek Logo from @thesvg/react (thesvg)
  */
-export const DeepSeekLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size, alt = "DeepSeek" }) => (
-  <img
-    src={deepseekLogoIcon}
-    alt={alt}
-    className={`inline-block object-contain shrink-0 select-none ${className}`}
-    style={size ? { width: size, height: size } : undefined}
-    draggable={false}
+export const DeepSeekLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <Deepseek
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="DeepSeek"
   />
 );
 
 /**
- * Official Groq Fast LPU Silicon Logo SVG
+ * Official Groq Fast LPU Silicon Logo from @thesvg/react (thesvg)
  */
 export const GroqLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
+  <Groq
+    className={`inline-block shrink-0 select-none ${className}`}
     width={size}
     height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9H12v2h2.2c-.3 1.2-1.3 2-2.2 2-1.7 0-3-1.3-3-3s1.3-3 3-3c.8 0 1.5.3 2 .8l1.4-1.4C14.4 7.6 13.3 7 12 7 9.2 7 7 9.2 7 12s2.2 5 5 5c2.8 0 4.8-2 4.8-4.8 0-.4-.1-.8-.3-1.2z" />
-  </svg>
+    aria-label="Groq"
+  />
 );
 
 /**
- * Official OpenRouter Gateway Logo SVG
+ * Official OpenRouter Gateway Logo from @thesvg/react (thesvg)
  */
 export const OpenRouterLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
+  <Openrouter
+    className={`inline-block shrink-0 select-none ${className}`}
     width={size}
     height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2L2 7l10 5 10-5-10-5zm0 6.86L5.3 7 12 3.64 18.7 7 12 8.86zM2 12l10 5 10-5-2.3-1.15L12 14.54 4.3 10.85 2 12zm0 5l10 5 10-5-2.3-1.15L12 19.54 4.3 15.85 2 17z" />
-  </svg>
+    aria-label="OpenRouter"
+  />
 );
 
 /**
- * Official Together AI Logo SVG
+ * Official Together AI Logo from @thesvg/react (thesvg)
  */
 export const TogetherAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
+  <TogetherAi
+    className={`inline-block shrink-0 select-none ${className}`}
     width={size}
     height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle cx="7" cy="7" r="3.5" />
-    <circle cx="17" cy="7" r="3.5" />
-    <circle cx="7" cy="17" r="3.5" />
-    <circle cx="17" cy="17" r="3.5" />
-    <path d="M7 10.5v3M17 10.5v3M10.5 7h3M10.5 17h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-  </svg>
+    aria-label="Together AI"
+  />
 );
 
 /**
- * Official vLLM High-Throughput Inference Engine Logo SVG
+ * Official vLLM High-Throughput Inference Engine from @thesvg/react (thesvg)
  */
 export const VLLMLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
+  <Vllm
+    className={`inline-block shrink-0 select-none ${className}`}
     width={size}
     height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M3.5 4h3.8l4.7 11.2L16.7 4h3.8l-6.7 16h-3.6L3.5 4zm13.2 0h3.8l-3.8 9.2-1.9-4.6L16.7 4z" />
-  </svg>
+    aria-label="vLLM"
+  />
 );
 
 /**
- * Official Ollama Terminal / Local AI Logo SVG
+ * Official Ollama Terminal / Local AI Logo from @thesvg/react (thesvg)
  */
 export const OllamaLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
+  <Ollama
+    className={`inline-block shrink-0 select-none ${className}`}
     width={size}
     height={size}
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 2c-3.86 0-7 3.14-7 7 0 2.22 1.04 4.2 2.66 5.48L7 19a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l-.66-4.52C17.96 13.2 19 11.22 19 9c0-3.86-3.14-7-7-7zm-2 15l.43-3h3.14l.43 3H10zm2-5a4.98 4.98 0 0 1-4.9-4c0-2.71 2.19-4.9 4.9-4.9s4.9 2.19 4.9 4.9c0 1.83-1.01 3.43-2.5 4.28L14 12h-2z" />
-  </svg>
+    aria-label="Ollama"
+  />
+);
+
+/**
+ * Official Mistral AI Logo from @thesvg/react (thesvg)
+ */
+export const MistralLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <MistralAi
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="Mistral AI"
+  />
+);
+
+/**
+ * Official Meta / Llama Logo from @thesvg/react (thesvg)
+ */
+export const MetaLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <Meta
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="Meta"
+  />
+);
+
+/**
+ * Official Hugging Face Logo from @thesvg/react (thesvg)
+ */
+export const HuggingFaceLogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
+  <HuggingFace
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="Hugging Face"
+  />
 );
 
 /**
@@ -248,6 +262,15 @@ export const ProviderLogo: React.FC<{
   if (v.includes("groq")) {
     return <GroqLogo className={className} size={size} />;
   }
+  if (v.includes("mistral")) {
+    return <MistralLogo className={className} size={size} />;
+  }
+  if (v.includes("meta") || v.includes("llama")) {
+    return <MetaLogo className={className} size={size} />;
+  }
+  if (v.includes("hugging")) {
+    return <HuggingFaceLogo className={className} size={size} />;
+  }
   if (v.includes("openrouter")) {
     return <OpenRouterLogo className={className} size={size} />;
   }
@@ -267,3 +290,38 @@ export const ProviderLogo: React.FC<{
   // Fallback for generic OpenAI-compatible or custom endpoints
   return <OpenRouterLogo className={className} size={size} />;
 };
+
+/**
+ * Official LLMark Brand Logo Mark
+ * Minimalist, high-craft benchmark impulse glyph
+ */
+export const LLMarkLogo: React.FC<BrandLogoProps> = ({ className = "h-5 w-5", size = 28 }) => (
+  <svg
+    viewBox="0 0 28 28"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={`inline-block shrink-0 select-none ${className}`}
+    width={size}
+    height={size}
+    aria-label="LLMark"
+  >
+    <defs>
+      <linearGradient id="llmark-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#E05284" />
+        <stop offset="50%" stopColor="#853953" />
+        <stop offset="100%" stopColor="#612D53" />
+      </linearGradient>
+    </defs>
+    <rect width="28" height="28" rx="7.5" fill="url(#llmark-logo-grad)" />
+    {/* Twin L latency bars with high-speed benchmark tick */}
+    <path
+      d="M7.5 7.5V18.5C7.5 19.3 8.2 20 9 20H13M14.5 7.5V18.5C14.5 19.3 15.2 20 16 20H20.5"
+      stroke="white"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    {/* Precision latency impulse spark dot */}
+    <circle cx="20.5" cy="8" r="1.75" fill="#FCE7F3" />
+  </svg>
+);
