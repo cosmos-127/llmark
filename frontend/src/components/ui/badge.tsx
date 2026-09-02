@@ -10,11 +10,11 @@ const badgeVariants = cva(
         default:
           "border border-[var(--brand-primary-border)] bg-[var(--brand-primary-light)] text-[var(--brand-primary)]",
         secondary:
-          "border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-[var(--text-subheading)]",
+          "border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)] text-[var(--text-muted)]",
         destructive:
           "border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300",
         outline:
-          "border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-[var(--text-subheading)] bg-white dark:bg-slate-900",
+          "border border-[var(--border-medium)] text-[var(--text-main)] bg-[var(--bg-card)]",
         emerald:
           "border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300",
         sky:
@@ -26,7 +26,7 @@ const badgeVariants = cva(
         purple:
           "border border-purple-200 dark:border-purple-900 bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300",
         gray:
-          "border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-[var(--text-body)]",
+          "border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)] text-[var(--text-muted)]",
       },
     },
     defaultVariants: {

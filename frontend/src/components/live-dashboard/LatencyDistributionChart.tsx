@@ -190,7 +190,7 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
                     const data = payload[0].payload;
                     return (
                       <div className="rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-2.5 text-white text-xs shadow-xl space-y-1">
-                        <p className="font-semibold text-[11px] text-slate-300">
+                        <p className="font-semibold text-[11px] text-[var(--text-subheading)]">
                           Range: {data.bin_start_ms}ms - {data.bin_end_ms}ms
                         </p>
                         <p className="text-emerald-400 font-bold tabular-nums">

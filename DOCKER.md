@@ -1,10 +1,10 @@
-# 🐳 LLMark Docker Reference
+# LLMark Docker Reference
 
 This document covers all Docker configurations in the monorepo, when to use each, and how to build, run, and deploy them.
 
 ---
 
-## 📂 Dockerfile Overview
+## Dockerfile Overview
 
 | File | Purpose | Context |
 | :--- | :--- | :--- |
@@ -15,7 +15,7 @@ This document covers all Docker configurations in the monorepo, when to use each
 
 ---
 
-## 1️⃣ Monolith Container (`Dockerfile`)
+## 1. Monolith Container (`Dockerfile`)
 
 > **Best for:** Render.com (single Web Service), simple single-URL deployment.
 
@@ -60,7 +60,7 @@ docker run -p 8000:8000 \
 
 ---
 
-## 2️⃣ Standalone Backend (`backend/Dockerfile`)
+## 2. Standalone Backend (`backend/Dockerfile`)
 
 > **Best for:** Render.com Backend Web Service when frontend is on Netlify.
 
@@ -100,7 +100,7 @@ Same as Monolith — `PORT`, `BACKEND_CORS_ORIGINS`, `GROQ_API_KEY`, `DATABASE_U
 
 ---
 
-## 3️⃣ Standalone Frontend (`frontend/Dockerfile`)
+## 3. Standalone Frontend (`frontend/Dockerfile`)
 
 > **Best for:** Local docker-compose or self-hosted Nginx; Netlify handles this automatically for cloud deployments.
 
@@ -135,7 +135,7 @@ docker run -p 3000:80 llmark-frontend:latest
 
 ---
 
-## 4️⃣ Docker Compose (Multi-Container Local Development)
+## 4. Docker Compose (Multi-Container Local Development)
 
 > **Best for:** Running both containers together locally or on a self-hosted VPS.
 
@@ -164,7 +164,7 @@ docker compose logs -f
 
 ---
 
-## 🏗️ Architecture Comparison
+## Architecture Comparison
 
 ```
 MODE 1: Monolith (Dockerfile)                MODE 2: Split (docker-compose / Netlify+Render)
@@ -193,7 +193,7 @@ Internet ──→ :8000                            ┌────────�
 
 ---
 
-## 🔁 Render Deployment (`render.yaml`)
+## Render Deployment (`render.yaml`)
 
 The [`render.yaml`](./render.yaml) Blueprint deploys the **monolith** `Dockerfile` as a single Render Web Service. To deploy the standalone backend instead, change the `dockerfilePath` field in `render.yaml`:
 
@@ -207,21 +207,22 @@ dockerfilePath: ./backend/Dockerfile
 
 ---
 
-## 📋 Quick Reference
+## Quick Reference
 
 ```bash
-# ── Monolith ────────────────────────────────────────────────────────────────
+# -- Monolith ----------------------------------------------------------------
 docker build -t llmark .
 docker run -p 8000:8000 llmark
 
-# ── Backend only ─────────────────────────────────────────────────────────────
+# -- Backend only ------------------------------------------------------------
 docker build -t llmark-backend -f backend/Dockerfile backend/
 docker run -p 8000:8000 llmark-backend
 
-# ── Frontend only ─────────────────────────────────────────────────────────────
+# -- Frontend only -----------------------------------------------------------
 docker build -t llmark-frontend --build-arg VITE_API_URL=http://localhost:8000 -f frontend/Dockerfile frontend/
 docker run -p 3000:80 llmark-frontend
 
-# ── Both containers via Compose ───────────────────────────────────────────────
+# -- Both containers via Compose ---------------------------------------------
 docker compose up --build
 ```
+

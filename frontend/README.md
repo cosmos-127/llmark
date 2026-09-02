@@ -1,10 +1,10 @@
-# ⚡ LLMark Frontend Application
+# LLMark Frontend Application
 
 Modern, high-performance React 19 web application for streaming microsecond LLM benchmarking telemetry, real-time waterfall latency visualization, visual head-to-head diffing, and interactive AI queuing theory guidance.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework:** React 19 (`react`, `react-dom`)
 - **Build Tool:** Vite 6 + TypeScript 5.6
@@ -16,7 +16,7 @@ Modern, high-performance React 19 web application for streaming microsecond LLM 
 
 ---
 
-## 📁 Component Directory Layout
+## Component Directory Layout
 
 ```
 frontend/src/
@@ -72,7 +72,7 @@ frontend/src/
 
 ---
 
-## 🚀 Running Locally
+## Running Locally
 
 ```bash
 # 1. Install dependencies
@@ -87,7 +87,7 @@ npm run build
 
 ---
 
-## 🐳 Standalone Docker Container (Nginx)
+## Standalone Docker Container (Nginx)
 
 ```bash
 # Build standalone Nginx frontend image
@@ -99,7 +99,7 @@ docker run -p 3000:80 llmark-frontend:latest
 
 ---
 
-## 🔒 Security & Privacy Notice
+## Security & Privacy Notice
 
 All vendor credentials (API keys, endpoints) entered into the **Credential Vault** are stored exclusively in client browser memory for the duration of the session. They are dispatched via ephemeral payloads for benchmark execution and are **never** persisted to disk, local storage, or server databases.
 

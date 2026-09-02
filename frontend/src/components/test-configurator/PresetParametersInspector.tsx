@@ -92,14 +92,14 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
                       <Icon className="h-3.5 w-3.5 text-[var(--brand-primary)]/50 dark:text-[var(--brand-primary)]/50 shrink-0" />
                       {card.label}
                     </span>
-                    <div className="h-4 w-12 bg-slate-200/70 dark:bg-white/5 rounded-md animate-pulse" />
+                    <div className="h-4 w-12 bg-[var(--border-subtle)] dark:bg-white/5 rounded-md animate-pulse" />
                   </div>
 
                   <div className="flex items-baseline justify-between pt-0.5">
-                    <span className="text-sm font-bold text-[var(--text-placeholder)] dark:text-slate-600 font-mono">
+                    <span className="text-sm font-bold text-[var(--text-placeholder)] dark:text-[var(--text-subtle)] font-mono">
                       {card.defaultVal}
                     </span>
-                    <div className="h-3 w-16 bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-[var(--border-subtle)] dark:bg-white/5 rounded animate-pulse" />
                   </div>
 
                   <div className="space-y-1 pt-1 border-t border-[var(--border-subtle)] dark:border-[var(--border-subtle)]">

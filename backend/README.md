@@ -1,10 +1,10 @@
-# ⚡ LLMark Backend Service
+# LLMark Backend Service
 
 FastAPI-powered, async streaming benchmarking engine for evaluating LLM inference endpoints with microsecond precision, financial circuit breakers, self-healing persistence, and AI-assisted performance analysis.
 
 ---
 
-## 🏗️ Architecture & Module Layout
+## Architecture & Module Layout
 
 ```
 backend/
@@ -55,7 +55,7 @@ backend/
 
 ---
 
-## 🛡️ Database Resilience & Error Architecture
+## Database Resilience & Error Architecture
 
 - **Self-Healing Initialization (`ensure_db_initialized`)**: An asynchronous lock-protected check verifies table schema integrity on every connection. If the database file is fresh, moved, or accessed outside FastAPI lifespan (e.g. CLI, worker subprocesses), tables are automatically created without runtime failures.
 - **FastAPI Global Exception Handlers**: Registered handlers for `SQLAlchemyError`, `RequestValidationError`, `StarletteHTTPException`, and uncaught `Exception` guarantee consistent, structured JSON responses (`{"detail": "...", "error_type": "..."}`) and comprehensive server-side logs.
@@ -63,7 +63,7 @@ backend/
 
 ---
 
-## 🚀 Running the Backend
+## Running the Backend
 
 ### Local Setup
 ```bash
@@ -80,7 +80,7 @@ python -m uvicorn app.main:app --port 8000 --reload
 
 ---
 
-## 💻 Headless CI Mode (`app/cli.py`)
+## Headless CI Mode (`app/cli.py`)
 
 ```bash
 # Run benchmark from YAML configuration with Goodput threshold
@@ -97,7 +97,7 @@ python app/cli.py run --vendor mock --model gpt-4o -a "p95_ttft < 500" -a "goodp
 
 ---
 
-## 🧪 Running Tests & Quality Checks
+## Running Tests & Quality Checks
 
 ```bash
 # Run complete test suite (63 test cases)
@@ -113,7 +113,7 @@ python -m mypy app
 
 ---
 
-## 🐳 Standalone Docker Container
+## Standalone Docker Container
 
 ```bash
 # Build standalone backend image
@@ -122,4 +122,5 @@ docker build -t llmark-backend:latest -f Dockerfile .
 # Run standalone backend container
 docker run -p 8000:8000 -e PORT=8000 -e BACKEND_CORS_ORIGINS="*" llmark-backend:latest
 ```
+
 

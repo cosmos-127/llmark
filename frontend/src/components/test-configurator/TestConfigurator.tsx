@@ -2278,7 +2278,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   Enforced ON (Prefill TTFT)
                                 </Badge>
                               ) : isRateLimitPreset ? (
-                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-[var(--text-muted)] border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] border-[var(--border-subtle)] font-sans flex items-center gap-1 font-medium">
                                   <Lock className="h-2.5 w-2.5" />
                                   Locked OFF (Rate Limit Probe)
                                 </Badge>
@@ -2322,7 +2322,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     Disabled by Prefill TTFT
                                   </Badge>
                                 ) : isRateLimitPreset ? (
-                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-[var(--text-muted)] border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] border-[var(--border-subtle)] font-sans flex items-center gap-1 font-medium">
                                     <Lock className="h-2.5 w-2.5" />
                                     Disabled by Rate Limit Probe
                                   </Badge>
@@ -2372,7 +2372,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   Locked to 0 (Cold Seed Reference)
                                 </Badge>
                               ) : isRateLimitPreset ? (
-                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-[var(--text-muted)] border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] border-[var(--border-subtle)] font-sans flex items-center gap-1 font-medium">
                                   <Lock className="h-2.5 w-2.5" />
                                   Locked to 0 (Rate Limit Probe)
                                 </Badge>
@@ -2401,7 +2401,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 Warmup bypassed so Request #1 cold baseline is strictly preserved
                               </span>
                             ) : isRateLimitPreset ? (
-                              <span className="text-slate-600 dark:text-[var(--text-muted)] font-medium">
+                              <span className="text-[var(--text-muted)] font-medium">
                                 Warmup bypassed to immediately test HTTP 429 quota boundaries
                               </span>
                             ) : config.measure_cache_speedup ? (

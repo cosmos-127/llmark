@@ -9,24 +9,23 @@
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.5;
-    letter-spacing: -0.006em;
+    letter-spacing: -0.012em;
     background-color: var(--bg-app);
     color: var(--text-main);
     overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'calt';
   }
 
   code, pre, kbd {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875em;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
     font-feature-settings: 'tnum' 1, 'zero' 1;
   }
 
@@ -36,9 +35,8 @@
     font-feature-settings: 'tnum' 1, 'zero' 1;
   }
 
-  /* ── Inter Standard Type Scale (Clean Enterprise 14px Base) ─────────────
-     Standardized scale for Inter: ensures micro text (≥11px) remains 100%
-     legible while headers scale proportionally without jarring jumps.
+  /* ── Plus Jakarta Sans Type Scale (Clean High-Tech 14px Base) ───────────
+     Modern Neo-Grotesque scale with geometric punch and tight optical tracking.
      ─────────────────────────────────────────────────────────────────────── */
   :root {
     /* Micro tags / status chips (never below 11px for WCAG readability) */
@@ -62,18 +60,19 @@
     /* Main landing hero display title */
     --text-4xl: 36px;
 
-    /* Font weights — Inter supports full variable 100-900 weights */
+    /* Font weights — Plus Jakarta Sans variable weights */
     --fw-normal:   400;  /* Body copy, descriptions, captions */
     --fw-medium:   500;  /* Form labels, chips, badges, nav items */
     --fw-semibold: 600;  /* Card titles, section headers, active tabs, buttons */
     --fw-bold:     700;  /* Hero page titles & large standalone KPI numbers */
+    --fw-extrabold:800;  /* Large display titles */
   }
 }
 
 @theme {
-  /* ── Font families: 100% Inter universally ────────────────────────────── */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* ── Font families: Plus Jakarta Sans (UI) & Geist Mono (Engineering) ─── */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* ── Colour tokens (Radix / shadcn HSL) ──────────────────────────────── */
   --color-background: hsl(var(--background));

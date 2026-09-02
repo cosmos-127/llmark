@@ -71,14 +71,14 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     charcoal: {
       text: "text-[var(--text-main)]",
       bg: "bg-[var(--border-subtle)] dark:bg-white/[0.06] text-[var(--text-main)] border border-[var(--border-subtle)] dark:border-[var(--border-subtle)]",
-      border: "hover:border-[#0F172A] dark:hover:border-white/30",
-      ring: "hover:shadow-[#0F172A]/5",
+      border: "hover:border-[var(--border-strong)]",
+      ring: "hover:shadow-xs",
     },
     zinc: {
       text: "text-[var(--text-main)]",
       bg: "bg-[var(--border-subtle)] dark:bg-white/[0.06] text-[var(--text-main)] border border-[var(--border-subtle)] dark:border-[var(--border-subtle)]",
-      border: "hover:border-[#0F172A] dark:hover:border-white/30",
-      ring: "hover:shadow-[#0F172A]/5",
+      border: "hover:border-[var(--border-strong)]",
+      ring: "hover:shadow-xs",
     },
     emerald: {
       text: "text-emerald-700 dark:text-emerald-400",

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Icons } from "@/components/common/HugeIcons";
@@ -269,6 +269,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const [copiedTrace, setCopiedTrace] = useState(false);
   const probeTimersRef = useRef<NodeJS.Timeout[]>([]);
 
+  // Interactive Request Lifecycle Step state
+  const [activeLifecycleStep, setActiveLifecycleStep] = useState<number>(0);
+
+  // Interactive Head-to-Head Compare state
+  const [diffModelA, setDiffModelA] = useState<ProbeModelProfile>(PROBE_MODELS[4]); // Groq 8B
+  const [diffModelB, setDiffModelB] = useState<ProbeModelProfile>(PROBE_MODELS[0]); // DeepSeek R1
+
+  // Interactive CLI Snippet state
+  const [activeCliTab, setActiveCliTab] = useState<"npx" | "docker" | "pip" | "curl">("npx");
+  const [copiedCli, setCopiedCli] = useState(false);
+
+  // Interactive FAQ Accordion open state
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
   const clearProbeTimers = useCallback(() => {
     probeTimersRef.current.forEach(clearTimeout);
     probeTimersRef.current = [];
@@ -537,6 +551,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     setTimeout(() => setCopiedTrace(false), 2000);
   };
 
+  const handleCopyCli = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCli(true);
+    setTimeout(() => setCopiedCli(false), 2000);
+  };
+
   const handleLaunchStudioWithModel = (model: ProbeModelProfile) => {
     try {
       sessionStorage.setItem("llmark_selected_model", model.id);
@@ -544,14 +564,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     } catch (e) {}
     onNavigate("benchmark");
   };
-
-  const handleLaunchDiffWithModel = (model: ProbeModelProfile) => {
-    try {
-      sessionStorage.setItem("llmark_diff_model_a", model.id);
-    } catch (e) {}
-    onNavigate("diff");
-  };
-
 
   const operations = [
     {
@@ -610,6 +622,124 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     },
   ];
 
+  const lifecycleStages = [
+    {
+      step: "01",
+      phase: "DNS & Socket Handshake",
+      shortTitle: "Socket Connection",
+      timing: "0.8ms - 8.2ms",
+      color: "sky",
+      colorClass: "bg-sky-500",
+      borderClass: "border-sky-500/30",
+      textClass: "text-sky-500",
+      summary: "Resolves host DNS and establishes TCP 3-way SYN/ACK socket session.",
+      details: "UDP/TCP port 53 lookup + connection pool reuse telemetry.",
+      icon: Icons.Network,
+    },
+    {
+      step: "02",
+      phase: "TLS 1.3 Cryptography",
+      shortTitle: "TLS & HTTP/2",
+      timing: "6.5ms - 14.1ms",
+      color: "indigo",
+      colorClass: "bg-indigo-500",
+      borderClass: "border-indigo-500/30",
+      textClass: "text-indigo-500",
+      summary: "Negotiates 1-RTT cryptographic session tickets and ALPN frame multiplexing.",
+      details: "TLS 1.3 encryption handshake + HTTP/2 streaming pipeline.",
+      icon: Icons.Lock,
+    },
+    {
+      step: "03",
+      phase: "Prompt Prefill & TTFT",
+      shortTitle: "Prefill Stopwatch",
+      timing: "48.2ms - 142.0ms",
+      color: "brand",
+      colorClass: "bg-[var(--brand-primary)]",
+      borderClass: "border-[var(--brand-primary-border)]",
+      textClass: "text-[var(--brand-primary)]",
+      summary: "Measures time before first token is emitted (PagedAttention & KV-cache).",
+      details: "Attention ingestion + server worker queue scheduling latency.",
+      icon: Icons.Zap,
+    },
+    {
+      step: "04",
+      phase: "Streaming Decode & ITL",
+      shortTitle: "Token Stream",
+      timing: "84.2 - 492 tok/s",
+      color: "emerald",
+      colorClass: "bg-emerald-500",
+      borderClass: "border-emerald-500/30",
+      textClass: "text-emerald-500",
+      summary: "Captures high-frequency 100Hz SSE delivery and P99 inter-token jitter tail.",
+      details: "Auto-regressive decode cadence + token transfer efficiency.",
+      icon: Icons.ActivityPulse,
+    },
+  ];
+
+  const bentoSuperpowers = [
+    {
+      id: "waterfall",
+      title: "Microsecond Socket Waterfall",
+      badge: "Zero-Overhead",
+      description:
+        "Isolate client network latency from server queue delays with sub-millisecond precision across DNS, TCP, TLS, TTFT, and Decode.",
+      icon: Icons.Network,
+      glow: "rgba(56, 189, 248, 0.15)",
+      visual: "waterfall",
+    },
+    {
+      id: "telemetry",
+      title: "100Hz Real-Time SSE Stream",
+      badge: "10ms Resolution",
+      description:
+        "High-frequency Server-Sent Events monitoring engine sampling live concurrency, active sockets, and decode speeds in real-time.",
+      icon: Icons.ActivityPulse,
+      glow: "rgba(16, 185, 129, 0.15)",
+      visual: "stream",
+    },
+    {
+      id: "goodput",
+      title: "Goodput SLO Sieve",
+      badge: "SLO Compliance",
+      description:
+        "Separate compliant responses from latency spikes. Configure custom TTFT and TPS thresholds to calculate true production Goodput.",
+      icon: Icons.Target,
+      glow: "rgba(168, 85, 247, 0.15)",
+      visual: "slo",
+    },
+    {
+      id: "guardrails",
+      title: "Spend Cap Guardrails",
+      badge: "Hard Budget Caps",
+      description:
+        "Hardware-enforced financial kill-switches automatically cancel running tests before exceeding your allocated token budget.",
+      icon: Icons.Dollar,
+      glow: "rgba(245, 158, 11, 0.15)",
+      visual: "spend",
+    },
+    {
+      id: "vault",
+      title: "Local-First SQLite WAL",
+      badge: "Zero Cloud Leak",
+      description:
+        "Your model credentials, private prompts, and telemetry results remain 100% local on your machine in encrypted SQLite storage.",
+      icon: Icons.Lock,
+      glow: "rgba(239, 68, 68, 0.15)",
+      visual: "vault",
+    },
+    {
+      id: "adapters",
+      title: "Universal Inference Adapters",
+      badge: "OpenAI Compatible",
+      description:
+        "Plug-and-play compatibility with OpenAI, Anthropic, Gemini, DeepSeek, Groq, AWS Bedrock, Azure, vLLM, and Ollama.",
+      icon: Icons.Cpu,
+      glow: "rgba(99, 102, 241, 0.15)",
+      visual: "providers",
+    },
+  ];
+
   const providers = [
     { name: "OpenAI", sub: "GPT-4o, o3, o1", vendor: "openai" },
     { name: "Anthropic", sub: "Claude 3.7 / 3.5", vendor: "anthropic" },
@@ -618,7 +748,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
     { name: "AWS Bedrock", sub: "Claude & Llama", vendor: "aws_bedrock" },
     { name: "Microsoft Azure", sub: "Azure OpenAI", vendor: "azure" },
     { name: "Groq LPU", sub: "Ultra-Fast Inference", vendor: "groq" },
-    { name: "vLLM / Ollama", sub: "Local & Self-Hosted", vendor: "vllm" },
+    { name: "vLLM", sub: "PagedAttention v2", vendor: "vllm" },
+    { name: "Ollama", sub: "Local Apple Silicon / CUDA", vendor: "ollama" },
+    { name: "Together AI", sub: "Serverless & Dedicated", vendor: "together" },
+    { name: "Mistral AI", sub: "Large 2 & Codestral", vendor: "mistral" },
+    { name: "Meta Llama", sub: "Llama 3.3 70B / 405B", vendor: "meta" },
+  ];
+
+  const cliSnippets = {
+    npx: "npx llmark studio --model deepseek-r1 --concurrency 20 --duration 30s",
+    docker: "docker run -p 8000:8000 -p 5173:5173 -v ./data:/data ghcr.io/llmark/llmark:latest",
+    pip: "pip install llmark && llmark diff openai/gpt-4o anthropic/claude-3-5-sonnet",
+    curl: "curl -X POST http://localhost:8000/api/benchmark/start \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"model\": \"groq-llama-3-1-8b\", \"concurrency\": 10, \"max_spend\": 0.50}'",
+  };
+
+  const faqs = [
+    {
+      q: "How does LLMark achieve 100Hz telemetry without adding client-side latency?",
+      a: "LLMark uses lightweight non-blocking asynchronous socket probes implemented in FastAPI and uvloop. The timing measurements are recorded at the OS socket level using microsecond monotonic clocks, decoupling packet observation from serialization overhead.",
+    },
+    {
+      q: "How is TTFT accurately separated from DNS, TCP, and TLS overhead?",
+      a: "Standard HTTP clients group all initial socket handshakes into a single latency bucket. LLMark's socket waterfall engine instruments the exact tcp_connect, ssl_handshake, and server_response timestamps individually, giving you true prompt prefill time without network skew.",
+    },
+    {
+      q: "Can I benchmark local vLLM or Ollama clusters without internet access?",
+      a: "Yes. LLMark is entirely local-first. You can connect directly to http://localhost:8000/v1 or custom internal VPC endpoints. Zero telemetry or prompt tokens are ever sent to external cloud servers.",
+    },
+    {
+      q: "What is Goodput and how does it differ from raw Throughput?",
+      a: "Raw throughput counts all generated tokens regardless of latency violations. Goodput only counts tokens from requests that strictly meet your target Time-to-First-Token (TTFT) and Inter-Token Latency (ITL) Service Level Objectives (SLOs).",
+    },
+    {
+      q: "How do the spend caps protect against unexpected API bills?",
+      a: "Before each test packet is dispatched, LLMark estimates token consumption and tracks running dollar expenditure in real-time. If the projected spend hits your preset cap (e.g. $1.00), the execution immediately aborts in-flight streams.",
+    },
   ];
 
   // GSAP Advanced ScrollTrigger Lifecycle Animations
@@ -646,6 +810,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           ".gsap-hero-title",
           ".gsap-hero-desc",
           ".gsap-hero-btn",
+          ".gsap-hero-float-chip",
           ".gsap-telemetry-header",
           ".gsap-telemetry-card-wrap",
           ".gsap-waterfall-dns",
@@ -655,10 +820,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           ".gsap-waterfall-decode",
           ".gsap-waterfall-label",
           ".gsap-metric-chip",
+          ".gsap-lifecycle-header",
+          ".gsap-lifecycle-card-wrap",
+          ".gsap-lifecycle-step",
+          ".gsap-diff-header",
+          ".gsap-diff-card-wrap",
+          ".gsap-diff-bar-a",
+          ".gsap-diff-bar-b",
+          ".gsap-bento-header",
+          ".gsap-bento-card",
           ".gsap-capabilities-header",
           ".gsap-capability-card-wrap",
+          ".gsap-cli-header",
+          ".gsap-cli-card-wrap",
           ".gsap-providers-header",
           ".gsap-provider-card-wrap",
+          ".gsap-faq-header",
+          ".gsap-faq-item",
           ".gsap-cta-card-wrap",
         ],
         { opacity: 1, y: 0, scale: 1, scaleX: 1, clearProps: "all" }
@@ -719,9 +897,43 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             clearProps: "transform",
           },
           "-=0.35"
+        )
+        .fromTo(
+          ".gsap-hero-float-chip",
+          { y: 30, opacity: 0, scale: 0.85 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            stagger: 0.1,
+            duration: 0.65,
+            ease: "back.out(1.4)",
+          },
+          "-=0.4"
         );
 
-      // Hero Scroll Parallax Recede (Subtle cinematic depth on scroll)
+      // High-Entropy Multi-Axis Floating Levitation (Lively Zero-G Brownian Drift)
+      const createEntropyFloat = (target: string, rangeX: number, rangeY: number, rangeRot: number) => {
+        const wander = () => {
+          gsap.to(target, {
+            x: gsap.utils.random(-rangeX, rangeX, 1),
+            y: gsap.utils.random(-rangeY, rangeY, 1),
+            rotation: gsap.utils.random(-rangeRot, rangeRot, 0.2),
+            duration: gsap.utils.random(1.9, 3.2),
+            ease: "sine.inOut",
+            force3D: true,
+            onComplete: wander,
+          });
+        };
+        wander();
+      };
+
+      createEntropyFloat(".gsap-float-inner-1", 24, 28, 5.5);
+      createEntropyFloat(".gsap-float-inner-2", 28, 34, 6.5);
+      createEntropyFloat(".gsap-float-inner-3", 26, 30, 5.0);
+      createEntropyFloat(".gsap-float-inner-4", 28, 32, 6.0);
+
+      // Hero Scroll Parallax Recede
       if (!isMobile) {
         gsap.to("#hero-content", {
           scrollTrigger: {
@@ -730,10 +942,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             end: "bottom top",
             scrub: 0.8,
           },
-          y: 50,
-          opacity: 0.25,
+          y: 40,
+          opacity: 0.35,
           scale: 0.98,
           ease: "none",
+        });
+
+        // Scrub individual floating chip wrappers at varied speeds for 3D parallax depth
+        gsap.to(".gsap-float-1", {
+          scrollTrigger: { trigger: "#hero-section", start: "top top", end: "bottom top", scrub: 0.5 },
+          y: -50,
+          x: -12,
+        });
+        gsap.to(".gsap-float-2", {
+          scrollTrigger: { trigger: "#hero-section", start: "top top", end: "bottom top", scrub: 0.7 },
+          y: -70,
+          x: 18,
+        });
+        gsap.to(".gsap-float-3", {
+          scrollTrigger: { trigger: "#hero-section", start: "top top", end: "bottom top", scrub: 0.6 },
+          y: -45,
+          x: -20,
+        });
+        gsap.to(".gsap-float-4", {
+          scrollTrigger: { trigger: "#hero-section", start: "top top", end: "bottom top", scrub: 0.8 },
+          y: -75,
+          x: 14,
         });
       }
 
@@ -747,7 +981,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         defaults: { ease: "power3.out" },
       });
 
-      // Counter animation proxy object for zero-overhead DOM updates
       const counterObj = {
         totalLatency: 0,
         ttft: 0,
@@ -775,7 +1008,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           },
           "-=0.35"
         )
-        // Sequential Waterfall Latency Expansion (DNS -> TCP -> TLS -> TTFT -> Decode)
         .fromTo(
           ".gsap-waterfall-dns",
           { scaleX: 0, transformOrigin: "left" },
@@ -806,7 +1038,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           { scaleX: 1, duration: 0.5, ease: "power2.out" },
           "-=0.15"
         )
-        // Waterfall stage labels reveal
         .fromTo(
           ".gsap-waterfall-label",
           { y: 8, opacity: 0 },
@@ -820,7 +1051,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           },
           "-=0.4"
         )
-        // Metric chips entrance
         .fromTo(
           ".gsap-metric-chip",
           { y: 20, opacity: 0, scale: 0.94 },
@@ -835,7 +1065,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           },
           "-=0.35"
         )
-        // High-precision numerical counter interpolate
         .to(
           counterObj,
           {
@@ -857,7 +1086,117 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           "-=0.6"
         );
 
-      // ── Section 3: Core Capabilities Showcase ────────────────────────────
+      // ── Section 3: Sub-ms Latency Request Lifecycle (Single Minimal Card) ──
+      const lifecycleTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#lifecycle-section",
+          start: isMobile ? "top 90%" : "top 82%",
+          once: true,
+        },
+        defaults: { ease: "power3.out" },
+      });
+
+      lifecycleTl
+        .fromTo(
+          ".gsap-lifecycle-header",
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55 }
+        )
+        .fromTo(
+          ".gsap-lifecycle-card-wrap",
+          { y: 35, opacity: 0, scale: 0.96 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.7,
+            ease: "power3.out",
+            clearProps: "transform",
+          },
+          "-=0.3"
+        )
+        .fromTo(
+          ".gsap-lifecycle-step",
+          { y: 15, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            stagger: 0.08,
+            duration: 0.5,
+            ease: "back.out(1.2)",
+            clearProps: "transform",
+          },
+          "-=0.35"
+        );
+
+      // ── Section 4: Live Head-to-Head Compare Widget ───────────────────────
+      const diffTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#diff-widget-section",
+          start: isMobile ? "top 90%" : "top 82%",
+          once: true,
+        },
+        defaults: { ease: "power3.out" },
+      });
+
+      diffTl
+        .fromTo(
+          ".gsap-diff-header",
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55 }
+        )
+        .fromTo(
+          ".gsap-diff-card-wrap",
+          { y: 35, opacity: 0, scale: 0.96 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.7,
+            ease: "power3.out",
+            clearProps: "transform",
+          },
+          "-=0.3"
+        )
+        .fromTo(
+          ".gsap-diff-bar-a, .gsap-diff-bar-b",
+          { scaleX: 0, transformOrigin: "left" },
+          { scaleX: 1, stagger: 0.05, duration: 0.6, ease: "power2.out" },
+          "-=0.4"
+        );
+
+      // ── Section 5: Bento Superpowers Grid ─────────────────────────────────
+      const bentoTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#bento-section",
+          start: isMobile ? "top 90%" : "top 82%",
+          once: true,
+        },
+        defaults: { ease: "power3.out" },
+      });
+
+      bentoTl
+        .fromTo(
+          ".gsap-bento-header",
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55 }
+        )
+        .fromTo(
+          ".gsap-bento-card",
+          { y: 35, opacity: 0, scale: 0.94 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            stagger: 0.08,
+            duration: 0.6,
+            ease: "power2.out",
+            clearProps: "transform",
+          },
+          "-=0.3"
+        );
+
+      // ── Section 6: Core Workspaces Showcase ───────────────────────────────
       const capabilitiesTl = gsap.timeline({
         scrollTrigger: {
           trigger: "#capabilities-section",
@@ -888,7 +1227,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           "-=0.3"
         );
 
-      // ── Section 4: Supported Providers Grid ───────────────────────────────
+      // ── Section 7: Developer CLI & Quickstart ─────────────────────────────
+      const cliTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#cli-section",
+          start: isMobile ? "top 90%" : "top 82%",
+          once: true,
+        },
+        defaults: { ease: "power3.out" },
+      });
+
+      cliTl
+        .fromTo(
+          ".gsap-cli-header",
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55 }
+        )
+        .fromTo(
+          ".gsap-cli-card-wrap",
+          { y: 35, opacity: 0, scale: 0.96 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.7,
+            ease: "power3.out",
+            clearProps: "transform",
+          },
+          "-=0.3"
+        );
+
+      // ── Section 8: Supported Providers Grid ───────────────────────────────
       const providersTl = gsap.timeline({
         scrollTrigger: {
           trigger: "#providers-section",
@@ -923,7 +1292,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           "-=0.3"
         );
 
-      // ── Section 5: Closing CTA Banner ─────────────────────────────────────
+      // ── Section 9: FAQ Accordion ──────────────────────────────────────────
+      const faqTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#faq-section",
+          start: isMobile ? "top 90%" : "top 82%",
+          once: true,
+        },
+        defaults: { ease: "power3.out" },
+      });
+
+      faqTl
+        .fromTo(
+          ".gsap-faq-header",
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55 }
+        )
+        .fromTo(
+          ".gsap-faq-item",
+          { y: 20, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            stagger: 0.08,
+            duration: 0.5,
+            ease: "power2.out",
+            clearProps: "transform",
+          },
+          "-=0.3"
+        );
+
+      // ── Section 10: Closing CTA Banner ────────────────────────────────────
       gsap.fromTo(
         ".gsap-cta-card-wrap",
         { y: 35, opacity: 0, scale: 0.96 },
@@ -984,7 +1383,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   const ttftWidth = Math.max(30, (currentTtft / currentTotal) * 100);
   const decodeWidth = Math.max(25, 100 - (dnsWidth + tcpWidth + tlsWidth + ttftWidth));
 
-
   return (
     <div
       ref={containerRef}
@@ -994,17 +1392,74 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       <div className="gsap-scroll-progress fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand-secondary)] to-[var(--brand-primary)] z-50 origin-left scale-x-0 pointer-events-none opacity-90 shadow-sm" />
 
       {/* Main Spacious Landing Canvas */}
-      <main className="flex-1 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16 space-y-16 sm:space-y-20 lg:space-y-24">
+      <main className="flex-1 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16 space-y-20 sm:space-y-24 lg:space-y-28">
+        
         {/* ===================================================================
-            SECTION 1: HERO (Centred, Breathable, Minimal)
+            SECTION 1: HERO (Cinematic Kinetic Entrance & Parallax Floating HUD)
             =================================================================== */}
-        <section id="hero-section" className="text-center max-w-4xl mx-auto pt-2 sm:pt-4">
-          <div id="hero-content" className="space-y-6 sm:space-y-7">
+        <section id="hero-section" className="relative text-center max-w-5xl mx-auto pt-4 sm:pt-8 pb-4">
+          
+          {/* Parallax Floating HUD Metric Chips (Asymmetric Constellation Scatter) */}
+          <div className="hidden lg:block">
+            {/* Top-Left Mid Altitude: Groq LPU Speed Chip */}
+            <div className="gsap-hero-float-chip gsap-float-1 absolute top-1 -left-4 lg:-left-12 xl:-left-20 z-20 pointer-events-auto select-none rotate-[-2deg]">
+              <div className="gsap-float-inner-1 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-strong)] shadow-2xl shadow-black/10 flex items-center gap-3 hover:border-[var(--brand-primary-border)] hover:scale-105 transition-all duration-200 cursor-default transform-gpu [backface-visibility:hidden] [transform:translateZ(0)]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                  <Icons.Zap className="h-4 w-4" />
+                </div>
+                <div className="text-left font-mono leading-tight">
+                  <div className="text-[10px] text-[var(--text-subtle)] uppercase tracking-wider font-semibold">Groq LPU</div>
+                  <div className="text-xs font-bold text-[var(--text-main)] tabular-nums whitespace-nowrap">492 tok/s Peak</div>
+                </div>
+              </div>
+            </div>
+
+            {/* High Top-Right Altitude: Sub-ms TTFT Chip */}
+            <div className="gsap-hero-float-chip gsap-float-2 absolute -top-10 right-4 lg:right-0 xl:-right-8 z-20 pointer-events-auto select-none rotate-[3.5deg]">
+              <div className="gsap-float-inner-2 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-strong)] shadow-2xl shadow-black/10 flex items-center gap-3 hover:border-emerald-500/40 hover:scale-105 transition-all duration-200 cursor-default transform-gpu [backface-visibility:hidden] [transform:translateZ(0)]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                  <Icons.Clock className="h-4 w-4" />
+                </div>
+                <div className="text-left font-mono leading-tight">
+                  <div className="text-[10px] text-[var(--text-subtle)] uppercase tracking-wider font-semibold">P95 TTFT</div>
+                  <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 tabular-nums whitespace-nowrap">48.2ms Fast</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Deep Lower-Left Altitude: Zero-Cloud SQLite Chip */}
+            <div className="gsap-hero-float-chip gsap-float-3 absolute top-52 -left-10 lg:-left-22 xl:-left-32 z-20 pointer-events-auto select-none rotate-[2deg]">
+              <div className="gsap-float-inner-3 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-strong)] shadow-2xl shadow-black/10 flex items-center gap-3 hover:border-[var(--brand-primary-border)] hover:scale-105 transition-all duration-200 cursor-default transform-gpu [backface-visibility:hidden] [transform:translateZ(0)]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)] shrink-0">
+                  <Icons.Database className="h-4 w-4" />
+                </div>
+                <div className="text-left font-mono leading-tight">
+                  <div className="text-[10px] text-[var(--text-subtle)] uppercase tracking-wider font-semibold">Local Vault</div>
+                  <div className="text-xs font-bold text-[var(--text-main)] whitespace-nowrap">Zero-Cloud SQLite</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mid-Right Altitude: Goodput SLO 99.9% Chip */}
+            <div className="gsap-hero-float-chip gsap-float-4 absolute top-36 -right-6 lg:-right-14 xl:-right-22 z-20 pointer-events-auto select-none rotate-[-3.5deg]">
+              <div className="gsap-float-inner-4 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-strong)] shadow-2xl shadow-black/10 flex items-center gap-3 hover:border-[var(--brand-primary-border)] hover:scale-105 transition-all duration-200 cursor-default transform-gpu [backface-visibility:hidden] [transform:translateZ(0)]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)] shrink-0">
+                  <Icons.Target className="h-4 w-4" />
+                </div>
+                <div className="text-left font-mono leading-tight">
+                  <div className="text-[10px] text-[var(--text-subtle)] uppercase tracking-wider font-semibold">Goodput SLO</div>
+                  <div className="text-xs font-bold text-[var(--brand-primary)] tabular-nums whitespace-nowrap">99.9% Passing</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="hero-content" className="space-y-6 sm:space-y-7 relative z-10">
             <div className="space-y-5">
               {/* Minimal Micro-Badge */}
               <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] text-[var(--brand-primary)] text-xs font-mono font-medium shadow-xs tracking-wide">
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary)] animate-pulse" />
-                <span>LIVE INFERENCE BENCHMARKING</span>
+                <span>100Hz SUB-MILLISECOND INFERENCE TELEMETRY</span>
               </div>
 
               {/* Main Headline */}
@@ -1014,7 +1469,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
               {/* Sub-headline Description */}
               <p className="gsap-hero-desc text-base sm:text-lg text-[var(--text-body)] max-w-2xl mx-auto leading-relaxed">
-                Stress-test LLMs with microsecond socket waterfalls, real-time concurrency profiling, and cost guard rails.
+                Stress-test LLMs with microsecond socket waterfalls, real-time concurrency profiling, statistical diffs, and hard spend guardrails.
               </p>
             </div>
 
@@ -1037,6 +1492,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <Icons.Diff className="h-4 w-4 text-[var(--brand-primary)]" />
                 <span>Compare Models</span>
               </Button>
+            </div>
+
+            {/* Micro Feature Bullet Ribbon */}
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-[var(--text-muted)] font-mono">
+              <div className="flex items-center gap-1.5">
+                <Icons.CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Zero-Cloud Privacy</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Icons.CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <span>100Hz Monotonic Timestamps</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Icons.CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Automated Spend Caps</span>
+              </div>
             </div>
           </div>
         </section>
@@ -1209,7 +1680,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                             ? "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300 animate-pulse"
                             : isCompleted
                             ? "bg-white/60 dark:bg-[var(--bg-surface)] border-emerald-500/20 text-[var(--text-main)] dark:text-[var(--text-subheading)] hover:border-emerald-500/40 cursor-pointer"
-                            : "bg-white/20 dark:bg-[var(--bg-surface)] border-transparent text-[var(--text-placeholder)] dark:text-slate-600 opacity-60 cursor-not-allowed"
+                            : "bg-white/20 dark:bg-[var(--bg-surface)] border-transparent text-[var(--text-placeholder)] dark:text-[var(--text-subtle)] opacity-60 cursor-not-allowed"
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -1219,7 +1690,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                           ) : isCompleted ? (
                             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
                           ) : (
-                            <span className="text-[10px] text-[var(--text-placeholder)] dark:text-slate-600">--</span>
+                            <span className="text-[10px] text-[var(--text-placeholder)] dark:text-[var(--text-subtle)]">--</span>
                           )}
                         </div>
                         <span className="font-bold tabular-nums text-xs">
@@ -1345,7 +1816,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                       </span>
                     ) : (
                       <span className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
-                        Click "Instant Probe (5-Packet Ping)" to execute live telemetry test...
+                        Click "Run Live Probe" to execute ephemeral 100Hz telemetry test...
                       </span>
                     )}
                     {probeState === "probing" && (
@@ -1440,7 +1911,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => handleLaunchDiffWithModel(activeProbeModel)}
+                    onClick={() => {
+                      try {
+                        sessionStorage.setItem("llmark_diff_model_a", activeProbeModel.id);
+                      } catch (e) {}
+                      onNavigate("diff");
+                    }}
                     className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-[var(--bg-surface-elevated)] border-[var(--border-medium)] hover:border-[var(--brand-primary-border)] text-[var(--text-main)] flex items-center gap-1.5 cursor-pointer transition-all"
                   >
                     <Icons.Diff className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
@@ -1461,14 +1937,417 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           </div>
         </section>
 
+        {/* ===================================================================
+            SECTION 3: SUB-MS LATENCY REQUEST LIFECYCLE (Single Minimal 1->2->3->4 Pipeline Card)
+            =================================================================== */}
+        <section id="lifecycle-section" className="space-y-4 max-w-5xl mx-auto">
+          <div className="gsap-lifecycle-header text-center space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[10px] font-semibold uppercase tracking-wider font-mono">
+              02 // PIPELINE
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+              Sub-Millisecond Request Lifecycle
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-xl mx-auto">
+              How LLMark isolates network handshakes from inference prefill queueing and streaming decode tokens.
+            </p>
+          </div>
+
+          <div className="gsap-lifecycle-card-wrap">
+            <SpotlightCard
+              glowColor="var(--brand-primary-light)"
+              className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-5 sm:p-6 space-y-5 shadow-sm"
+            >
+              {/* Connected Sequential Step Strip: 1 -> 2 -> 3 -> 4 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative font-sans">
+                {lifecycleStages.map((stage, idx) => {
+                  const Icon = stage.icon;
+                  const isActive = activeLifecycleStep === idx;
+                  const isLast = idx === lifecycleStages.length - 1;
+
+                  return (
+                    <div
+                      key={stage.step}
+                      onClick={() => setActiveLifecycleStep(idx)}
+                      className={`gsap-lifecycle-step p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 relative group ${
+                        isActive
+                          ? "bg-[var(--bg-surface-elevated)] border-[var(--brand-primary)] shadow-xs ring-1 ring-[var(--brand-primary-border)]"
+                          : "bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-app)] border-[var(--border-subtle)] hover:border-[var(--border-medium)]"
+                      }`}
+                    >
+                      {/* Step Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`flex h-6 w-6 items-center justify-center rounded-lg text-xs font-mono font-bold transition-colors ${
+                            isActive
+                              ? "bg-[var(--brand-primary)] text-[var(--text-inverse)]"
+                              : "bg-[var(--border-subtle)] text-[var(--text-subtle)] group-hover:text-[var(--text-main)]"
+                          }`}>
+                            {stage.step}
+                          </span>
+                          <span className="text-xs font-bold text-[var(--text-main)] font-sans">
+                            {stage.shortTitle}
+                          </span>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] font-mono px-1.5 py-0 border ${
+                            stage.color === "sky"
+                              ? "border-sky-500/30 text-sky-600 dark:text-sky-400 bg-sky-500/10"
+                              : stage.color === "indigo"
+                              ? "border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10"
+                              : stage.color === "brand"
+                              ? "border-[var(--brand-primary-border)] text-[var(--brand-primary)] bg-[var(--brand-primary-light)]"
+                              : "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                          }`}
+                        >
+                          {stage.timing}
+                        </Badge>
+                      </div>
+
+                      {/* Summary */}
+                      <p className="text-[11px] text-[var(--text-muted)] leading-relaxed line-clamp-2">
+                        {stage.summary}
+                      </p>
+
+                      {/* Technical Detail Line */}
+                      <div className="pt-2 border-t border-[var(--border-subtle)]/60 flex items-center gap-1.5 text-[10px] font-mono text-[var(--text-subtle)] truncate">
+                        <Icon className="h-3 w-3 shrink-0 text-[var(--brand-primary)]" />
+                        <span className="truncate">{stage.details}</span>
+                      </div>
+
+                      {/* Arrow Connector between steps for large screens */}
+                      {!isLast && (
+                        <div className="hidden lg:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10 h-4 w-4 items-center justify-center rounded-full bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-subtle)] text-[10px]">
+                          →
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Bottom Contextual Metric Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--border-subtle)] text-xs font-sans">
+                <div className="flex items-center gap-2 text-[var(--text-body)]">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>
+                    <strong>Step {lifecycleStages[activeLifecycleStep].step}:</strong> {lifecycleStages[activeLifecycleStep].phase} — {lifecycleStages[activeLifecycleStep].summary}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 font-mono text-[11px] text-[var(--text-subtle)]">
+                  <span>Monotonic OS clock timing</span>
+                  <span>•</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">100Hz telemetry</span>
+                </div>
+              </div>
+            </SpotlightCard>
+          </div>
+        </section>
 
         {/* ===================================================================
-            SECTION 3: THREE CORE CAPABILITIES SHOWCASE (ScrollTrigger Animated)
+            SECTION 4: SIDE-BY-SIDE MODEL COMPARISON (Model A vs Model B)
+            =================================================================== */}
+        <section id="diff-widget-section" className="space-y-4 max-w-5xl mx-auto">
+          <div className="gsap-diff-header text-center space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[10px] font-semibold uppercase tracking-wider font-mono">
+              03 // STATISTICAL DIFF
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+              Model Comparison Matrix
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-xl mx-auto">
+              Select any two models to inspect and compare their latency, streaming throughput, and SLO metrics side-by-side.
+            </p>
+          </div>
+
+          <div className="gsap-diff-card-wrap">
+            <SpotlightCard
+              glowColor="var(--brand-primary-light)"
+              className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-5 sm:p-6 space-y-5 shadow-sm"
+            >
+              {/* Side-by-Side Model A & Model B Columns */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 font-sans">
+                {/* Model A Card */}
+                <div className="p-4 rounded-xl bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-app)] border border-[var(--border-subtle)] space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    {/* Model A Header & Selector */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono font-bold text-[var(--brand-primary)] tracking-wide uppercase">
+                          MODEL A
+                        </span>
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-[var(--brand-primary-border)] text-[var(--brand-primary)] bg-[var(--brand-primary-light)] font-mono">
+                          {diffModelA.badge}
+                        </Badge>
+                      </div>
+                      <span className="text-[11px] font-mono text-[var(--text-subtle)]">{diffModelA.vendor}</span>
+                    </div>
+
+                    {/* Model A Selection Pills */}
+                    <div className="flex items-center gap-1 overflow-x-auto py-1">
+                      {PROBE_MODELS.map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setDiffModelA(m)}
+                          className={`px-2 py-1 rounded-lg text-xs font-medium cursor-pointer transition-all flex items-center gap-1.5 shrink-0 ${
+                            diffModelA.id === m.id
+                              ? "bg-[var(--bg-surface-elevated)] text-[var(--brand-primary)] font-bold shadow-2xs border border-[var(--brand-primary-border)]"
+                              : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                          }`}
+                        >
+                          <ProviderLogo vendor={m.vendor} className="h-3 w-3 shrink-0" />
+                          <span>{m.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Model A Metrics 2x2 Grid */}
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">P95 TTFT (Prefill)</div>
+                      <div className="text-base font-bold text-[var(--brand-primary)] font-mono">
+                        {diffModelA.ttft} <span className="text-[11px] font-normal text-[var(--text-subtle)]">ms</span>
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Lower is faster</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">Decode Speed</div>
+                      <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                        {diffModelA.decodeSpeed} <span className="text-[11px] font-normal text-[var(--text-subtle)]">tok/s</span>
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Higher is faster</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">P99 ITL Tail</div>
+                      <div className="text-base font-bold text-[var(--text-main)] font-mono">
+                        {diffModelA.itlTail} <span className="text-[11px] font-normal text-[var(--text-subtle)]">ms</span>
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Jitter &lt; 2ms</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">Goodput SLO</div>
+                      <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                        {diffModelA.goodput}%
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Target &gt; 95%</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Model B Card */}
+                <div className="p-4 rounded-xl bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-app)] border border-[var(--border-subtle)] space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    {/* Model B Header & Selector */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono font-bold text-[var(--text-subheading)] tracking-wide uppercase">
+                          MODEL B
+                        </span>
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-[var(--border-medium)] text-[var(--text-muted)] font-mono">
+                          {diffModelB.badge}
+                        </Badge>
+                      </div>
+                      <span className="text-[11px] font-mono text-[var(--text-subtle)]">{diffModelB.vendor}</span>
+                    </div>
+
+                    {/* Model B Selection Pills */}
+                    <div className="flex items-center gap-1 overflow-x-auto py-1">
+                      {PROBE_MODELS.map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setDiffModelB(m)}
+                          className={`px-2 py-1 rounded-lg text-xs font-medium cursor-pointer transition-all flex items-center gap-1.5 shrink-0 ${
+                            diffModelB.id === m.id
+                              ? "bg-[var(--bg-surface-elevated)] text-[var(--text-main)] font-bold shadow-2xs border border-[var(--border-strong)]"
+                              : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                          }`}
+                        >
+                          <ProviderLogo vendor={m.vendor} className="h-3 w-3 shrink-0" />
+                          <span>{m.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Model B Metrics 2x2 Grid */}
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">P95 TTFT (Prefill)</div>
+                      <div className="text-base font-bold text-[var(--text-main)] font-mono">
+                        {diffModelB.ttft} <span className="text-[11px] font-normal text-[var(--text-subtle)]">ms</span>
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Lower is faster</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">Decode Speed</div>
+                      <div className="text-base font-bold text-[var(--text-main)] font-mono">
+                        {diffModelB.decodeSpeed} <span className="text-[11px] font-normal text-[var(--text-subtle)]">tok/s</span>
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Higher is faster</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">P99 ITL Tail</div>
+                      <div className="text-base font-bold text-[var(--text-main)] font-mono">
+                        {diffModelB.itlTail} <span className="text-[11px] font-normal text-[var(--text-subtle)]">ms</span>
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Jitter &lt; 2ms</div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--text-muted)] font-mono">Goodput SLO</div>
+                      <div className="text-base font-bold text-[var(--text-main)] font-mono">
+                        {diffModelB.goodput}%
+                      </div>
+                      <div className="text-[10px] text-[var(--text-subtle)]">Target &gt; 95%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Minimal Delta Comparison Strip & Launch CTA */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--border-subtle)]">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-body)]">
+                  <div className="flex items-center gap-1.5 font-mono">
+                    <span className="text-[var(--text-subtle)]">TTFT Delta:</span>
+                    <span className={`font-bold ${diffModelA.ttft <= diffModelB.ttft ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500"}`}>
+                      {diffModelA.ttft <= diffModelB.ttft ? `-${(diffModelB.ttft - diffModelA.ttft).toFixed(1)}ms` : `+${(diffModelA.ttft - diffModelB.ttft).toFixed(1)}ms`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-mono">
+                    <span className="text-[var(--text-subtle)]">Decode Delta:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {(diffModelA.decodeSpeed / Math.max(1, diffModelB.decodeSpeed)).toFixed(1)}x speedup
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      sessionStorage.setItem("llmark_diff_model_a", diffModelA.id);
+                      sessionStorage.setItem("llmark_diff_model_b", diffModelB.id);
+                    } catch (e) {}
+                    onNavigate("diff");
+                  }}
+                  className="h-8 px-3 rounded-lg text-xs font-semibold btn-brand-glow text-white flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <span>Open Diff Studio</span>
+                  <Icons.ArrowRight className="h-3 w-3 opacity-75" />
+                </Button>
+              </div>
+            </SpotlightCard>
+          </div>
+        </section>
+
+        {/* ===================================================================
+            SECTION 5: ARCHITECTURAL SUPERPOWERS BENTO GRID (ScrollTrigger Staggered)
+            =================================================================== */}
+        <section id="bento-section" className="space-y-6">
+          <div className="gsap-bento-header text-center max-w-2xl mx-auto space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
+              04 // CAPABILITIES
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
+              Built for High-Load AI Infrastructure
+            </h2>
+            <p className="text-sm text-[var(--text-muted)]">
+              Everything engineering teams need to benchmark production LLM gateways and self-hosted clusters.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 font-sans">
+            {bentoSuperpowers.map((power) => {
+              const Icon = power.icon;
+              return (
+                <div key={power.id} className="gsap-bento-card">
+                  <SpotlightCard
+                    glowColor={power.glow}
+                    className="h-full p-6 bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary-border)] flex flex-col justify-between space-y-5 shadow-2xs group"
+                  >
+                    <div className="space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] group-hover:scale-105 transition-transform shadow-2xs">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <Badge variant="outline" className="text-[10px] font-mono font-medium px-2 py-0.5 border-[var(--brand-primary-border)] text-[var(--brand-primary)] bg-[var(--brand-primary-light)]">
+                          {power.badge}
+                        </Badge>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h3 className="text-base font-bold text-[var(--text-main)] font-sans">
+                          {power.title}
+                        </h3>
+                        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                          {power.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Interactive Micro Visualizer inside Bento Card */}
+                    <div className="pt-3 border-t border-[var(--border-subtle)]">
+                      {power.visual === "waterfall" && (
+                        <div className="h-2 w-full rounded-full bg-[var(--border-subtle)] overflow-hidden flex">
+                          <div className="h-full bg-sky-500 w-[10%]" />
+                          <div className="h-full bg-indigo-500 w-[15%]" />
+                          <div className="h-full bg-[var(--brand-primary)] w-[45%]" />
+                          <div className="h-full bg-emerald-500 w-[30%]" />
+                        </div>
+                      )}
+                      {power.visual === "stream" && (
+                        <div className="flex items-center justify-between">
+                          <LiveStreamWave active={true} className="h-4 w-16" />
+                          <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">100Hz Active</span>
+                        </div>
+                      )}
+                      {power.visual === "slo" && (
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-[var(--text-muted)]">SLO &gt; 95%</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">99.9% Pass</span>
+                        </div>
+                      )}
+                      {power.visual === "spend" && (
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-[var(--text-muted)]">Cap: $1.00</span>
+                          <span className="font-bold text-[var(--brand-primary)]">Kill-Switch Armed</span>
+                        </div>
+                      )}
+                      {power.visual === "vault" && (
+                        <div className="flex items-center gap-2 text-xs font-mono text-[var(--text-muted)]">
+                          <Icons.ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                          <span>AES-256 / SQLite WAL</span>
+                        </div>
+                      )}
+                      {power.visual === "providers" && (
+                        <div className="flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
+                          <span>12+ Engine Adapters</span>
+                        </div>
+                      )}
+                    </div>
+                  </SpotlightCard>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ===================================================================
+            SECTION 6: THREE CORE WORKSPACES SHOWCASE (ScrollTrigger Animated)
             =================================================================== */}
         <section id="capabilities-section" className="space-y-6">
           <div className="gsap-capabilities-header text-center max-w-2xl mx-auto space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
-              02 // WORKSPACES
+              05 // WORKSPACES
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
               Three Dedicated Workspaces
@@ -1542,22 +2421,103 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         </section>
 
         {/* ===================================================================
-            SECTION 4: SUPPORTED PROVIDERS ECOSYSTEM (ScrollTrigger Animated)
+            SECTION 7: DEVELOPER CLI & QUICKSTART (Interactive Terminal)
+            =================================================================== */}
+        <section id="cli-section" className="space-y-6">
+          <div className="gsap-cli-header text-center max-w-2xl mx-auto space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
+              06 // QUICKSTART
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
+              Developer-First Execution
+            </h2>
+            <p className="text-sm text-[var(--text-muted)]">
+              Launch benchmarks via web GUI, Docker container, Python package, or direct REST API.
+            </p>
+          </div>
+
+          <div className="gsap-cli-card-wrap max-w-3xl mx-auto">
+            <div className="rounded-2xl bg-[#09090B] border border-white/15 p-5 sm:p-6 shadow-xl text-zinc-100 font-mono space-y-4">
+              {/* Terminal Title Bar */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
+                  <span className="h-3 w-3 rounded-full bg-amber-500/80 inline-block" />
+                  <span className="h-3 w-3 rounded-full bg-emerald-500/80 inline-block" />
+                  <span className="text-xs text-zinc-400 font-medium ml-2 font-sans">llmark-cli</span>
+                </div>
+
+                {/* Tab Switcher */}
+                <div className="flex items-center gap-1 p-0.5 rounded-lg bg-white/5 border border-white/10 text-xs">
+                  {(["npx", "docker", "pip", "curl"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveCliTab(tab)}
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                        activeCliTab === tab
+                          ? "bg-white/15 text-white font-bold"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
+                    >
+                      {tab.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Code Snippet Display with Copy Button */}
+              <div className="relative group">
+                <pre className="p-4 rounded-xl bg-black/60 border border-white/10 text-xs sm:text-sm text-emerald-400 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                  <code>{cliSnippets[activeCliTab]}</code>
+                </pre>
+                <button
+                  type="button"
+                  onClick={() => handleCopyCli(cliSnippets[activeCliTab])}
+                  className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-zinc-200 flex items-center gap-1.5 cursor-pointer transition-all opacity-80 group-hover:opacity-100"
+                >
+                  {copiedCli ? (
+                    <>
+                      <Icons.Check className="h-3.5 w-3.5 text-emerald-400" />
+                      <span className="text-emerald-400 font-sans">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icons.Copy className="h-3.5 w-3.5" />
+                      <span className="font-sans">Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Mock Terminal Output */}
+              <div className="text-xs text-zinc-400 space-y-1 pt-1 font-mono">
+                <div className="text-zinc-500"># Output:</div>
+                <div className="text-zinc-300">✓ Initialized 20 async workers in 1.4ms</div>
+                <div className="text-zinc-300">✓ P95 TTFT: 48.2ms | Throughput: 492.0 tok/s | Goodput: 100.0%</div>
+                <div className="text-emerald-400">✓ Audit completed. 0 dropped packets. Spend: $0.00012.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===================================================================
+            SECTION 8: SUPPORTED PROVIDERS ECOSYSTEM (ScrollTrigger Animated)
             =================================================================== */}
         <section id="providers-section" className="space-y-6">
           <div className="gsap-providers-header text-center max-w-2xl mx-auto space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
-              03 // COMPATIBILITY
+              07 // COMPATIBILITY
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
-              Supported Endpoints
+              Supported Endpoints & Engines
             </h2>
             <p className="text-sm text-[var(--text-muted)]">
               Zero-overhead benchmarking for frontier models, custom OpenAI proxies, and local clusters.
             </p>
           </div>
 
-          <div className="gsap-providers-grid grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 font-sans">
+          <div className="gsap-providers-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 font-sans">
             {providers.map((pr, i) => (
               <div key={i} className="gsap-provider-card-wrap">
                 <motion.div
@@ -1565,8 +2525,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   transition={{ duration: 0.18 }}
                   className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary-border)] text-center cursor-default transition-all flex flex-col items-center justify-between gap-2 shadow-2xs group h-full"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-surface-subtle)] text-[var(--text-subheading)] group-hover:text-[var(--brand-primary)] dark:group-hover:text-[var(--brand-primary)] transition-colors">
-                    <ProviderLogo vendor={pr.vendor} className="h-4 w-4" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--bg-surface-subtle)] text-[var(--text-subheading)] group-hover:text-[var(--brand-primary)] transition-colors">
+                    <ProviderLogo vendor={pr.vendor} className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="text-xs font-semibold text-[var(--text-main)] truncate">
@@ -1583,7 +2543,63 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         </section>
 
         {/* ===================================================================
-            SECTION 5: QUICK-START DEVELOPER BANNER (ScrollTrigger Animated)
+            SECTION 9: ENGINEERING FAQ ACCORDION (ScrollTrigger Animated)
+            =================================================================== */}
+        <section id="faq-section" className="space-y-6 max-w-3xl mx-auto">
+          <div className="gsap-faq-header text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
+              08 // ARCHITECTURE FAQ
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
+              Frequently Answered Questions
+            </h2>
+            <p className="text-sm text-[var(--text-muted)]">
+              Technical specifics on timing precision, local privacy, and SLO measurement methodology.
+            </p>
+          </div>
+
+          <div className="space-y-3 font-sans">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div key={idx} className="gsap-faq-item">
+                  <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] overflow-hidden transition-all shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(isOpen ? null : idx)}
+                      className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-[var(--bg-surface-subtle)] transition-colors"
+                    >
+                      <span className="text-sm font-semibold text-[var(--text-main)]">
+                        {faq.q}
+                      </span>
+                      <span className="text-base text-[var(--text-muted)] shrink-0">
+                        {isOpen ? "−" : "+"}
+                      </span>
+                    </button>
+
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                        >
+                          <div className="px-4 sm:px-5 pb-4 pt-1 text-xs text-[var(--text-body)] leading-relaxed border-t border-[var(--border-subtle)]/50">
+                            {faq.a}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ===================================================================
+            SECTION 10: QUICK-START DEVELOPER BANNER (ScrollTrigger Animated)
             =================================================================== */}
         <section id="cta-section" className="pb-4">
           <div className="gsap-cta-card-wrap">
@@ -1600,7 +2616,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </p>
               </div>
 
-              <div className="flex items-center justify-center pt-1">
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                 <Button
                   onClick={() => onNavigate("benchmark")}
                   className="btn-brand-glow text-white shadow-md shadow-[var(--brand-primary-light)] h-11 px-7 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2.5 cursor-pointer group"
@@ -1608,6 +2624,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   <Icons.Play className="h-4 w-4" />
                   <span>Open Studio</span>
                   <Icons.ArrowRight className="h-4 w-4 opacity-75 group-hover:translate-x-1 transition-transform" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => onNavigate("diff")}
+                  className="h-11 px-6 rounded-xl text-xs sm:text-sm font-semibold bg-[var(--bg-card)] border-[var(--border-medium)] hover:border-[var(--brand-primary-border)] text-[var(--text-main)] flex items-center gap-2 cursor-pointer transition-all shadow-xs"
+                >
+                  <Icons.Diff className="h-4 w-4 text-[var(--brand-primary)]" />
+                  <span>Compare Models</span>
                 </Button>
               </div>
             </SpotlightCard>
