@@ -21,7 +21,7 @@ export interface CategoryBarProps {
 
 export const CategoryBar: React.FC<CategoryBarProps> = ({
   values = [],
-  colors = ["bg-[var(--brand-primary)]", "bg-[var(--brand-secondary)]", "bg-[var(--text-muted)]", "bg-[var(--brand-secondary)]", "bg-emerald-600 dark:bg-emerald-500"],
+  colors = ["bg-indigo-600 dark:bg-indigo-500", "bg-sky-500 dark:bg-sky-400", "bg-amber-500 dark:bg-amber-400", "bg-purple-600 dark:bg-purple-500", "bg-emerald-600 dark:bg-emerald-500"],
   labels = [],
   items,
   showLabels = true,

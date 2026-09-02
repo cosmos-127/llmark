@@ -72,9 +72,9 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
         name: "1. Network Edge & TLS Handshake",
         durationMs: dnsTlsMs,
         pct: (dnsTlsMs / totalMs) * 100,
-        color: "bg-[var(--brand-primary)]",
-        textColor: "text-[var(--brand-primary)]",
-        border: "border-[var(--brand-primary-border)]",
+        color: "bg-sky-500",
+        textColor: "text-sky-600 dark:text-sky-400",
+        border: "border-sky-500/40",
         icon: Globe,
         desc: "TCP 3-way handshake + TLS 1.3 cryptographic session setup over public internet edge.",
       },
@@ -94,9 +94,9 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
         name: `3. GPU Prefill (${cacheBust ? "Cold Matrix Compute" : "Warm Prefix Hit"})`,
         durationMs: gpuPrefillMs,
         pct: (gpuPrefillMs / totalMs) * 100,
-        color: "bg-[var(--brand-primary)]",
-        textColor: "text-[var(--brand-primary)]",
-        border: "border-[var(--brand-primary-border)]",
+        color: "bg-amber-500 dark:bg-amber-600",
+        textColor: "text-amber-700 dark:text-amber-400",
+        border: "border-amber-500/40",
         icon: Cpu,
         desc: `Parallel tensor ingestion over ${promptTokens.toLocaleString()} prompt tokens to compute initial KV cache matrix.`,
       },
@@ -105,9 +105,9 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
         name: `4. Autoregressive Streaming (${maxTokens} tokens @ ~45.5 tok/s)`,
         durationMs: streamingDecodeMs,
         pct: (streamingDecodeMs / totalMs) * 100,
-        color: "bg-[var(--brand-secondary)]",
-        textColor: "text-[var(--brand-secondary)]",
-        border: "border-[var(--brand-secondary-border)]",
+        color: "bg-emerald-600 dark:bg-emerald-500",
+        textColor: "text-emerald-700 dark:text-emerald-400",
+        border: "border-emerald-500/40",
         icon: Zap,
         desc: `Sequential memory-bandwidth bound generation of ${maxTokens} output tokens delivered over Server-Sent Events (SSE).`,
       },
@@ -194,7 +194,7 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
             <div className="flex items-center justify-between text-xs font-sans text-[var(--text-body)] pt-1">
               <div className="flex items-center gap-3.5 flex-wrap">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-[var(--brand-primary)]" />
+                  <span className="h-2.5 w-2.5 rounded-xs bg-sky-500" />
                   <span>Edge TLS (32ms)</span>
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -202,11 +202,11 @@ export const LatencyWaterfallInspector: React.FC<LatencyWaterfallInspectorProps>
                   <span>Queue (18ms)</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-[var(--brand-primary)]" />
+                  <span className="h-2.5 w-2.5 rounded-xs bg-amber-500 dark:bg-amber-600" />
                   <span>Prefill TTFT ({phases[2].durationMs}ms)</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-[var(--brand-secondary)]" />
+                  <span className="h-2.5 w-2.5 rounded-xs bg-emerald-600 dark:bg-emerald-500" />
                   <span>Decode Stream ({phases[3].durationMs}ms)</span>
                 </span>
               </div>

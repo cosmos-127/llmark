@@ -112,7 +112,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
           <span
             onMouseEnter={() => setHoveredPhase("prefill")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className="flex items-center gap-2 text-[var(--brand-primary)] cursor-pointer hover:underline"
+            className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline"
           >
             <Cpu className="h-4 w-4" />
             <span className="font-semibold">1. Prefill Ingestion:</span>
@@ -122,7 +122,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
           <span
             onMouseEnter={() => setHoveredPhase("decode")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className="flex items-center gap-2 text-[var(--brand-secondary)] cursor-pointer hover:underline"
+            className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 cursor-pointer hover:underline"
           >
             <HardDrive className="h-4 w-4" />
             <span className="font-semibold">2. Decode Generation:</span>
@@ -139,7 +139,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
             transition={{ duration: 0.3, ease: "easeOut" }}
             onMouseEnter={() => setHoveredPhase("prefill")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className={`h-full rounded-lg bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
+            className={`h-full rounded-lg bg-gradient-to-r from-indigo-600 to-blue-500 cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
               hoveredPhase === "decode" ? "opacity-40" : "opacity-100"
             }`}
           >
@@ -153,7 +153,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
             transition={{ duration: 0.3, ease: "easeOut" }}
             onMouseEnter={() => setHoveredPhase("decode")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className={`h-full rounded-lg bg-gradient-to-r from-[var(--brand-secondary)] to-[var(--brand-primary)] cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
+            className={`h-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
               hoveredPhase === "prefill" ? "opacity-40" : "opacity-100"
             }`}
           >

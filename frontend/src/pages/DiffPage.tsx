@@ -512,7 +512,7 @@ export const DiffPage: React.FC = () => {
       {
         name: diffData.run_a_name,
         role: "Baseline (A)",
-        color: "var(--brand-secondary)",
+        color: "#3b82f6",
         tps: tps?.run_a_value || 0,
         cost: cost1k?.run_a_value || 0,
         goodput: goodput?.run_a_value || 100,
@@ -520,7 +520,7 @@ export const DiffPage: React.FC = () => {
       {
         name: diffData.run_b_name,
         role: "Candidate 1 (B)",
-        color: "var(--brand-primary)",
+        color: "#8b5cf6",
         tps: tps?.run_b_value || 0,
         cost: cost1k?.run_b_value || 0,
         goodput: goodput?.run_b_value || 100,
@@ -607,19 +607,19 @@ export const DiffPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Run A (Baseline) */}
             <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }} className="w-full">
-              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-[var(--brand-secondary)] transition-all bg-[var(--bg-card)] backdrop-blur-xs">
+              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-blue-500 transition-all bg-[var(--bg-card)] backdrop-blur-xs">
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-xs flex items-center gap-2 font-semibold">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[var(--brand-secondary)] shrink-0" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-blue-500 shrink-0" />
                       <span>Run A (Baseline Anchor)</span>
                     </CardTitle>
-                    <Badge variant="outline" className="font-mono text-[10px] uppercase font-medium">Baseline</Badge>
+                    <Badge variant="outline" className="font-mono text-[10px] uppercase font-medium text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800">Baseline</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-1 space-y-3">
                   <Select value={runAId} onValueChange={setRunAId}>
-                    <SelectTrigger className="focus:border-[var(--brand-secondary)] dark:focus:border-[var(--brand-secondary)] text-xs bg-white dark:bg-[var(--bg-surface-subtle)] w-full">
+                    <SelectTrigger className="focus:border-blue-500 text-xs bg-white dark:bg-[var(--bg-surface-subtle)] w-full">
                       <SelectValue placeholder="Select baseline run A..." />
                     </SelectTrigger>
                     <SelectContent className="max-w-[min(calc(100vw-2rem),520px)]">
@@ -650,7 +650,7 @@ export const DiffPage: React.FC = () => {
                           <ProviderLogo vendor={selectedRunA.vendor} className="h-3.5 w-3.5 inline" />
                           {selectedRunA.model}
                         </span>
-                        <span className="text-[var(--brand-secondary)] font-semibold tabular-nums">
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold tabular-nums">
                           {formatMs(selectedRunA.ttft_p95)} P95
                         </span>
                       </div>
@@ -667,19 +667,19 @@ export const DiffPage: React.FC = () => {
 
             {/* Run B (Candidate 1) */}
             <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }} className="w-full">
-              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-[var(--brand-primary)] transition-all bg-[var(--bg-card)] backdrop-blur-xs">
+              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-purple-500 transition-all bg-[var(--bg-card)] backdrop-blur-xs">
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-xs flex items-center gap-2 font-semibold">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[var(--brand-primary)] shrink-0" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-purple-500 shrink-0" />
                       <span>Run B (Candidate 1)</span>
                     </CardTitle>
-                    <Badge variant="outline" className="font-mono text-[10px] uppercase font-medium">Candidate</Badge>
+                    <Badge variant="outline" className="font-mono text-[10px] uppercase font-medium text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800">Candidate</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-1 space-y-3">
                   <Select value={runBId} onValueChange={setRunBId}>
-                    <SelectTrigger className="focus:border-[var(--brand-primary)] dark:focus:border-[var(--brand-primary)] text-xs bg-white dark:bg-[var(--bg-surface-subtle)] w-full">
+                    <SelectTrigger className="focus:border-purple-500 text-xs bg-white dark:bg-[var(--bg-surface-subtle)] w-full">
                       <SelectValue placeholder="Select candidate run B..." />
                     </SelectTrigger>
                     <SelectContent className="max-w-[min(calc(100vw-2rem),520px)]">
@@ -1055,15 +1055,15 @@ export const DiffPage: React.FC = () => {
                           <Radar
                             name={diffData.run_a_name}
                             dataKey={diffData.run_a_name}
-                            stroke="var(--brand-secondary)"
-                            fill="var(--brand-secondary)"
+                            stroke="#3b82f6"
+                            fill="#3b82f6"
                             fillOpacity={0.35}
                           />
                           <Radar
                             name={diffData.run_b_name}
                             dataKey={diffData.run_b_name}
-                            stroke="var(--brand-primary)"
-                            fill="var(--brand-primary)"
+                            stroke="#8b5cf6"
+                            fill="#8b5cf6"
                             fillOpacity={0.35}
                           />
                           {diffData.run_c_name && (
@@ -1235,8 +1235,8 @@ export const DiffPage: React.FC = () => {
                         <YAxis tick={{ fontSize: 11 }} unit="ms" />
                         <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#1E293B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                        <Bar dataKey={diffData.run_a_name} fill="var(--brand-secondary)" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey={diffData.run_b_name} fill="var(--brand-primary)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_a_name} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_b_name} fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                         {diffData.run_c_name && (
                           <Bar dataKey={diffData.run_c_name} fill="#10b981" radius={[4, 4, 0, 0]} />
                         )}
@@ -1270,8 +1270,8 @@ export const DiffPage: React.FC = () => {
                         <YAxis tick={{ fontSize: 11 }} unit="ms" />
                         <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#1E293B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                        <Bar dataKey={diffData.run_a_name} fill="var(--brand-secondary)" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey={diffData.run_b_name} fill="var(--brand-primary)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_a_name} fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_b_name} fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                         {diffData.run_c_name && (
                           <Bar dataKey={diffData.run_c_name} fill="#10b981" radius={[4, 4, 0, 0]} />
                         )}

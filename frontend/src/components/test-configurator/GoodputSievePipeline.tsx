@@ -93,10 +93,10 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
         {/* Gate 1: TTFT Sieve */}
         <div className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2 relative shadow-xs">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-[var(--brand-primary)] flex items-center gap-1.5">
+            <span className="font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
               <Radio className="h-4 w-4" /> Gate 1: TTFT
             </span>
-            <span className="font-sans font-bold text-sm text-[var(--brand-primary)]">
+            <span className="font-sans font-bold text-sm text-indigo-600 dark:text-indigo-400">
               {ttftPassPct}%
             </span>
           </div>
@@ -105,7 +105,7 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
           </p>
           <div className="h-2 w-full rounded-full bg-[var(--bg-surface-subtle)] overflow-hidden">
             <motion.div
-              className="h-full bg-[var(--brand-primary)]"
+              className="h-full bg-indigo-600 dark:bg-indigo-500"
               style={{ width: `${ttftPassPct}%` }}
             />
           </div>
@@ -114,10 +114,10 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
         {/* Gate 2: TPOT Decode Sieve */}
         <div className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-[var(--brand-secondary)] flex items-center gap-1.5">
+            <span className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
               <Zap className="h-4 w-4" /> Gate 2: TPOT
             </span>
-            <span className="font-sans font-bold text-sm text-[var(--brand-secondary)]">
+            <span className="font-sans font-bold text-sm text-amber-600 dark:text-amber-400">
               {tpotPassPct}%
             </span>
           </div>
@@ -126,7 +126,7 @@ export const GoodputSievePipeline: React.FC<GoodputSievePipelineProps> = ({
           </p>
           <div className="h-2 w-full rounded-full bg-[var(--bg-surface-subtle)] overflow-hidden">
             <motion.div
-              className="h-full bg-[var(--brand-secondary)]"
+              className="h-full bg-amber-500 dark:bg-amber-600"
               style={{ width: `${tpotPassPct}%` }}
             />
           </div>

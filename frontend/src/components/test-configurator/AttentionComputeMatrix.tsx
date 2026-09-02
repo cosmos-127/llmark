@@ -88,8 +88,8 @@ export const AttentionComputeMatrix: React.FC<AttentionComputeMatrixProps> = ({
                         isCausalMasked
                           ? "bg-[var(--border-subtle)]/50 dark:bg-[var(--bg-surface-subtle)]/5 opacity-15 cursor-not-allowed"
                           : isDecodeCell
-                          ? "bg-[var(--brand-secondary)] text-white shadow-2xs hover:brightness-110"
-                          : "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-2xs hover:brightness-110"
+                          ? "bg-amber-500 text-white shadow-2xs hover:brightness-110"
+                          : "bg-indigo-600 text-white shadow-2xs hover:brightness-110"
                       } ${isHovered ? "scale-125 ring-2 ring-white z-10 shadow-md" : ""}`}
                     >
                       {!isCausalMasked && (
@@ -106,12 +106,12 @@ export const AttentionComputeMatrix: React.FC<AttentionComputeMatrixProps> = ({
 
           <div className="flex items-center justify-center gap-4 text-xs font-sans text-[var(--text-body)]">
             <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-xs bg-[var(--brand-primary)]" />
-              <span className="font-medium">Prefill Phase: O(N²)</span>
+              <span className="h-2.5 w-2.5 rounded-xs bg-indigo-600" />
+              <span className="font-semibold text-indigo-700 dark:text-indigo-400">Prefill Phase: O(N²)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-xs bg-[var(--brand-secondary)]" />
-              <span className="font-medium">Decode Phase: O(N)</span>
+              <span className="h-2.5 w-2.5 rounded-xs bg-amber-500" />
+              <span className="font-semibold text-amber-700 dark:text-amber-400">Decode Phase: O(N)</span>
             </span>
             <span className="flex items-center gap-1.5 opacity-50">
               <span className="h-2.5 w-2.5 rounded-xs bg-[var(--border-medium)] dark:bg-[var(--bg-surface-subtle)]/20" />
@@ -126,9 +126,9 @@ export const AttentionComputeMatrix: React.FC<AttentionComputeMatrixProps> = ({
               {hoveredCell.k > hoveredCell.q ? (
                 <span className="text-rose-500 font-semibold ml-1.5">(Causal Future Masked)</span>
               ) : hoveredCell.q < PREFILL_SPLIT ? (
-                <span className="text-[var(--brand-primary)] font-semibold ml-1.5">(Parallel GEMM)</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-semibold ml-1.5">(Parallel GEMM)</span>
               ) : (
-                <span className="text-[var(--brand-secondary)] font-semibold ml-1.5">(KV Cache GEMV)</span>
+                <span className="text-amber-600 dark:text-amber-400 font-semibold ml-1.5">(KV Cache GEMV)</span>
               )}
             </div>
           )}
@@ -139,23 +139,23 @@ export const AttentionComputeMatrix: React.FC<AttentionComputeMatrixProps> = ({
           {/* Prefill Phase Row */}
           <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[var(--brand-primary)] flex items-center gap-2 text-xs">
+              <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2 text-xs">
                 <Cpu className="h-4 w-4" />
                 <span>1. Prefill Phase (Prompt Ingestion)</span>
               </span>
-              <Badge variant="outline" className="font-sans font-bold text-[var(--brand-primary)] bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[11px]">
+              <Badge variant="outline" className="font-sans font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800 text-[11px]">
                 Compute-Bound (Tensor Cores)
               </Badge>
             </div>
             <p className="text-xs text-[var(--text-main)]/75 dark:text-white/75 leading-relaxed">
-              All <strong className="text-[var(--text-main)]">{promptTokens.toLocaleString()} prompt tokens</strong> are multiplied in a single parallel <strong className="text-[var(--text-main)]">GEMM</strong> (General Matrix Multiply). High arithmetic intensity (<MathFormula math="I \gg 100 \text{ FLOPs/Byte}" />) fully saturates GPU Tensor Cores. Dictates <strong className="text-[var(--brand-primary)]">Time to First Token (TTFT)</strong>.
+              All <strong className="text-[var(--text-main)]">{promptTokens.toLocaleString()} prompt tokens</strong> are multiplied in a single parallel <strong className="text-[var(--text-main)]">GEMM</strong> (General Matrix Multiply). High arithmetic intensity (<MathFormula math="I \gg 100 \text{ FLOPs/Byte}" />) fully saturates GPU Tensor Cores. Dictates <strong className="text-indigo-600 dark:text-indigo-400">Time to First Token (TTFT)</strong>.
             </p>
           </div>
 
           {/* Decode Phase Row */}
           <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[var(--brand-secondary)] flex items-center gap-2 text-xs">
+              <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2 text-xs">
                 <HardDrive className="h-4 w-4" />
                 <span>2. Decode Phase (Autoregressive Generation)</span>
               </span>
@@ -164,7 +164,7 @@ export const AttentionComputeMatrix: React.FC<AttentionComputeMatrixProps> = ({
               </Badge>
             </div>
             <p className="text-xs text-[var(--text-main)]/75 dark:text-white/75 leading-relaxed">
-              To generate each single output token (1 at a time), the GPU executes a <strong className="text-[var(--text-main)]">GEMV</strong> (Matrix-Vector Multiply). The entire multi-gigabyte model weights must be re-read from GPU HBM into SRAM for <em>each generated token</em>. Low arithmetic intensity (<MathFormula math="I \approx 1\text{ FLOP/Byte}" />) bottlenecks generation on memory bandwidth, dictating <strong className="text-[var(--brand-secondary)]">Time Per Output Token (TPOT / ITL)</strong>.
+              To generate each single output token (1 at a time), the GPU executes a <strong className="text-[var(--text-main)]">GEMV</strong> (Matrix-Vector Multiply). The entire multi-gigabyte model weights must be re-read from GPU HBM into SRAM for <em>each generated token</em>. Low arithmetic intensity (<MathFormula math="I \approx 1\text{ FLOP/Byte}" />) bottlenecks generation on memory bandwidth, dictating <strong className="text-amber-600 dark:text-amber-400">Time Per Output Token (TPOT / ITL)</strong>.
             </p>
           </div>
         </div>

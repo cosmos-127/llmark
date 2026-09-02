@@ -1548,14 +1548,10 @@ class ReportExporter:
         # Color Palette
         c_plum = colors.HexColor("#612D53")
         c_wine = colors.HexColor("#853953")
-        c_rose = colors.HexColor("#E05284")
         c_dark = colors.HexColor("#18181B")
         c_muted = colors.HexColor("#71717A")
         c_border = colors.HexColor("#E4E4E7")
         c_light = colors.HexColor("#FAFAFA")
-        c_green = colors.HexColor("#059669")
-        c_red = colors.HexColor("#DC2626")
-        c_callout_bg = colors.HexColor("#F8F9FA")
 
         styles = getSampleStyleSheet()
 
@@ -1627,9 +1623,10 @@ class ReportExporter:
         )
 
         # 2. Executive Decision Brief & Verdict Box
-        find_delta = lambda name: next((d for d in diff.deltas if name in d.metric_name), None)
+        def find_delta(name: str):
+            return next((d for d in diff.deltas if name in d.metric_name), None)
+
         ttft_d = find_delta("TTFT P95")
-        tps_d = find_delta("Decode TPS")
         cost_d = find_delta("Total Cost") or find_delta("Cost / 1K")
         gp_d = find_delta("Goodput")
 

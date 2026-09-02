@@ -255,9 +255,9 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
         name: `Model Weights (${modelProfile.displayName})`,
         sizeGb: modelWeightsGb,
         pct: (modelWeightsGb / targetMemoryGb) * 100,
-        color: "bg-[var(--brand-secondary)]",
-        textColor: "text-[var(--brand-secondary)]",
-        border: "border-[var(--brand-secondary-border)]",
+        color: "bg-indigo-600 dark:bg-indigo-500",
+        textColor: "text-indigo-600 dark:text-indigo-400",
+        border: "border-indigo-500/40",
         desc: `Fixed ${modelProfile.precision} parameter weights for ${modelProfile.displayName} resident in GPU HBM.`,
       },
       {
@@ -265,9 +265,9 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
         name: `KV Cache Buffer (${concurrency} streams)`,
         sizeGb: kvCacheGb,
         pct: (kvCacheGb / targetMemoryGb) * 100,
-        color: cacheBust ? "bg-[var(--brand-primary)]" : "bg-emerald-600 dark:bg-emerald-500",
-        textColor: cacheBust ? "text-[var(--brand-primary)]" : "text-emerald-700 dark:text-emerald-400",
-        border: cacheBust ? "border-[var(--brand-primary-border)]" : "border-emerald-500/40",
+        color: cacheBust ? "bg-amber-500 dark:bg-amber-600" : "bg-emerald-600 dark:bg-emerald-500",
+        textColor: cacheBust ? "text-amber-700 dark:text-amber-400" : "text-emerald-700 dark:text-emerald-400",
+        border: cacheBust ? "border-amber-500/40" : "border-emerald-500/40",
         desc: cacheBust
           ? `Cold KV cache buffer allocated across ${concurrency} independent streams (${modelProfile.layers} layers).`
           : `Prefix-shared KV cache buffer (+${sharedPromptSavingsGb}GB VRAM saved).`,
@@ -277,9 +277,9 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
         name: "Activations & CUDA Runtime Overhead",
         sizeGb: activationsGb,
         pct: (activationsGb / targetMemoryGb) * 100,
-        color: "bg-[var(--brand-primary)]",
-        textColor: "text-[var(--brand-primary)]",
-        border: "border-[var(--brand-primary-border)]",
+        color: "bg-purple-600 dark:bg-purple-500",
+        textColor: "text-purple-600 dark:text-purple-400",
+        border: "border-purple-500/40",
         desc: "Intermediate tensor activation buffers, scratchpad memory, and CUDA runtime context.",
       },
       {
@@ -359,7 +359,7 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
           <span className="font-semibold text-[var(--text-main)] flex items-center gap-2">
             <span>{activeGpu.name} Memory Partition</span>
             <span className="text-[11px] text-[var(--text-subtle)] font-normal">
-              (Target: <strong className="text-[var(--brand-secondary)] font-semibold">{modelProfile.displayName}</strong>)
+              (Target: <strong className="text-indigo-600 dark:text-indigo-400 font-semibold">{modelProfile.displayName}</strong>)
             </span>
           </span>
           <span className={`tabular-nums font-bold text-xs ${isOverVramLimit ? "text-rose-700 dark:text-rose-400" : "text-[var(--brand-primary)]"}`}>
@@ -404,15 +404,15 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
             <div className="flex items-center justify-between text-xs font-sans text-[var(--text-body)] pt-1">
               <div className="flex items-center gap-3.5 flex-wrap">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-[var(--brand-secondary)]" />
+                  <span className="h-2.5 w-2.5 rounded-xs bg-indigo-600 dark:bg-indigo-500" />
                   <span>{modelProfile.displayName} Weights ({modelWeightsGb}GB)</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className={`h-2.5 w-2.5 rounded-xs ${cacheBust ? "bg-[var(--brand-primary)]" : "bg-emerald-600 dark:bg-emerald-500"}`} />
+                  <span className={`h-2.5 w-2.5 rounded-xs ${cacheBust ? "bg-amber-500 dark:bg-amber-600" : "bg-emerald-600 dark:bg-emerald-500"}`} />
                   <span>KV Cache ({kvCacheGb}GB)</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-[var(--brand-primary)]" />
+                  <span className="h-2.5 w-2.5 rounded-xs bg-purple-600 dark:bg-purple-500" />
                   <span>Runtime Overhead (6GB)</span>
                 </span>
               </div>

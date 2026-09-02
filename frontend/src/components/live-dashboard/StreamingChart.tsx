@@ -212,13 +212,18 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
 
   const latest = data[data.length - 1] || null;
 
-  // Theme palette colors
-  const primaryColor = isDark ? "var(--brand-primary)" : "var(--brand-primary)";
-  const plumColor = isDark ? "var(--brand-secondary)" : "var(--brand-secondary)";
-  const emeraldColor = isDark ? "#34D399" : "#059669";
-  const cyanColor = isDark ? "var(--brand-secondary)" : "var(--brand-secondary)";
-  const roseColor = isDark ? "#F87171" : "#E11D48";
-  const amberColor = isDark ? "#FBBF24" : "#D97706";
+  // Dedicated, vibrant, high-contrast palette for clear multi-plot & multi-legend segregation
+  const throughputColor = isDark ? "#34D399" : "#059669"; // Emerald (tok/s)
+  const prefillSpeedColor = isDark ? "#22D3EE" : "#0891B2"; // Vibrant Cyan
+  const ttftInstantColor = isDark ? "#818CF8" : "#4F46E5"; // Indigo / Electric Blue
+  const ttftP95Color = isDark ? "#FBBF24" : "#D97706"; // Amber / Warm Orange
+  const itlP95Color = isDark ? "#C084FC" : "#9333EA"; // Violet / Purple
+  const goodputColor = isDark ? "#10B981" : "#047857"; // Deep Forest Emerald
+  const instantSloColor = isDark ? "#38BDF8" : "#0284C7"; // Sky Blue
+  const costColor = isDark ? "#F59E0B" : "#D97706"; // Amber Gold ($)
+  const rateLimitColor = isDark ? "#F87171" : "#E11D48"; // Rose / Red (429 Rate)
+  const rpmColor = isDark ? "#A78BFA" : "#6D28D9"; // Purple / Violet (RPM)
+  const thinkingColor = isDark ? "#818CF8" : "#4338CA"; // Indigo (Thinking)
   const gridStroke = isDark ? "rgba(255, 255, 255, 0.05)" : "#e1e4e4";
   const axisColor = isDark ? "#94A3B8" : "#6E6E6E";
 
@@ -583,36 +588,44 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             <AreaChart data={formattedData} margin={{ top: 10, right: 15, left: -5, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorThroughput" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={emeraldColor} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={emeraldColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={throughputColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={throughputColor} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="colorPrefill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={cyanColor} stopOpacity={0.45} />
-                  <stop offset="95%" stopColor={cyanColor} stopOpacity={0.03} />
+                  <stop offset="5%" stopColor={prefillSpeedColor} stopOpacity={0.45} />
+                  <stop offset="95%" stopColor={prefillSpeedColor} stopOpacity={0.03} />
                 </linearGradient>
                 <linearGradient id="colorTtft" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={primaryColor} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={primaryColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={ttftInstantColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={ttftInstantColor} stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="colorTtftP95" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={ttftP95Color} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={ttftP95Color} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="colorItl" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={plumColor} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={plumColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={itlP95Color} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={itlP95Color} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="colorGoodput" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={emeraldColor} stopOpacity={0.35} />
-                  <stop offset="95%" stopColor={emeraldColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={goodputColor} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={goodputColor} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={primaryColor} stopOpacity={0.35} />
-                  <stop offset="95%" stopColor={primaryColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={costColor} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={costColor} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="colorRateLimit" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={roseColor} stopOpacity={0.45} />
-                  <stop offset="95%" stopColor={roseColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={rateLimitColor} stopOpacity={0.45} />
+                  <stop offset="95%" stopColor={rateLimitColor} stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="colorRpm" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={rpmColor} stopOpacity={0.45} />
+                  <stop offset="95%" stopColor={rpmColor} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="colorThinking" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={plumColor} stopOpacity={0.45} />
-                  <stop offset="95%" stopColor={plumColor} stopOpacity={0.02} />
+                  <stop offset="5%" stopColor={thinkingColor} stopOpacity={0.45} />
+                  <stop offset="95%" stopColor={thinkingColor} stopOpacity={0.02} />
                 </linearGradient>
               </defs>
 
@@ -756,11 +769,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Saturated RPM"
-                  stroke={plumColor}
+                  stroke={rpmColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
-                  fill="url(#colorThinking)"
-                  activeDot={getActiveDot(plumColor)}
+                  fill="url(#colorRpm)"
+                  activeDot={getActiveDot(rpmColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -770,11 +783,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="right"
                   type="monotone"
                   dataKey="HTTP 429 Rate (%)"
-                  stroke={roseColor}
+                  stroke={rateLimitColor}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorRateLimit)"
-                  activeDot={getActiveDot(roseColor)}
+                  activeDot={getActiveDot(rateLimitColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -786,11 +799,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Prefill Speed (tok/s)"
-                  stroke={cyanColor}
+                  stroke={prefillSpeedColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorPrefill)"
-                  activeDot={getActiveDot(cyanColor)}
+                  activeDot={getActiveDot(prefillSpeedColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -800,11 +813,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="right"
                   type="monotone"
                   dataKey="Instant TTFT (ms)"
-                  stroke={primaryColor}
+                  stroke={ttftInstantColor}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorTtft)"
-                  activeDot={getActiveDot(primaryColor)}
+                  activeDot={getActiveDot(ttftInstantColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -814,11 +827,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="right"
                   type="monotone"
                   dataKey="TTFT P95 (ms)"
-                  stroke={plumColor}
+                  stroke={ttftP95Color}
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   dot={false}
-                  activeDot={getActiveDot(plumColor)}
+                  activeDot={getActiveDot(ttftP95Color)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -830,11 +843,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Throughput (tok/s)"
-                  stroke={emeraldColor}
+                  stroke={throughputColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorThroughput)"
-                  activeDot={getActiveDot(emeraldColor)}
+                  activeDot={getActiveDot(throughputColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -844,11 +857,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="right"
                   type="monotone"
                   dataKey="Instant TTFT (ms)"
-                  stroke={primaryColor}
+                  stroke={ttftInstantColor}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorTtft)"
-                  activeDot={getActiveDot(primaryColor)}
+                  activeDot={getActiveDot(ttftInstantColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -858,11 +871,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="right"
                   type="monotone"
                   dataKey="TTFT P95 (ms)"
-                  stroke={plumColor}
+                  stroke={ttftP95Color}
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   dot={false}
-                  activeDot={getActiveDot(plumColor)}
+                  activeDot={getActiveDot(ttftP95Color)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -873,9 +886,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 <ReferenceLine
                   yAxisId="left"
                   y={1500}
-                  stroke={roseColor}
+                  stroke={rateLimitColor}
                   strokeDasharray="3 3"
-                  label={{ value: "1500ms TTFT SLA Cap", fill: roseColor, fontSize: 11, position: "insideTopLeft" }}
+                  label={{ value: "1500ms TTFT SLA Cap", fill: rateLimitColor, fontSize: 11, position: "insideTopLeft" }}
                 />
               )}
               {activeMetric === "latency" && (
@@ -883,11 +896,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Instant TTFT (ms)"
-                  stroke={primaryColor}
+                  stroke={ttftInstantColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorTtft)"
-                  activeDot={getActiveDot(primaryColor)}
+                  activeDot={getActiveDot(ttftInstantColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -897,11 +910,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="TTFT P95 (ms)"
-                  stroke={amberColor}
+                  stroke={ttftP95Color}
                   strokeWidth={2.5}
                   strokeDasharray="4 4"
                   dot={false}
-                  activeDot={getActiveDot(amberColor)}
+                  activeDot={getActiveDot(ttftP95Color)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -911,11 +924,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="right"
                   type="monotone"
                   dataKey="ITL P95 (ms)"
-                  stroke={plumColor}
+                  stroke={itlP95Color}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorItl)"
-                  activeDot={getActiveDot(plumColor)}
+                  activeDot={getActiveDot(itlP95Color)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -927,11 +940,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Throughput (tok/s)"
-                  stroke={emeraldColor}
+                  stroke={throughputColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorThroughput)"
-                  activeDot={getActiveDot(emeraldColor)}
+                  activeDot={getActiveDot(throughputColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -941,11 +954,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Prefill Speed (tok/s)"
-                  stroke={cyanColor}
+                  stroke={prefillSpeedColor}
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorPrefill)"
-                  activeDot={getActiveDot(cyanColor)}
+                  activeDot={getActiveDot(prefillSpeedColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -956,9 +969,9 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 <ReferenceLine
                   yAxisId="left"
                   y={95}
-                  stroke={emeraldColor}
+                  stroke={goodputColor}
                   strokeDasharray="3 3"
-                  label={{ value: "95% Target SLA", fill: emeraldColor, fontSize: 11, position: "insideTopLeft" }}
+                  label={{ value: "95% Target SLA", fill: goodputColor, fontSize: 11, position: "insideTopLeft" }}
                 />
               )}
               {activeMetric === "goodput" && (
@@ -966,11 +979,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Goodput SLO Yield (%)"
-                  stroke={emeraldColor}
+                  stroke={goodputColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorGoodput)"
-                  activeDot={getActiveDot(emeraldColor)}
+                  activeDot={getActiveDot(goodputColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -980,11 +993,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Instant SLO Pass (%)"
-                  stroke={cyanColor}
+                  stroke={instantSloColor}
                   strokeWidth={2}
                   strokeDasharray="3 3"
                   dot={false}
-                  activeDot={getActiveDot(cyanColor)}
+                  activeDot={getActiveDot(instantSloColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -996,11 +1009,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Total Cost ($)"
-                  stroke={primaryColor}
+                  stroke={costColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorCost)"
-                  activeDot={getActiveDot(primaryColor)}
+                  activeDot={getActiveDot(costColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -1012,11 +1025,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="HTTP 429 Rate (%)"
-                  stroke={roseColor}
+                  stroke={rateLimitColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorRateLimit)"
-                  activeDot={getActiveDot(roseColor)}
+                  activeDot={getActiveDot(rateLimitColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
@@ -1028,11 +1041,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   yAxisId="left"
                   type="monotone"
                   dataKey="Thinking Tokens (tok)"
-                  stroke={plumColor}
+                  stroke={thinkingColor}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorThinking)"
-                  activeDot={getActiveDot(plumColor)}
+                  activeDot={getActiveDot(thinkingColor)}
                   connectNulls
                   isAnimationActive={false}
                 />
