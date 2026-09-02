@@ -47,8 +47,8 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
       return {
         label: "Prefill Heavy (TTFT Bound)",
         desc: "Dominated by KV-cache ingestion. Isolates GPU prefill compute & prompt processing.",
-        color: "text-[#853953] dark:text-[#F06A9A]",
-        badgeBg: "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/30",
+        color: "text-[#2563EB] dark:text-[#60A5FA]",
+        badgeBg: "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/30",
         bottleneck: "Time to First Token (TTFT)",
       };
     }
@@ -56,22 +56,22 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
       return {
         label: "Decode Heavy (TPOT Bound)",
         desc: "Dominated by sequential token generation. Isolates GPU VRAM memory bandwidth & streaming speed.",
-        color: "text-[#612D53] dark:text-[#E270BB]",
-        badgeBg: "bg-[#612D53]/10 dark:bg-[#C57BB2]/15 border-[#612D53]/30",
+        color: "text-[#1D4ED8] dark:text-[#38BDF8]",
+        badgeBg: "bg-[#1D4ED8]/10 dark:bg-[#60A5FA]/15 border-[#1D4ED8]/30",
         bottleneck: "Inter-Token Latency (ITL / TPOT)",
       };
     }
     return {
       label: "Balanced Conversational",
       desc: "Equalized prompt ingestion and generation tokens, modeling standard chat turns.",
-      color: "text-[#853953] dark:text-[#F06A9A]",
-      badgeBg: "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/25 dark:border-[#E05284]/35",
+      color: "text-[#2563EB] dark:text-[#60A5FA]",
+      badgeBg: "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/25 dark:border-[#3B82F6]/35",
       bottleneck: "Balanced TTFT & TPOT",
     };
   }, [prefillPct, decodePct]);
 
   return (
-    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 bg-white dark:bg-[#0F0F13] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#111827] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -80,7 +80,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#2C2C2C] dark:text-white">
+              <span className="text-sm font-bold text-[#0F172A] dark:text-white">
                 Token Dynamics & Compute Balance Spectrum
               </span>
               <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
@@ -90,29 +90,29 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
                 {computeProfile.label}
               </Badge>
             </div>
-            <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65 mt-0.5">
+            <p className="text-xs text-[#0F172A]/65 dark:text-white/65 mt-0.5">
               {computeProfile.desc}
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className="text-sm font-bold font-sans tabular-nums text-[#853953] dark:text-[#F06A9A]">
+          <span className="text-sm font-bold font-sans tabular-nums text-[#2563EB] dark:text-[#60A5FA]">
             ~{totalTokens.toLocaleString()} Total Tokens
           </span>
-          <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-sans tabular-nums">
+          <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-sans tabular-nums">
             {prefillPct}% prefill • {decodePct}% decode
           </span>
         </div>
       </div>
 
       {/* Visual Compute Spectrum Segmented Bar */}
-      <div className="space-y-2.5 p-4 sm:p-5 rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#14141B] border border-[#2C2C2C]/10">
+      <div className="space-y-2.5 p-4 sm:p-5 rounded-2xl bg-[#F1F5F9]/70 dark:bg-[#1E293B] border border-[#0F172A]/10">
         <div className="flex justify-between text-xs font-medium">
           <span
             onMouseEnter={() => setHoveredPhase("prefill")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className="flex items-center gap-2 text-[#853953] dark:text-[#F06A9A] cursor-pointer hover:underline"
+            className="flex items-center gap-2 text-[#2563EB] dark:text-[#60A5FA] cursor-pointer hover:underline"
           >
             <Cpu className="h-4 w-4" />
             <span className="font-semibold">1. Prefill Ingestion:</span>
@@ -122,7 +122,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
           <span
             onMouseEnter={() => setHoveredPhase("decode")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className="flex items-center gap-2 text-[#612D53] dark:text-[#E270BB] cursor-pointer hover:underline"
+            className="flex items-center gap-2 text-[#1D4ED8] dark:text-[#38BDF8] cursor-pointer hover:underline"
           >
             <HardDrive className="h-4 w-4" />
             <span className="font-semibold">2. Decode Generation:</span>
@@ -131,7 +131,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
         </div>
 
         {/* Dual-tone animated balance bar */}
-        <div className="h-6 w-full rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 p-0.5 flex items-center overflow-hidden gap-1 select-none shadow-inner">
+        <div className="h-6 w-full rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 p-0.5 flex items-center overflow-hidden gap-1 select-none shadow-inner">
           {/* Prefill Segment */}
           <motion.div
             initial={{ width: 0 }}
@@ -139,7 +139,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
             transition={{ duration: 0.3, ease: "easeOut" }}
             onMouseEnter={() => setHoveredPhase("prefill")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className={`h-full rounded-lg bg-gradient-to-r from-[#853953] to-[#A74B6A] cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
+            className={`h-full rounded-lg bg-gradient-to-r from-[#2563EB] to-[#3B82F6] cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
               hoveredPhase === "decode" ? "opacity-40" : "opacity-100"
             }`}
           >
@@ -153,7 +153,7 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
             transition={{ duration: 0.3, ease: "easeOut" }}
             onMouseEnter={() => setHoveredPhase("decode")}
             onMouseLeave={() => setHoveredPhase(null)}
-            className={`h-full rounded-lg bg-gradient-to-r from-[#612D53] to-[#C57BB2] cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
+            className={`h-full rounded-lg bg-gradient-to-r from-[#1D4ED8] to-[#60A5FA] cursor-pointer transition-all relative flex items-center justify-center text-xs text-white font-sans font-bold overflow-hidden shadow-2xs hover:brightness-110 ${
               hoveredPhase === "prefill" ? "opacity-40" : "opacity-100"
             }`}
           >
@@ -162,20 +162,20 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
         </div>
 
         {/* Context Window Utilization Gauge */}
-        <div className="pt-2 border-t border-[#2C2C2C]/5 dark:border-white/[0.06] space-y-1.5">
+        <div className="pt-2 border-t border-[#0F172A]/5 dark:border-white/[0.06] space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-[#2C2C2C]/70 dark:text-slate-300 font-medium flex items-center gap-1.5">
-              <Gauge className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+            <span className="text-[#0F172A]/70 dark:text-slate-300 font-medium flex items-center gap-1.5">
+              <Gauge className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
               Context Window Occupancy (~{totalTokens.toLocaleString()} / {(modelContextLimit / 1000).toFixed(0)}k max tokens):
             </span>
-            <span className="font-sans tabular-nums font-semibold text-[#853953] dark:text-[#F06A9A]">
+            <span className="font-sans tabular-nums font-semibold text-[#2563EB] dark:text-[#60A5FA]">
               {contextPct < 0.1 ? "<0.1%" : `${contextPct}%`} capacity
             </span>
           </div>
 
-          <div className="h-2 w-full rounded-full bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-white dark:bg-[#111827] border border-[#0F172A]/10 overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#853953] to-[#A74B6A]"
+              className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6]"
               style={{ width: `${Math.min(100, Math.max(1, (totalTokens / modelContextLimit) * 100))}%` }}
             />
           </div>
@@ -184,46 +184,46 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
 
       {/* Telemetry Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Cpu className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
+          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Cpu className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
             Primary Performance Metric
           </span>
-          <div className="font-bold text-[#853953] dark:text-[#F06A9A] text-xs truncate">
+          <div className="font-bold text-[#2563EB] dark:text-[#60A5FA] text-xs truncate">
             {computeProfile.bottleneck}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-[#612D53] dark:text-[#E270BB]" />
+        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
+          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-[#1D4ED8] dark:text-[#38BDF8]" />
             KV Cache Prefill Mode
           </span>
-          <div className="font-semibold text-[#2C2C2C] dark:text-white text-xs truncate">
+          <div className="font-semibold text-[#0F172A] dark:text-white text-xs truncate">
             {cacheBust ? "Cold Ingestion (Forced Bust)" : "Warm Prefix Eligible"}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
+          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             Prompt-to-Decode Ratio
           </span>
-          <div className="font-sans tabular-nums font-bold text-[#2C2C2C] dark:text-white text-xs truncate">
+          <div className="font-sans tabular-nums font-bold text-[#0F172A] dark:text-white text-xs truncate">
             {promptTokens}:{maxTokens} ({((promptTokens / Math.max(1, maxTokens))).toFixed(2)}x)
           </div>
         </div>
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#14141B] border border-[#2C2C2C]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#1E293B] border border-[#0F172A]/10 space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-white cursor-pointer hover:text-[#853953] dark:hover:text-[#F06A9A]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#0F172A] dark:text-white cursor-pointer hover:text-[#2563EB] dark:hover:text-[#60A5FA]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+            <BookOpen className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
             <span>LLM Serving Mechanics: Disaggregated Prefill & Decode</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -235,25 +235,25 @@ export const PrefillDecodeBalanceGauge: React.FC<PrefillDecodeBalanceGaugeProps>
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-white/10"
+              className="space-y-3 pt-2 text-xs border-t border-[#0F172A]/10 dark:border-white/10"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#853953] dark:text-[#F06A9A]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
+                  <span className="font-semibold text-[#2563EB] dark:text-[#60A5FA]">
                     Prefill Ratio & Computational Complexity:
                   </span>
                   <MathFormula math="\text{Prefill Ratio} = \frac{N_{\text{prompt}}}{N_{\text{prompt}} + N_{\text{gen}}}, \quad \text{Compute}_{\text{prefill}} \approx 2 \cdot P \cdot N_{\text{prompt}}" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
                     Where <MathFormula math="P" /> is model parameter count. High prefill ratios benefit heavily from prompt-caching engines (RadixAttention / Chunked Prefills).
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#612D53] dark:text-[#E270BB]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
+                  <span className="font-semibold text-[#1D4ED8] dark:text-[#38BDF8]">
                     Continuous Batching Interference:
                   </span>
                   <MathFormula math="T_{\text{turnaround}} = T_{\text{TTFT}} + \sum_{i=1}^{N_{\text{gen}}} \text{ITL}_i" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
                     In multi-tenant LLM clusters, new incoming prefill requests preempt decode streams, causing ITL jitter spikes unless chunked-prefill isolation is deployed.
                   </p>
                 </div>

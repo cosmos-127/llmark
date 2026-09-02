@@ -52,7 +52,6 @@ frontend/src/
 │   │   ├── WaterfallBar.tsx         # Real-time DNS -> TCP -> TLS -> Prefill -> Decode progress bar
 │   │   ├── StreamingChart.tsx       # 40-point rolling time-series chart
 │   │   ├── TokenTerminal.tsx        # Live streaming token feed viewer
-│   │   └── ProductionCostCalculator.tsx # Enterprise monthly cost extrapolation at scale
 │   │
 │   ├── tremor/                      # Metric badges, category bars & donut charts
 │   └── ui/                          # Radix UI primitives (Button, Dialog, Select, Tabs, Badge, Card, etc.)

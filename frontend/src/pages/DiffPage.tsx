@@ -512,7 +512,7 @@ export const DiffPage: React.FC = () => {
       {
         name: diffData.run_a_name,
         role: "Baseline (A)",
-        color: "#612D53",
+        color: "#1D4ED8",
         tps: tps?.run_a_value || 0,
         cost: cost1k?.run_a_value || 0,
         goodput: goodput?.run_a_value || 100,
@@ -520,7 +520,7 @@ export const DiffPage: React.FC = () => {
       {
         name: diffData.run_b_name,
         role: "Candidate 1 (B)",
-        color: "#E05284",
+        color: "#3B82F6",
         tps: tps?.run_b_value || 0,
         cost: cost1k?.run_b_value || 0,
         goodput: goodput?.run_b_value || 100,
@@ -545,15 +545,15 @@ export const DiffPage: React.FC = () => {
     <TooltipProvider>
       <div className="space-y-6 font-sans pb-12">
         {/* Top Header & Context Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2C2C2C]/10 dark:border-white/10 pb-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#0F172A]/10 dark:border-white/10 pb-5">
           <div>
-            <h2 className="text-xl font-bold text-[#2C2C2C] dark:text-white tracking-tight flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35 shadow-xs">
+            <h2 className="text-xl font-bold text-[#0F172A] dark:text-white tracking-tight flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35 shadow-xs">
                 <GitCompare className="h-5 w-5" />
               </div>
               <span>Model Comparison</span>
             </h2>
-            <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 mt-1">
+            <p className="text-xs text-[#0F172A]/60 dark:text-slate-400 mt-1">
               Side-by-side A/B/C differential analysis, tail latency distributions, and cost trade-offs.
             </p>
           </div>
@@ -565,9 +565,9 @@ export const DiffPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleCopyDecisionBrief}
-                  className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs gap-1.5 h-8.5 bg-white dark:bg-[#14141B]"
+                  className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs gap-1.5 h-8.5 bg-white dark:bg-[#1E293B]"
                 >
-                  {copiedDecision ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />}
+                  {copiedDecision ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />}
                   <span>{copiedDecision ? "Copied to Clipboard!" : "Copy Decision Brief"}</span>
                 </Button>
 
@@ -575,7 +575,7 @@ export const DiffPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleExportCSV}
-                  className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs gap-1.5 h-8.5 bg-white dark:bg-[#14141B]"
+                  className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs gap-1.5 h-8.5 bg-white dark:bg-[#1E293B]"
                   title="Export raw deltas as CSV spreadsheet"
                 >
                   <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -585,7 +585,7 @@ export const DiffPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs gap-1.5 h-8.5 bg-white dark:bg-[#14141B]"
+                  className="rounded-xl font-medium shadow-2xs hover:shadow-xs cursor-pointer text-xs gap-1.5 h-8.5 bg-white dark:bg-[#1E293B]"
                   onClick={() => {
                     let endpoint = `/api/export/diff/pdf?run_a=${encodeURIComponent(runAId)}&run_b=${encodeURIComponent(runBId)}`;
                     if (runCId && runCId.trim().length > 0 && runCId !== runAId && runCId !== runBId) {
@@ -594,7 +594,7 @@ export const DiffPage: React.FC = () => {
                     downloadFile(getApiUrl(endpoint), `llmark_diff_${runAId}_vs_${runBId}.pdf`);
                   }}
                 >
-                  <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+                  <Download className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
                   <span>PDF Comparison</span>
                 </Button>
               </>
@@ -607,11 +607,11 @@ export const DiffPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Run A (Baseline) */}
             <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }} className="w-full">
-              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-[#612D53] dark:border-l-[#C14594] transition-all bg-white/80 dark:bg-[#0E0E14]/80 backdrop-blur-xs">
+              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-[#1D4ED8] dark:border-l-[#0284C7] transition-all bg-white/80 dark:bg-[#0B0F17]/80 backdrop-blur-xs">
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-xs flex items-center gap-2 font-semibold">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#612D53] dark:bg-[#C14594] shrink-0" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#1D4ED8] dark:bg-[#0284C7] shrink-0" />
                       <span>Run A (Baseline Anchor)</span>
                     </CardTitle>
                     <Badge variant="outline" className="font-mono text-[10px] uppercase font-medium">Baseline</Badge>
@@ -619,14 +619,14 @@ export const DiffPage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="p-4 pt-1 space-y-3">
                   <Select value={runAId} onValueChange={setRunAId}>
-                    <SelectTrigger className="focus:border-[#612D53] dark:focus:border-[#C14594] text-xs bg-white dark:bg-[#0B0B0E] w-full">
+                    <SelectTrigger className="focus:border-[#1D4ED8] dark:focus:border-[#0284C7] text-xs bg-white dark:bg-[#0F172A] w-full">
                       <SelectValue placeholder="Select baseline run A..." />
                     </SelectTrigger>
                     <SelectContent className="max-w-[min(calc(100vw-2rem),520px)]">
                       {runs?.map((r) => (
                         <SelectItem key={r.id} value={r.id} className="text-xs cursor-pointer">
                           <div className="flex items-center gap-2 w-full">
-                            <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A] shrink-0" />
+                            <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA] shrink-0" />
                             <span className="font-mono text-[9.5px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 uppercase font-medium">
                               {r.workload_preset || "chat"}
                             </span>
@@ -646,15 +646,15 @@ export const DiffPage: React.FC = () => {
                   {selectedRunA && (
                     <div className="p-2.5 rounded-xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800 text-[11px] space-y-1.5 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-[#2C2C2C] dark:text-white truncate flex items-center gap-1.5">
+                        <span className="font-medium text-[#0F172A] dark:text-white truncate flex items-center gap-1.5">
                           <ProviderLogo vendor={selectedRunA.vendor} className="h-3.5 w-3.5 inline" />
                           {selectedRunA.model}
                         </span>
-                        <span className="text-[#612D53] dark:text-[#E270BB] font-semibold tabular-nums">
+                        <span className="text-[#1D4ED8] dark:text-[#38BDF8] font-semibold tabular-nums">
                           {formatMs(selectedRunA.ttft_p95)} P95
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[#2C2C2C]/60 dark:text-slate-400 text-[10.5px]">
+                      <div className="flex items-center justify-between text-[#0F172A]/60 dark:text-slate-400 text-[10.5px]">
                         <span>TPS: {selectedRunA.tps_decode ? selectedRunA.tps_decode.toFixed(1) : "—"} tok/s</span>
                         <span>Goodput: {formatPct(selectedRunA.goodput_pct)}</span>
                         <span>Cost: {formatUsd(selectedRunA.total_cost_usd)}</span>
@@ -667,11 +667,11 @@ export const DiffPage: React.FC = () => {
 
             {/* Run B (Candidate 1) */}
             <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }} className="w-full">
-              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-[#853953] dark:border-l-[#E05284] transition-all bg-white/80 dark:bg-[#0E0E14]/80 backdrop-blur-xs">
+              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-[#2563EB] dark:border-l-[#3B82F6] transition-all bg-white/80 dark:bg-[#0B0F17]/80 backdrop-blur-xs">
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-xs flex items-center gap-2 font-semibold">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#853953] dark:bg-[#E05284] shrink-0" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] dark:bg-[#3B82F6] shrink-0" />
                       <span>Run B (Candidate 1)</span>
                     </CardTitle>
                     <Badge variant="outline" className="font-mono text-[10px] uppercase font-medium">Candidate</Badge>
@@ -679,14 +679,14 @@ export const DiffPage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="p-4 pt-1 space-y-3">
                   <Select value={runBId} onValueChange={setRunBId}>
-                    <SelectTrigger className="focus:border-[#853953] dark:focus:border-[#E05284] text-xs bg-white dark:bg-[#0B0B0E] w-full">
+                    <SelectTrigger className="focus:border-[#2563EB] dark:focus:border-[#3B82F6] text-xs bg-white dark:bg-[#0F172A] w-full">
                       <SelectValue placeholder="Select candidate run B..." />
                     </SelectTrigger>
                     <SelectContent className="max-w-[min(calc(100vw-2rem),520px)]">
                       {candidateRuns?.map((r) => (
                         <SelectItem key={r.id} value={r.id} className="text-xs cursor-pointer">
                           <div className="flex items-center gap-2 w-full">
-                            <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A] shrink-0" />
+                            <ProviderLogo vendor={r.vendor} className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA] shrink-0" />
                             <span className="font-mono text-[9.5px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 uppercase font-medium">
                               {r.workload_preset || "chat"}
                             </span>
@@ -706,15 +706,15 @@ export const DiffPage: React.FC = () => {
                   {selectedRunB && (
                     <div className="p-2.5 rounded-xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800 text-[11px] space-y-1.5 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-[#2C2C2C] dark:text-white truncate flex items-center gap-1.5">
+                        <span className="font-medium text-[#0F172A] dark:text-white truncate flex items-center gap-1.5">
                           <ProviderLogo vendor={selectedRunB.vendor} className="h-3.5 w-3.5 inline" />
                           {selectedRunB.model}
                         </span>
-                        <span className="text-[#853953] dark:text-[#F06A9A] font-semibold tabular-nums">
+                        <span className="text-[#2563EB] dark:text-[#60A5FA] font-semibold tabular-nums">
                           {formatMs(selectedRunB.ttft_p95)} P95
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[#2C2C2C]/60 dark:text-slate-400 text-[10.5px]">
+                      <div className="flex items-center justify-between text-[#0F172A]/60 dark:text-slate-400 text-[10.5px]">
                         <span>TPS: {selectedRunB.tps_decode ? selectedRunB.tps_decode.toFixed(1) : "—"} tok/s</span>
                         <span>Goodput: {formatPct(selectedRunB.goodput_pct)}</span>
                         <span>Cost: {formatUsd(selectedRunB.total_cost_usd)}</span>
@@ -727,7 +727,7 @@ export const DiffPage: React.FC = () => {
 
             {/* Run C (Candidate 2 - Optional) */}
             <motion.div whileHover={{ y: -1 }} transition={{ duration: 0.15 }} className="w-full">
-              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-emerald-500 transition-all bg-white/80 dark:bg-[#0E0E14]/80 backdrop-blur-xs">
+              <Card className="shadow-xs hover:shadow-sm border-l-4 border-l-emerald-500 transition-all bg-white/80 dark:bg-[#0B0F17]/80 backdrop-blur-xs">
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-xs flex items-center gap-2 font-semibold">
@@ -739,7 +739,7 @@ export const DiffPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setRunCId("")}
-                          className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 hover:text-rose-500 flex items-center gap-0.5 cursor-pointer mr-1"
+                          className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 hover:text-rose-500 flex items-center gap-0.5 cursor-pointer mr-1"
                           title="Remove 3rd run"
                         >
                           <X className="h-3 w-3" /> Clear
@@ -751,7 +751,7 @@ export const DiffPage: React.FC = () => {
                 </CardHeader>
                 <CardContent className="p-4 pt-1 space-y-3">
                   <Select value={runCId} onValueChange={setRunCId}>
-                    <SelectTrigger className="focus:border-emerald-500 text-xs bg-white dark:bg-[#0B0B0E] w-full">
+                    <SelectTrigger className="focus:border-emerald-500 text-xs bg-white dark:bg-[#0F172A] w-full">
                       <SelectValue placeholder="Select optional 3rd run C..." />
                     </SelectTrigger>
                     <SelectContent className="max-w-[min(calc(100vw-2rem),520px)]">
@@ -778,7 +778,7 @@ export const DiffPage: React.FC = () => {
                   {selectedRunC ? (
                     <div className="p-2.5 rounded-xl bg-neutral-100/70 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800 text-[11px] space-y-1.5 animate-fadeIn">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-[#2C2C2C] dark:text-white truncate flex items-center gap-1.5">
+                        <span className="font-medium text-[#0F172A] dark:text-white truncate flex items-center gap-1.5">
                           <ProviderLogo vendor={selectedRunC.vendor} className="h-3.5 w-3.5 inline" />
                           {selectedRunC.model}
                         </span>
@@ -786,14 +786,14 @@ export const DiffPage: React.FC = () => {
                           {formatMs(selectedRunC.ttft_p95)} P95
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-[#2C2C2C]/60 dark:text-slate-400 text-[10.5px]">
+                      <div className="flex items-center justify-between text-[#0F172A]/60 dark:text-slate-400 text-[10.5px]">
                         <span>TPS: {selectedRunC.tps_decode ? selectedRunC.tps_decode.toFixed(1) : "—"} tok/s</span>
                         <span>Goodput: {formatPct(selectedRunC.goodput_pct)}</span>
                         <span>Cost: {formatUsd(selectedRunC.total_cost_usd)}</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-2.5 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 text-[11px] text-[#2C2C2C]/40 dark:text-slate-500 text-center py-3">
+                    <div className="p-2.5 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 text-[11px] text-[#0F172A]/40 dark:text-slate-500 text-center py-3">
                       Add a 3rd run to compare 3 models simultaneously.
                     </div>
                   )}
@@ -809,7 +809,7 @@ export const DiffPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleSwapAAndB}
-                className="h-7 px-3 text-[11px] font-medium rounded-full bg-white dark:bg-[#1A1A24] border-neutral-200 dark:border-neutral-700 shadow-xs hover:shadow-sm text-[#853953] dark:text-[#F06A9A] gap-1.5 cursor-pointer"
+                className="h-7 px-3 text-[11px] font-medium rounded-full bg-white dark:bg-[#1E293B] border-neutral-200 dark:border-neutral-700 shadow-xs hover:shadow-sm text-[#2563EB] dark:text-[#60A5FA] gap-1.5 cursor-pointer"
                 title="Swap Baseline A and Candidate B"
               >
                 <ArrowLeftRight className="h-3 w-3" />
@@ -823,14 +823,14 @@ export const DiffPage: React.FC = () => {
         {selectedRunA && (
           <div className="p-3 rounded-2xl bg-neutral-100/80 dark:bg-neutral-900/60 border border-neutral-200/90 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2.5">
-              <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider bg-white dark:bg-[#14141B] border-[#853953]/30 text-[#853953] dark:text-[#F06A9A] font-semibold">
+              <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider bg-white dark:bg-[#1E293B] border-[#2563EB]/30 text-[#2563EB] dark:text-[#60A5FA] font-semibold">
                 Workload: {(selectedRunA.workload_preset || "chat").replace("_", " ")}
               </Badge>
-              <span className="text-[#2C2C2C]/75 dark:text-neutral-300 text-[11.5px]">
+              <span className="text-[#0F172A]/75 dark:text-neutral-300 text-[11.5px]">
                 Dropdowns locked to identical workload preset to ensure statistically sound A/B/C deltas.
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[11px] text-[#2C2C2C]/50 dark:text-neutral-400">
+            <div className="flex items-center gap-2 text-[11px] text-[#0F172A]/50 dark:text-neutral-400">
               <span>{candidateRuns.length} matching run{candidateRuns.length === 1 ? "" : "s"} found</span>
             </div>
           </div>
@@ -838,16 +838,16 @@ export const DiffPage: React.FC = () => {
 
         {/* State: Prompt to Select Models or Loading */}
         {!runAId || !runBId ? (
-          <Card className="p-8 sm:p-12 border-dashed border-2 border-neutral-300 dark:border-neutral-800 bg-neutral-50/50 dark:bg-[#0B0B0E]/50 shadow-xs">
+          <Card className="p-8 sm:p-12 border-dashed border-2 border-neutral-300 dark:border-neutral-800 bg-neutral-50/50 dark:bg-[#0F172A]/50 shadow-xs">
             <div className="max-w-xl mx-auto flex flex-col items-center justify-center text-center space-y-4">
-              <div className="p-4 rounded-2xl bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35">
+              <div className="p-4 rounded-2xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35">
                 <GitCompare className="h-8 w-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-[#2C2C2C] dark:text-white">
+                <h3 className="text-base font-bold text-[#0F172A] dark:text-white">
                   Select Baseline & Candidate Runs
                 </h3>
-                <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
+                <p className="text-xs text-[#0F172A]/60 dark:text-slate-400">
                   Pick any two benchmark executions above to compute differential latency distributions, Goodput compliance shifts, and Pareto token economics.
                 </p>
               </div>
@@ -855,7 +855,7 @@ export const DiffPage: React.FC = () => {
               {/* Quick Preset 1-Click Comparison Recommendations */}
               {runs && runs.length >= 2 && (
                 <div className="w-full pt-4 border-t border-neutral-200 dark:border-neutral-800/80 space-y-2.5">
-                  <span className="text-[11px] font-semibold text-[#2C2C2C]/70 dark:text-slate-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-semibold text-[#0F172A]/70 dark:text-slate-400 uppercase tracking-wider block">
                     Quick-Compare Suggestions
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -867,17 +867,17 @@ export const DiffPage: React.FC = () => {
                           key={preset}
                           type="button"
                           onClick={() => handleQuickPair(r1.id, r2.id, r3?.id)}
-                          className="p-3 rounded-xl bg-white dark:bg-[#14141B] border border-neutral-200 dark:border-neutral-800 hover:border-[#853953]/40 dark:hover:border-[#E05284]/50 text-left transition-all hover:shadow-xs group cursor-pointer"
+                          className="p-3 rounded-xl bg-white dark:bg-[#1E293B] border border-neutral-200 dark:border-neutral-800 hover:border-[#2563EB]/40 dark:hover:border-[#3B82F6]/50 text-left transition-all hover:shadow-xs group cursor-pointer"
                         >
                           <div className="flex items-center justify-between mb-1">
                             <Badge variant="secondary" className="text-[9.5px] uppercase font-mono">
                               {preset}
                             </Badge>
-                            <span className="text-[10px] text-[#853953] dark:text-[#F06A9A] group-hover:underline flex items-center gap-1 font-medium">
+                            <span className="text-[10px] text-[#2563EB] dark:text-[#60A5FA] group-hover:underline flex items-center gap-1 font-medium">
                               Load Comparison <ArrowRight className="h-3 w-3" />
                             </span>
                           </div>
-                          <div className="text-xs font-semibold text-[#2C2C2C] dark:text-white truncate">
+                          <div className="text-xs font-semibold text-[#0F172A] dark:text-white truncate">
                             {r1.model} vs {r2.model} {r3 ? `vs ${r3.model}` : ""}
                           </div>
                         </button>
@@ -889,14 +889,14 @@ export const DiffPage: React.FC = () => {
             </div>
           </Card>
         ) : runAId === runBId ? (
-          <Card className="border-[#853953]/30 dark:border-[#E05284]/40 bg-[#853953]/10 dark:bg-[#E05284]/15 shadow-xs">
-            <CardContent className="p-4 text-xs text-[#853953] dark:text-[#F06A9A] font-medium text-center">
+          <Card className="border-[#2563EB]/30 dark:border-[#3B82F6]/40 bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 shadow-xs">
+            <CardContent className="p-4 text-xs text-[#2563EB] dark:text-[#60A5FA] font-medium text-center">
               Run A and Run B must be distinct benchmark executions to calculate differential shifts.
             </CardContent>
           </Card>
         ) : isLoadingDiff ? (
-          <Card className="h-64 flex flex-col items-center justify-center text-xs text-[#2C2C2C]/60 dark:text-slate-400 space-y-3 shadow-xs">
-            <Sparkles className="h-6 w-6 text-[#853953] dark:text-[#F06A9A] animate-spin" />
+          <Card className="h-64 flex flex-col items-center justify-center text-xs text-[#0F172A]/60 dark:text-slate-400 space-y-3 shadow-xs">
+            <Sparkles className="h-6 w-6 text-[#2563EB] dark:text-[#60A5FA] animate-spin" />
             <p className="font-medium">Calculating statistical distributions across microsecond telemetry logs...</p>
           </Card>
         ) : isError || !diffData ? (
@@ -914,7 +914,7 @@ export const DiffPage: React.FC = () => {
           >
             {/* EXECUTIVE VERDICT & WINNER SCORECARD HERO */}
             {executiveVerdict && (
-              <Card className="border-neutral-200/90 dark:border-white/10 shadow-sm bg-gradient-to-br from-white via-white to-neutral-50/80 dark:from-[#0E0E14] dark:via-[#111118] dark:to-[#161622] overflow-hidden">
+              <Card className="border-neutral-200/90 dark:border-white/10 shadow-sm bg-gradient-to-br from-white via-white to-neutral-50/80 dark:from-[#0B0F17] dark:via-[#0B0F17] dark:to-[#111827] overflow-hidden">
                 <CardContent className="p-5 sm:p-6 space-y-5">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-neutral-200/70 dark:border-white/10 pb-4">
                     <div className="space-y-1">
@@ -923,17 +923,17 @@ export const DiffPage: React.FC = () => {
                           <Trophy className="h-3.5 w-3.5" />
                           {executiveVerdict.winnerTag}
                         </Badge>
-                        <h3 className="text-base font-bold text-[#2C2C2C] dark:text-white">
+                        <h3 className="text-base font-bold text-[#0F172A] dark:text-white">
                           {executiveVerdict.verdictTitle}
                         </h3>
                       </div>
-                      <p className="text-xs text-[#2C2C2C]/70 dark:text-slate-300 leading-relaxed max-w-3xl">
+                      <p className="text-xs text-[#0F172A]/70 dark:text-slate-300 leading-relaxed max-w-3xl">
                         {executiveVerdict.verdictSummary}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant="outline" className="font-mono text-xs py-1 px-3 bg-white/60 dark:bg-[#0B0B0E]/60 border-neutral-300 dark:border-neutral-700">
+                      <Badge variant="outline" className="font-mono text-xs py-1 px-3 bg-white/60 dark:bg-[#0F172A]/60 border-neutral-300 dark:border-neutral-700">
                         {diffData.workload_preset?.replace("_", " ").toUpperCase()}
                       </Badge>
                     </div>
@@ -942,66 +942,66 @@ export const DiffPage: React.FC = () => {
                   {/* 4 Dimension Winner Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {/* Dim 1: TTFT Speed */}
-                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#151520] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
-                      <span className="text-[10.5px] font-semibold text-[#2C2C2C]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                        <Activity className="h-3 w-3 text-[#853953] dark:text-[#F06A9A]" /> TTFT Leader
+                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#111827] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
+                      <span className="text-[10.5px] font-semibold text-[#0F172A]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <Activity className="h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" /> TTFT Leader
                       </span>
-                      <div className="text-xs font-bold text-[#2C2C2C] dark:text-white truncate">
+                      <div className="text-xs font-bold text-[#0F172A] dark:text-white truncate">
                         {executiveVerdict.latencyLeader}
                       </div>
                       <div className="text-[11px] font-semibold font-mono">
                         <span className={executiveVerdict.ttftDelta <= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-600"}>
                           {executiveVerdict.ttftDelta > 0 ? `+${executiveVerdict.ttftDelta}%` : `${executiveVerdict.ttftDelta}%`}
                         </span>
-                        <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
+                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
                       </div>
                     </div>
 
                     {/* Dim 2: Throughput Velocity */}
-                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#151520] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
-                      <span className="text-[10.5px] font-semibold text-[#2C2C2C]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#111827] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
+                      <span className="text-[10.5px] font-semibold text-[#0F172A]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                         <Zap className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> TPS Leader
                       </span>
-                      <div className="text-xs font-bold text-[#2C2C2C] dark:text-white truncate">
+                      <div className="text-xs font-bold text-[#0F172A] dark:text-white truncate">
                         {executiveVerdict.tpsLeader}
                       </div>
                       <div className="text-[11px] font-semibold font-mono">
                         <span className={executiveVerdict.tpsDelta >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-600"}>
                           {executiveVerdict.tpsDelta > 0 ? `+${executiveVerdict.tpsDelta}%` : `${executiveVerdict.tpsDelta}%`}
                         </span>
-                        <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
+                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
                       </div>
                     </div>
 
                     {/* Dim 3: SLO Goodput Yield */}
-                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#151520] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
-                      <span className="text-[10.5px] font-semibold text-[#2C2C2C]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#111827] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
+                      <span className="text-[10.5px] font-semibold text-[#0F172A]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                         <ShieldCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> SLO Yield Leader
                       </span>
-                      <div className="text-xs font-bold text-[#2C2C2C] dark:text-white truncate">
+                      <div className="text-xs font-bold text-[#0F172A] dark:text-white truncate">
                         {executiveVerdict.goodputLeader}
                       </div>
                       <div className="text-[11px] font-semibold font-mono">
                         <span className={executiveVerdict.goodputDelta >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-600"}>
                           {executiveVerdict.goodputDelta > 0 ? `+${executiveVerdict.goodputDelta}%` : `${executiveVerdict.goodputDelta}%`}
                         </span>
-                        <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
+                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
                       </div>
                     </div>
 
                     {/* Dim 4: Cost Efficiency */}
-                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#151520] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
-                      <span className="text-[10.5px] font-semibold text-[#2C2C2C]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                        <DollarSign className="h-3 w-3 text-[#853953] dark:text-[#F06A9A]" /> Cost Leader
+                    <div className="p-3.5 rounded-xl bg-neutral-100/70 dark:bg-[#111827] border border-neutral-200/80 dark:border-neutral-800/80 space-y-1">
+                      <span className="text-[10.5px] font-semibold text-[#0F172A]/60 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <DollarSign className="h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" /> Cost Leader
                       </span>
-                      <div className="text-xs font-bold text-[#2C2C2C] dark:text-white truncate">
+                      <div className="text-xs font-bold text-[#0F172A] dark:text-white truncate">
                         {executiveVerdict.costLeader}
                       </div>
                       <div className="text-[11px] font-semibold font-mono">
                         <span className={executiveVerdict.costDelta <= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-600"}>
                           {executiveVerdict.costDelta > 0 ? `+${executiveVerdict.costDelta}%` : `${executiveVerdict.costDelta}%`}
                         </span>
-                        <span className="text-[10px] text-[#2C2C2C]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
+                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-500 font-normal ml-1">B vs A</span>
                       </div>
                     </div>
                   </div>
@@ -1011,7 +1011,7 @@ export const DiffPage: React.FC = () => {
 
             {/* Visual Analytics Tabs Navigation */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl h-9 p-1 bg-neutral-200/60 dark:bg-[#14141B]">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-3xl h-9 p-1 bg-neutral-200/60 dark:bg-[#1E293B]">
                 <TabsTrigger value="overview" className="flex items-center gap-1.5 text-xs cursor-pointer">
                   <PieChart className="h-3.5 w-3.5" />
                   <span>Overview Radar</span>
@@ -1039,9 +1039,9 @@ export const DiffPage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                   {/* Radar Chart (Left 5 Cols) */}
                   <Card className="lg:col-span-5 p-4 space-y-3 shadow-xs">
-                    <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-white/10 pb-2">
+                    <div className="flex items-center justify-between border-b border-[#0F172A]/10 dark:border-white/10 pb-2">
                       <div className="flex items-center gap-2">
-                        <Activity className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+                        <Activity className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
                         <CardTitle className="text-xs font-bold">5-Pillar Normalized Radar</CardTitle>
                       </div>
                       <Badge variant="outline" className="text-[10px]">Normalized 0–100</Badge>
@@ -1055,15 +1055,15 @@ export const DiffPage: React.FC = () => {
                           <Radar
                             name={diffData.run_a_name}
                             dataKey={diffData.run_a_name}
-                            stroke="#612D53"
-                            fill="#612D53"
+                            stroke="#1D4ED8"
+                            fill="#1D4ED8"
                             fillOpacity={0.35}
                           />
                           <Radar
                             name={diffData.run_b_name}
                             dataKey={diffData.run_b_name}
-                            stroke="#E05284"
-                            fill="#E05284"
+                            stroke="#3B82F6"
+                            fill="#3B82F6"
                             fillOpacity={0.35}
                           />
                           {diffData.run_c_name && (
@@ -1076,7 +1076,7 @@ export const DiffPage: React.FC = () => {
                             />
                           )}
                           <Legend wrapperStyle={{ fontSize: 10 }} />
-                          <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#14141B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
+                          <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#1E293B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
                         </RadarChart>
                       </ResponsiveContainer>
                     </div>
@@ -1088,21 +1088,21 @@ export const DiffPage: React.FC = () => {
                     {(() => {
                       const d = diffData.deltas.find((item) => item.metric_name === "TTFT P95 (ms)");
                       return (
-                        <Card className="p-4 space-y-2.5 shadow-xs border-l-4 border-l-[#853953] dark:border-l-[#F06A9A]">
+                        <Card className="p-4 space-y-2.5 shadow-xs border-l-4 border-l-[#2563EB] dark:border-l-[#60A5FA]">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-[#2C2C2C]/70 dark:text-slate-300">TTFT Tail Latency (P95)</span>
+                            <span className="text-xs font-semibold text-[#0F172A]/70 dark:text-slate-300">TTFT Tail Latency (P95)</span>
                             <Badge variant={d?.is_improvement ? "emerald" : "destructive"} className="text-[10px] font-mono font-bold">
                               {d?.delta_pct ? (d.delta_pct > 0 ? `+${d.delta_pct}%` : `${d.delta_pct}%`) : "0%"}
                             </Badge>
                           </div>
                           <div className="space-y-1.5 pt-1">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#2C2C2C]/60 dark:text-slate-400">Baseline (A):</span>
+                              <span className="text-[#0F172A]/60 dark:text-slate-400">Baseline (A):</span>
                               <span className="font-semibold tabular-nums">{d?.run_a_value ?? 0} ms</span>
                             </div>
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#853953] dark:text-[#F06A9A] font-medium">Candidate (B):</span>
-                              <span className="font-bold tabular-nums text-[#853953] dark:text-[#F06A9A]">{d?.run_b_value ?? 0} ms</span>
+                              <span className="text-[#2563EB] dark:text-[#60A5FA] font-medium">Candidate (B):</span>
+                              <span className="font-bold tabular-nums text-[#2563EB] dark:text-[#60A5FA]">{d?.run_b_value ?? 0} ms</span>
                             </div>
                             {diffData.run_c_name && d?.run_c_value !== undefined && (
                               <div className="flex items-center justify-between text-xs">
@@ -1121,19 +1121,19 @@ export const DiffPage: React.FC = () => {
                       return (
                         <Card className="p-4 space-y-2.5 shadow-xs border-l-4 border-l-emerald-500">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-[#2C2C2C]/70 dark:text-slate-300">Decode Speed (TPS)</span>
+                            <span className="text-xs font-semibold text-[#0F172A]/70 dark:text-slate-300">Decode Speed (TPS)</span>
                             <Badge variant={d?.is_improvement ? "emerald" : "destructive"} className="text-[10px] font-mono font-bold">
                               {d?.delta_pct ? (d.delta_pct > 0 ? `+${d.delta_pct}%` : `${d.delta_pct}%`) : "0%"}
                             </Badge>
                           </div>
                           <div className="space-y-1.5 pt-1">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#2C2C2C]/60 dark:text-slate-400">Baseline (A):</span>
+                              <span className="text-[#0F172A]/60 dark:text-slate-400">Baseline (A):</span>
                               <span className="font-semibold tabular-nums">{d?.run_a_value ?? 0} tok/s</span>
                             </div>
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#853953] dark:text-[#F06A9A] font-medium">Candidate (B):</span>
-                              <span className="font-bold tabular-nums text-[#853953] dark:text-[#F06A9A]">{d?.run_b_value ?? 0} tok/s</span>
+                              <span className="text-[#2563EB] dark:text-[#60A5FA] font-medium">Candidate (B):</span>
+                              <span className="font-bold tabular-nums text-[#2563EB] dark:text-[#60A5FA]">{d?.run_b_value ?? 0} tok/s</span>
                             </div>
                             {diffData.run_c_name && d?.run_c_value !== undefined && (
                               <div className="flex items-center justify-between text-xs">
@@ -1152,19 +1152,19 @@ export const DiffPage: React.FC = () => {
                       return (
                         <Card className="p-4 space-y-2.5 shadow-xs border-l-4 border-l-emerald-600">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-[#2C2C2C]/70 dark:text-slate-300">Goodput SLO Compliance</span>
+                            <span className="text-xs font-semibold text-[#0F172A]/70 dark:text-slate-300">Goodput SLO Compliance</span>
                             <Badge variant={d?.is_improvement ? "emerald" : "destructive"} className="text-[10px] font-mono font-bold">
                               {d?.delta_pct ? (d.delta_pct > 0 ? `+${d.delta_pct}%` : `${d.delta_pct}%`) : "0%"}
                             </Badge>
                           </div>
                           <div className="space-y-1.5 pt-1">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#2C2C2C]/60 dark:text-slate-400">Baseline (A):</span>
+                              <span className="text-[#0F172A]/60 dark:text-slate-400">Baseline (A):</span>
                               <span className="font-semibold tabular-nums">{formatPct(d?.run_a_value ?? 0)}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#853953] dark:text-[#F06A9A] font-medium">Candidate (B):</span>
-                              <span className="font-bold tabular-nums text-[#853953] dark:text-[#F06A9A]">{formatPct(d?.run_b_value ?? 0)}</span>
+                              <span className="text-[#2563EB] dark:text-[#60A5FA] font-medium">Candidate (B):</span>
+                              <span className="font-bold tabular-nums text-[#2563EB] dark:text-[#60A5FA]">{formatPct(d?.run_b_value ?? 0)}</span>
                             </div>
                             {diffData.run_c_name && d?.run_c_value !== undefined && (
                               <div className="flex items-center justify-between text-xs">
@@ -1181,21 +1181,21 @@ export const DiffPage: React.FC = () => {
                     {(() => {
                       const d = diffData.deltas.find((item) => item.metric_name.includes("Cost / 1K") || item.metric_name.includes("Total Cost"));
                       return (
-                        <Card className="p-4 space-y-2.5 shadow-xs border-l-4 border-l-[#612D53] dark:border-l-[#C14594]">
+                        <Card className="p-4 space-y-2.5 shadow-xs border-l-4 border-l-[#1D4ED8] dark:border-l-[#0284C7]">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-[#2C2C2C]/70 dark:text-slate-300">Economic Spend</span>
+                            <span className="text-xs font-semibold text-[#0F172A]/70 dark:text-slate-300">Economic Spend</span>
                             <Badge variant={d?.is_improvement ? "emerald" : "destructive"} className="text-[10px] font-mono font-bold">
                               {d?.delta_pct ? (d.delta_pct > 0 ? `+${d.delta_pct}%` : `${d.delta_pct}%`) : "0%"}
                             </Badge>
                           </div>
                           <div className="space-y-1.5 pt-1">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#2C2C2C]/60 dark:text-slate-400">Baseline (A):</span>
+                              <span className="text-[#0F172A]/60 dark:text-slate-400">Baseline (A):</span>
                               <span className="font-semibold tabular-nums">{formatUsd(d?.run_a_value ?? 0)}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-[#853953] dark:text-[#F06A9A] font-medium">Candidate (B):</span>
-                              <span className="font-bold tabular-nums text-[#853953] dark:text-[#F06A9A]">{formatUsd(d?.run_b_value ?? 0)}</span>
+                              <span className="text-[#2563EB] dark:text-[#60A5FA] font-medium">Candidate (B):</span>
+                              <span className="font-bold tabular-nums text-[#2563EB] dark:text-[#60A5FA]">{formatUsd(d?.run_b_value ?? 0)}</span>
                             </div>
                             {diffData.run_c_name && d?.run_c_value !== undefined && (
                               <div className="flex items-center justify-between text-xs">
@@ -1214,10 +1214,10 @@ export const DiffPage: React.FC = () => {
               {/* TAB 2: LATENCY TAIL SPECTRUM */}
               <TabsContent value="spectrum" className="space-y-6 animate-fadeIn">
                 <Card className="p-5 space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-white/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-[#0F172A]/10 dark:border-white/10 pb-3">
                     <div>
                       <CardTitle className="text-sm font-bold flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+                        <BarChart3 className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
                         <span>Latency Distribution Tail Shift (ms)</span>
                       </CardTitle>
                       <CardDescription className="text-xs">
@@ -1233,10 +1233,10 @@ export const DiffPage: React.FC = () => {
                         <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                         <XAxis dataKey="metric" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} unit="ms" />
-                        <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#14141B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
+                        <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#1E293B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                        <Bar dataKey={diffData.run_a_name} fill="#612D53" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey={diffData.run_b_name} fill="#E05284" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_a_name} fill="#1D4ED8" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_b_name} fill="#3B82F6" radius={[4, 4, 0, 0]} />
                         {diffData.run_c_name && (
                           <Bar dataKey={diffData.run_c_name} fill="#10b981" radius={[4, 4, 0, 0]} />
                         )}
@@ -1249,10 +1249,10 @@ export const DiffPage: React.FC = () => {
               {/* TAB 3: WATERFALL DECOMPOSITION */}
               <TabsContent value="waterfall" className="space-y-6 animate-fadeIn">
                 <Card className="p-5 space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-white/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-[#0F172A]/10 dark:border-white/10 pb-3">
                     <div>
                       <CardTitle className="text-sm font-bold flex items-center gap-2">
-                        <Network className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+                        <Network className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
                         <span>Latency Waterfall Stage Decomposition</span>
                       </CardTitle>
                       <CardDescription className="text-xs">
@@ -1268,10 +1268,10 @@ export const DiffPage: React.FC = () => {
                         <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
                         <XAxis dataKey="stage" tick={{ fontSize: 11 }} />
                         <YAxis tick={{ fontSize: 11 }} unit="ms" />
-                        <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#14141B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
+                        <RechartsTooltip contentStyle={{ fontSize: 11, borderRadius: 8, backgroundColor: "#1E293B", borderColor: "rgba(255,255,255,0.1)", color: "#FFFFFF" }} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                        <Bar dataKey={diffData.run_a_name} fill="#612D53" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey={diffData.run_b_name} fill="#E05284" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_a_name} fill="#1D4ED8" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey={diffData.run_b_name} fill="#3B82F6" radius={[4, 4, 0, 0]} />
                         {diffData.run_c_name && (
                           <Bar dataKey={diffData.run_c_name} fill="#10b981" radius={[4, 4, 0, 0]} />
                         )}
@@ -1284,7 +1284,7 @@ export const DiffPage: React.FC = () => {
               {/* TAB 4: PARETO COST VS THROUGHPUT */}
               <TabsContent value="pareto" className="space-y-6 animate-fadeIn">
                 <Card className="p-5 space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between border-b border-[#2C2C2C]/10 dark:border-white/10 pb-3">
+                  <div className="flex items-center justify-between border-b border-[#0F172A]/10 dark:border-white/10 pb-3">
                     <div>
                       <CardTitle className="text-sm font-bold flex items-center gap-2">
                         <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -1301,28 +1301,28 @@ export const DiffPage: React.FC = () => {
                     {paretoData.map((pt, idx) => (
                       <div
                         key={idx}
-                        className="p-4 rounded-2xl bg-neutral-50/80 dark:bg-[#14141B]/80 border border-neutral-200 dark:border-neutral-800 space-y-3"
+                        className="p-4 rounded-2xl bg-neutral-50/80 dark:bg-[#1E293B]/80 border border-neutral-200 dark:border-neutral-800 space-y-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#2C2C2C] dark:text-white truncate">
+                          <span className="text-xs font-bold text-[#0F172A] dark:text-white truncate">
                             {pt.role}
                           </span>
                           <span className="h-3 w-3 rounded-full" style={{ backgroundColor: pt.color }} />
                         </div>
-                        <div className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400 truncate">
+                        <div className="text-[11px] text-[#0F172A]/60 dark:text-slate-400 truncate">
                           {pt.name}
                         </div>
                         <div className="space-y-1.5 pt-2 border-t border-neutral-200/80 dark:border-neutral-800">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Decode Speed:</span>
+                            <span className="text-[#0F172A]/60 dark:text-slate-400">Decode Speed:</span>
                             <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{pt.tps.toFixed(1)} tok/s</span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Cost per 1K calls:</span>
-                            <span className="font-bold tabular-nums text-[#853953] dark:text-[#F06A9A]">{formatUsd(pt.cost)}</span>
+                            <span className="text-[#0F172A]/60 dark:text-slate-400">Cost per 1K calls:</span>
+                            <span className="font-bold tabular-nums text-[#2563EB] dark:text-[#60A5FA]">{formatUsd(pt.cost)}</span>
                           </div>
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-[#2C2C2C]/60 dark:text-slate-400">Goodput Yield:</span>
+                            <span className="text-[#0F172A]/60 dark:text-slate-400">Goodput Yield:</span>
                             <span className="font-semibold tabular-nums">{formatPct(pt.goodput)}</span>
                           </div>
                         </div>
@@ -1337,13 +1337,13 @@ export const DiffPage: React.FC = () => {
                 {/* Search & Category Filter Header */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#2C2C2C]/40 dark:text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#0F172A]/40 dark:text-slate-400" />
                     <Input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search metric name (e.g. P95, Cost, TPS)..."
-                      className="pl-8.5 h-8.5 text-xs bg-white dark:bg-[#0B0B0E]"
+                      className="pl-8.5 h-8.5 text-xs bg-white dark:bg-[#0F172A]"
                     />
                   </div>
 
@@ -1356,7 +1356,7 @@ export const DiffPage: React.FC = () => {
                         className={cn(
                           "px-2.5 py-1 text-[11px] rounded-lg font-medium transition-all cursor-pointer",
                           categoryFilter === "all"
-                            ? "bg-white dark:bg-[#1A1A24] text-[#853953] dark:text-[#F06A9A] shadow-xs font-semibold"
+                            ? "bg-white dark:bg-[#1E293B] text-[#2563EB] dark:text-[#60A5FA] shadow-xs font-semibold"
                             : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                         )}
                       >
@@ -1372,7 +1372,7 @@ export const DiffPage: React.FC = () => {
                             className={cn(
                               "px-2.5 py-1 text-[11px] rounded-lg font-medium transition-all cursor-pointer whitespace-nowrap",
                               categoryFilter === cat
-                                ? "bg-white dark:bg-[#1A1A24] text-[#853953] dark:text-[#F06A9A] shadow-xs font-semibold"
+                                ? "bg-white dark:bg-[#1E293B] text-[#2563EB] dark:text-[#60A5FA] shadow-xs font-semibold"
                                 : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                             )}
                           >
@@ -1388,8 +1388,8 @@ export const DiffPage: React.FC = () => {
                 <Card className="overflow-hidden shadow-xs border-neutral-200/80 dark:border-white/10">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-b border-[#2C2C2C]/10 dark:border-white/10 bg-[#2C2C2C]/5 dark:bg-white/[0.03]">
-                        <TableHead className="py-3 px-5 text-xs font-bold text-[#2C2C2C] dark:text-white">
+                      <TableRow className="border-b border-[#0F172A]/10 dark:border-white/10 bg-[#0F172A]/5 dark:bg-white/[0.03]">
+                        <TableHead className="py-3 px-4 text-xs font-bold text-[#0F172A] dark:text-white">
                           <button
                             type="button"
                             onClick={() => {
@@ -1400,14 +1400,14 @@ export const DiffPage: React.FC = () => {
                                 setTableSortDir("asc");
                               }
                             }}
-                            className="flex items-center gap-1 hover:text-[#853953] dark:hover:text-[#F06A9A] cursor-pointer"
+                            className="flex items-center gap-1 hover:text-[#2563EB] dark:hover:text-[#60A5FA] cursor-pointer"
                           >
                             Metric Dimension
                           </button>
                         </TableHead>
-                        <TableHead className="py-3 px-3 text-xs font-bold text-[#2C2C2C] dark:text-white">Run A (Baseline)</TableHead>
-                        <TableHead className="py-3 px-3 text-xs font-bold text-[#2C2C2C] dark:text-white">Run B (Candidate 1)</TableHead>
-                        <TableHead className="py-3 px-3 text-xs font-bold text-[#2C2C2C] dark:text-white">
+                        <TableHead className="py-3 px-4 text-xs font-bold text-[#0F172A] dark:text-white">Run A (Baseline)</TableHead>
+                        <TableHead className="py-3 px-4 text-xs font-bold text-[#0F172A] dark:text-white">Run B (Candidate 1)</TableHead>
+                        <TableHead className="py-3 px-4 text-xs font-bold text-[#0F172A] dark:text-white">
                           <button
                             type="button"
                             onClick={() => {
@@ -1418,15 +1418,15 @@ export const DiffPage: React.FC = () => {
                                 setTableSortDir("desc");
                               }
                             }}
-                            className="flex items-center gap-1 hover:text-[#853953] dark:hover:text-[#F06A9A] cursor-pointer"
+                            className="flex items-center gap-1 hover:text-[#2563EB] dark:hover:text-[#60A5FA] cursor-pointer"
                           >
                             B vs A Delta Shift
                           </button>
                         </TableHead>
                         {diffData.run_c_name && (
                           <>
-                            <TableHead className="py-3 px-3 text-xs font-bold text-[#2C2C2C] dark:text-white">Run C (Candidate 2)</TableHead>
-                            <TableHead className="py-3 px-5 text-right text-xs font-bold text-[#2C2C2C] dark:text-white">C vs A Delta Shift</TableHead>
+                            <TableHead className="py-3 px-4 text-xs font-bold text-[#0F172A] dark:text-white">Run C (Candidate 2)</TableHead>
+                            <TableHead className="py-3 px-4 text-right text-xs font-bold text-[#0F172A] dark:text-white">C vs A Delta Shift</TableHead>
                           </>
                         )}
                       </TableRow>
@@ -1437,9 +1437,9 @@ export const DiffPage: React.FC = () => {
                         return (
                           <TableRow
                             key={idx}
-                            className="border-b border-[#2C2C2C]/10 dark:border-white/[0.06] transition-colors hover:bg-neutral-100/60 dark:hover:bg-white/[0.04]"
+                            className="border-b border-[#0F172A]/10 dark:border-white/[0.06] transition-colors hover:bg-neutral-100/60 dark:hover:bg-white/[0.04]"
                           >
-                            <TableCell className="py-3 px-5 font-medium text-[#2C2C2C] dark:text-white">
+                            <TableCell className="py-3 px-4 font-medium text-[#0F172A] dark:text-white">
                               <div className="flex items-center gap-2">
                                 <span className="text-xs font-semibold">{d.metric_name}</span>
                                 {d.category && (
@@ -1450,16 +1450,16 @@ export const DiffPage: React.FC = () => {
                               </div>
                             </TableCell>
 
-                            <TableCell className="py-3 px-3 text-[#2C2C2C]/70 dark:text-slate-400 font-sans tabular-nums text-xs">
+                            <TableCell className="py-3 px-4 text-[#0F172A]/70 dark:text-slate-400 font-sans tabular-nums text-xs">
                               {d.run_a_value}
                             </TableCell>
 
-                            <TableCell className="py-3 px-3 text-[#2C2C2C] dark:text-white font-semibold font-sans tabular-nums text-xs">
+                            <TableCell className="py-3 px-4 text-[#0F172A] dark:text-white font-semibold font-sans tabular-nums text-xs">
                               {d.run_b_value}
                             </TableCell>
 
                             {/* B vs A Delta with Visual Progress Bar */}
-                            <TableCell className="py-3 px-3">
+                            <TableCell className="py-3 px-4">
                               <div className="space-y-1 max-w-[140px]">
                                 <Badge
                                   variant={
@@ -1498,10 +1498,10 @@ export const DiffPage: React.FC = () => {
                             {/* Run C and C vs A */}
                             {diffData.run_c_name && (
                               <>
-                                <TableCell className="py-3 px-3 text-[#2C2C2C] dark:text-white font-semibold font-sans tabular-nums text-xs">
+                                <TableCell className="py-3 px-4 text-[#0F172A] dark:text-white font-semibold font-sans tabular-nums text-xs">
                                   {d.run_c_value !== undefined && d.run_c_value !== null ? d.run_c_value : "—"}
                                 </TableCell>
-                                <TableCell className="py-3 px-5 text-right">
+                                <TableCell className="py-3 px-4 text-right">
                                   {d.delta_c_pct !== undefined && d.delta_c_pct !== null ? (
                                     <div className="space-y-1 max-w-[140px] ml-auto">
                                       <Badge
@@ -1525,7 +1525,7 @@ export const DiffPage: React.FC = () => {
                                       </Badge>
                                     </div>
                                   ) : (
-                                    <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-500">—</span>
+                                    <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-500">—</span>
                                   )}
                                 </TableCell>
                               </>

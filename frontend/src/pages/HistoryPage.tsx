@@ -105,13 +105,13 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 font-sans font-medium text-xs text-[#2C2C2C] dark:text-white hover:text-[#853953] dark:hover:text-[#F06A9A]"
+            className="-ml-3 h-8 font-sans font-medium text-xs text-[#0F172A] dark:text-white hover:text-[#2563EB] dark:hover:text-[#60A5FA]"
           >
             Benchmark run & model
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="ml-1.5 h-3 w-3 text-[#853953] dark:text-[#F06A9A]" />
+              <ArrowUp className="ml-1.5 h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="ml-1.5 h-3 w-3 text-[#853953] dark:text-[#F06A9A]" />
+              <ArrowDown className="ml-1.5 h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" />
             ) : (
               <ArrowUpDown className="ml-1.5 h-3 w-3 opacity-40" />
             )}
@@ -121,16 +121,16 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
           const r = row.original;
           return (
             <div className="font-sans">
-              <div className="font-medium text-[#2C2C2C] dark:text-white group-hover:text-[#853953] dark:group-hover:text-[#F06A9A] transition-colors">
+              <div className="font-medium text-[#0F172A] dark:text-white group-hover:text-[#2563EB] dark:group-hover:text-[#60A5FA] transition-colors">
                 {r.name}
               </div>
-              <div className="text-xs font-sans text-[#2C2C2C]/60 dark:text-slate-400 flex items-center gap-2 mt-0.5">
+              <div className="text-xs font-sans text-[#0F172A]/60 dark:text-slate-400 flex items-center gap-2 mt-0.5">
                 <Badge variant="default" className="text-[11px] py-0 px-1.5 font-medium font-mono">
                   {r.model}
                 </Badge>
-                <span className="text-[#2C2C2C]/30 dark:text-white/20">•</span>
-                <span className="text-[#2C2C2C]/80 dark:text-slate-300 flex items-center gap-1">
-                  <ProviderLogo vendor={r.vendor as any} className="h-3 w-3 inline text-[#853953] dark:text-[#F06A9A]" />
+                <span className="text-[#0F172A]/30 dark:text-white/20">•</span>
+                <span className="text-[#0F172A]/80 dark:text-slate-300 flex items-center gap-1">
+                  <ProviderLogo vendor={r.vendor as any} className="h-3 w-3 inline text-[#2563EB] dark:text-[#60A5FA]" />
                   {r.vendor}
                 </span>
               </div>
@@ -142,7 +142,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         accessorKey: "workload_preset",
         header: "Workload",
         cell: ({ row }) => (
-          <span className="capitalize text-[#2C2C2C] dark:text-white font-sans text-xs">
+          <span className="capitalize text-[#0F172A] dark:text-white font-sans text-xs">
             {row.original.workload_preset?.replace("_", " ")}
           </span>
         ),
@@ -154,13 +154,13 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 font-sans font-medium text-xs text-[#2C2C2C] dark:text-white hover:text-[#853953] dark:hover:text-[#F06A9A]"
+            className="-ml-3 h-8 font-sans font-medium text-xs text-[#0F172A] dark:text-white hover:text-[#2563EB] dark:hover:text-[#60A5FA]"
           >
             Timestamp
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="ml-1.5 h-3 w-3 text-[#853953] dark:text-[#F06A9A]" />
+              <ArrowUp className="ml-1.5 h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="ml-1.5 h-3 w-3 text-[#853953] dark:text-[#F06A9A]" />
+              <ArrowDown className="ml-1.5 h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" />
             ) : (
               <ArrowUpDown className="ml-1.5 h-3 w-3 opacity-40" />
             )}
@@ -169,7 +169,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         cell: ({ row }) => {
           const val = row.original.created_at;
           return (
-            <span className="text-xs text-[#2C2C2C]/70 dark:text-slate-400 font-sans tabular-nums">
+            <span className="text-xs text-[#0F172A]/70 dark:text-slate-400 font-sans tabular-nums">
               {val ? new Date(val).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "N/A"}
             </span>
           );
@@ -179,7 +179,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         accessorKey: "ttft_p50",
         header: "TTFT (P50)",
         cell: ({ row }) => (
-          <span className="font-sans tabular-nums font-semibold text-xs text-[#612D53] dark:text-[#E270BB]">
+          <span className="font-sans tabular-nums font-semibold text-xs text-[#1D4ED8] dark:text-[#38BDF8]">
             {formatMs(row.original.ttft_p50)}
           </span>
         ),
@@ -201,7 +201,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         accessorKey: "total_cost_usd",
         header: "Run Cost",
         cell: ({ row }) => (
-          <span className="text-[#2C2C2C] dark:text-white font-sans tabular-nums text-xs font-medium">
+          <span className="text-[#0F172A] dark:text-white font-sans tabular-nums text-xs font-medium">
             {formatUsd(row.original.total_cost_usd)}
           </span>
         ),
@@ -218,7 +218,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                 e.stopPropagation();
                 setSelectedRunId(row.original.id);
               }}
-              className="h-8 text-[11px] px-3 rounded-xl shadow-2xs hover:shadow-xs cursor-pointer text-[#853953] dark:text-[#F06A9A] border-[#853953]/25 dark:border-[#E05284]/35 hover:bg-[#853953]/10 dark:hover:bg-[#E05284]/15 flex items-center gap-1.5 font-medium"
+              className="h-8 text-[11px] px-3 rounded-xl shadow-2xs hover:shadow-xs cursor-pointer text-[#2563EB] dark:text-[#60A5FA] border-[#2563EB]/25 dark:border-[#3B82F6]/35 hover:bg-[#2563EB]/10 dark:hover:bg-[#3B82F6]/15 flex items-center gap-1.5 font-medium"
               title="Inspect unaggregated percentiles & raw telemetry"
             >
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -255,15 +255,15 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
     <TooltipProvider>
       <div className="space-y-6 font-sans pb-8">
         {/* Header & Title */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2C2C2C]/10 dark:border-white/10 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0F172A]/10 dark:border-white/10 pb-5">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-[#2C2C2C] dark:text-white tracking-normal flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35">
+            <h2 className="text-lg sm:text-xl font-bold text-[#0F172A] dark:text-white tracking-normal flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35">
                 <History className="h-5 w-5" />
               </div>
               <span>Benchmark Runs</span>
             </h2>
-            <p className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 mt-1">
+            <p className="text-xs text-[#0F172A]/60 dark:text-slate-400 mt-1">
               Review saved benchmarks, tail percentiles, and export audit reports.
             </p>
           </div>
@@ -274,7 +274,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                 type="button"
                 size="sm"
                 onClick={onNavigateToBenchmark}
-                className="text-xs bg-[#853953] dark:bg-[#D84577] hover:bg-[#743663] dark:hover:bg-[#E05284] text-white cursor-pointer shadow-xs"
+                className="text-xs bg-[#2563EB] dark:bg-[#3B82F6] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] text-white cursor-pointer shadow-xs"
               >
                 <span>Open Studio</span>
               </Button>
@@ -285,17 +285,17 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         {/* Search & Provider Filter Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#2C2C2C]/40 dark:text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#0F172A]/40 dark:text-slate-400" />
             <Input
               type="text"
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               placeholder="Filter benchmark runs by name, model, preset..."
-              className="pl-8.5 h-8.5 text-xs bg-white dark:bg-[#0B0B0E]"
+              className="pl-9 h-9 text-xs bg-white dark:bg-[#0F172A]"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#F1F5F9]/70 dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 overflow-x-auto pb-1 sm:pb-1">
             {["all", "mock", "openai", "anthropic", "gemini", "aws_bedrock"].map((vf) => {
               const isActive = vendorFilter === vf;
               return (
@@ -306,14 +306,14 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                   className={cn(
                     "relative flex items-center gap-1.5 h-7 px-3 rounded-lg capitalize text-xs font-medium transition-colors cursor-pointer select-none whitespace-nowrap",
                     isActive
-                      ? "text-[#853953] dark:text-[#F06A9A] font-semibold"
-                      : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
+                      ? "text-[#2563EB] dark:text-[#60A5FA] font-semibold"
+                      : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
                   )}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="history-vendor-filter-pill"
-                      className="absolute inset-0 bg-white dark:bg-[#1A1A24] rounded-lg shadow-xs border border-[#853953]/20 dark:border-[#E05284]/40"
+                      className="absolute inset-0 bg-white dark:bg-[#1E293B] rounded-lg shadow-xs border border-[#2563EB]/20 dark:border-[#3B82F6]/40"
                       transition={{ type: "spring", stiffness: 450, damping: 32 }}
                     />
                   )}
@@ -326,14 +326,14 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         </div>
 
         {/* Benchmark History Table Card */}
-        <Card className="border-[#2C2C2C]/10 dark:border-white/[0.08] overflow-hidden shadow-xs">
+        <Card className="border-[#0F172A]/10 dark:border-white/[0.08] overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-[#F3F4F4]/60 dark:bg-[#0B0B0E] border-b border-[#2C2C2C]/10 dark:border-white/10">
+              <TableHeader className="bg-[#F1F5F9]/60 dark:bg-[#0F172A] border-b border-[#0F172A]/10 dark:border-white/10">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} className="text-xs font-semibold text-[#2C2C2C] dark:text-white">
+                      <TableHead key={header.id} className="h-9 px-4 text-xs font-semibold text-[#0F172A] dark:text-white">
                         {header.isPlaceholder
                           ? null
                           : flexRender(header.column.columnDef.header, header.getContext())}
@@ -342,10 +342,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                   </TableRow>
                 ))}
               </TableHeader>
-              <TableBody className="divide-y divide-[#2C2C2C]/5 dark:divide-white/[0.06]">
+              <TableBody className="divide-y divide-[#0F172A]/5 dark:divide-white/[0.06]">
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={columns.length} className="h-32 text-center text-xs text-[#2C2C2C]/60 dark:text-slate-400">
+                    <TableCell colSpan={columns.length} className="h-32 text-center text-xs text-[#0F172A]/60 dark:text-slate-400">
                       Loading persisted benchmark executions from SQLite...
                     </TableCell>
                   </TableRow>
@@ -356,10 +356,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                       onClick={() => {
                         setSelectedRunId(row.original.id);
                       }}
-                      className="hover:bg-[#F3F4F4]/50 dark:hover:bg-white/[0.04] cursor-pointer transition-colors group"
+                      className="hover:bg-[#F1F5F9]/50 dark:hover:bg-white/[0.04] cursor-pointer transition-colors group"
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="py-3">
+                        <TableCell key={cell.id} className="py-3 px-4">
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>
                       ))}
@@ -369,11 +369,11 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                   <TableRow>
                     <TableCell colSpan={columns.length} className="h-48 text-center">
                       <div className="flex flex-col items-center justify-center space-y-2">
-                        <EmptyStateIllustration className="h-10 w-10 text-[#2C2C2C]/30 dark:text-white/20" />
-                        <p className="text-xs font-medium text-[#2C2C2C]/70 dark:text-slate-300">
+                        <EmptyStateIllustration className="h-10 w-10 text-[#0F172A]/30 dark:text-white/20" />
+                        <p className="text-xs font-medium text-[#0F172A]/70 dark:text-slate-300">
                           No historical benchmark runs found
                         </p>
-                        <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-500">
+                        <p className="text-[11px] text-[#0F172A]/50 dark:text-slate-500">
                           Execute a benchmark in the Studio to record your first telemetry audit log.
                         </p>
                       </div>
@@ -386,10 +386,10 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
 
           {/* Table Pagination */}
           {table.getPageCount() > 1 && (
-            <div className="p-3 border-t border-[#2C2C2C]/10 dark:border-white/10 flex items-center justify-between text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
+            <div className="p-3 border-t border-[#0F172A]/10 dark:border-white/10 flex items-center justify-between text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">
               <div className="flex items-center gap-1">
                 <span>Page</span>
-                <strong className="text-[#2C2C2C] dark:text-white">
+                <strong className="text-[#0F172A] dark:text-white">
                   {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
                 </strong>
               </div>
@@ -423,94 +423,94 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
             <DialogHeader>
               <div className="flex items-center gap-2">
                 {runDetails && <ProviderLogo vendor={runDetails.vendor} className="h-5 w-5" />}
-                <DialogTitle className="text-base font-bold font-sans text-[#2C2C2C] dark:text-white">
+                <DialogTitle className="text-base font-bold font-sans text-[#0F172A] dark:text-white">
                   {runDetails?.name || "Benchmark Execution Details"}
                 </DialogTitle>
               </div>
 
-              <DialogDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
+              <DialogDescription className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">
                 Engine: {runDetails?.vendor} • Model: {runDetails?.model} • Workload: {runDetails?.workload_preset}
               </DialogDescription>
             </DialogHeader>
 
             {isLoadingDetails || !runDetails ? (
-              <div className="p-8 text-center text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-sans">
+              <div className="p-8 text-center text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">
                 Fetching microsecond trace percentiles and waterfall telemetry...
               </div>
             ) : (
               <div className="space-y-5 pt-2">
                 {/* Metrics Summary Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-sans">
-                  <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 p-3.5">
-                    <span className="text-xs font-medium text-[#2C2C2C]/60 dark:text-slate-400 block">Goodput Yield</span>
+                  <div className="rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 p-3.5">
+                    <span className="text-xs font-medium text-[#0F172A]/60 dark:text-slate-400 block">Goodput Yield</span>
                     <p className="text-lg font-semibold font-sans tabular-nums text-emerald-700 dark:text-emerald-400 mt-1">
                       {formatPct(runDetails.percentiles.goodput_pct)}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 p-3.5">
-                    <span className="text-xs font-medium text-[#2C2C2C]/60 dark:text-slate-400 block">Completed reqs</span>
-                    <p className="text-lg font-semibold font-sans tabular-nums text-[#2C2C2C] dark:text-white mt-1">
+                  <div className="rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 p-3.5">
+                    <span className="text-xs font-medium text-[#0F172A]/60 dark:text-slate-400 block">Completed reqs</span>
+                    <p className="text-lg font-semibold font-sans tabular-nums text-[#0F172A] dark:text-white mt-1">
                       {runDetails.counts.completed_requests} / {runDetails.counts.total_requests}
                     </p>
                   </div>
-                  <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 p-3.5">
-                    <span className="text-xs font-medium text-[#2C2C2C]/60 dark:text-slate-400 block">Decode TPS</span>
-                    <p className="text-lg font-semibold font-sans tabular-nums text-[#612D53] dark:text-[#E270BB] mt-1">
+                  <div className="rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 p-3.5">
+                    <span className="text-xs font-medium text-[#0F172A]/60 dark:text-slate-400 block">Decode TPS</span>
+                    <p className="text-lg font-semibold font-sans tabular-nums text-[#1D4ED8] dark:text-[#38BDF8] mt-1">
                       {runDetails.percentiles.tps_decode.toFixed(1)} tok/s
                     </p>
                   </div>
-                  <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 p-3.5">
-                    <span className="text-xs font-medium text-[#2C2C2C]/60 dark:text-slate-400 block">Run Spend</span>
-                    <p className="text-lg font-semibold font-sans tabular-nums text-[#853953] dark:text-[#F06A9A] mt-1">
+                  <div className="rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 p-3.5">
+                    <span className="text-xs font-medium text-[#0F172A]/60 dark:text-slate-400 block">Run Spend</span>
+                    <p className="text-lg font-semibold font-sans tabular-nums text-[#2563EB] dark:text-[#60A5FA] mt-1">
                       {formatUsd(runDetails.counts.total_cost_usd)}
                     </p>
                   </div>
                 </div>
 
                 {/* Unaggregated Percentile Grid */}
-                <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 p-4 space-y-3 font-sans text-xs">
-                  <h4 className="font-semibold text-[#2C2C2C] dark:text-white flex items-center gap-2 text-xs">
-                    <Activity className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+                <div className="rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 p-4 space-y-3 font-sans text-xs">
+                  <h4 className="font-semibold text-[#0F172A] dark:text-white flex items-center gap-2 text-xs">
+                    <Activity className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
                     Unaggregated percentile distribution
                   </h4>
                   <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                    <div className="bg-white dark:bg-[#0F0F13] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
-                      <span className="text-[#2C2C2C]/60 dark:text-slate-400 block text-[11px]">TTFT (P50)</span>
-                      <strong className="text-[#612D53] dark:text-[#E270BB] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p50)}</strong>
+                    <div className="bg-white dark:bg-[#111827] p-2.5 rounded-lg border border-[#0F172A]/10 dark:border-white/10 shadow-2xs">
+                      <span className="text-[#0F172A]/60 dark:text-slate-400 block text-[11px]">TTFT (P50)</span>
+                      <strong className="text-[#1D4ED8] dark:text-[#38BDF8] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p50)}</strong>
                     </div>
-                    <div className="bg-white dark:bg-[#0F0F13] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
-                      <span className="text-[#2C2C2C]/60 dark:text-slate-400 block text-[11px]">TTFT (P95)</span>
-                      <strong className="text-[#853953] dark:text-[#F06A9A] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p95)}</strong>
+                    <div className="bg-white dark:bg-[#111827] p-2.5 rounded-lg border border-[#0F172A]/10 dark:border-white/10 shadow-2xs">
+                      <span className="text-[#0F172A]/60 dark:text-slate-400 block text-[11px]">TTFT (P95)</span>
+                      <strong className="text-[#2563EB] dark:text-[#60A5FA] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p95)}</strong>
                     </div>
-                    <div className="bg-white dark:bg-[#0F0F13] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
-                      <span className="text-[#2C2C2C]/60 dark:text-slate-400 block text-[11px]">TTFT (P99)</span>
-                      <strong className="text-[#612D53] dark:text-[#E270BB] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p99)}</strong>
+                    <div className="bg-white dark:bg-[#111827] p-2.5 rounded-lg border border-[#0F172A]/10 dark:border-white/10 shadow-2xs">
+                      <span className="text-[#0F172A]/60 dark:text-slate-400 block text-[11px]">TTFT (P99)</span>
+                      <strong className="text-[#1D4ED8] dark:text-[#38BDF8] font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.ttft_p99)}</strong>
                     </div>
-                    <div className="bg-white dark:bg-[#0F0F13] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
-                      <span className="text-[#2C2C2C]/60 dark:text-slate-400 block text-[11px]">Max ITL freeze</span>
+                    <div className="bg-white dark:bg-[#111827] p-2.5 rounded-lg border border-[#0F172A]/10 dark:border-white/10 shadow-2xs">
+                      <span className="text-[#0F172A]/60 dark:text-slate-400 block text-[11px]">Max ITL freeze</span>
                       <strong className="text-rose-700 dark:text-rose-400 font-sans font-semibold tabular-nums">{formatMs(runDetails.percentiles.max_itl)}</strong>
                     </div>
                   </div>
                 </div>
 
                 {/* Network Handshake Breakdown */}
-                <div className="rounded-xl bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 p-4 space-y-2 font-sans text-xs">
-                  <h4 className="font-semibold text-[#2C2C2C] dark:text-white flex items-center gap-2 text-xs">
-                    <Network className="h-4 w-4 text-[#612D53] dark:text-[#E270BB]" />
+                <div className="rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 p-4 space-y-2 font-sans text-xs">
+                  <h4 className="font-semibold text-[#0F172A] dark:text-white flex items-center gap-2 text-xs">
+                    <Network className="h-4 w-4 text-[#1D4ED8] dark:text-[#38BDF8]" />
                     Network handshake baseline
                   </h4>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div className="bg-white dark:bg-[#0F0F13] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
-                      <span className="text-[#2C2C2C]/60 dark:text-slate-400 block text-[11px]">DNS lookup</span>
-                      <span className="text-[#2C2C2C] dark:text-white font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.dns_p50)}</span>
+                    <div className="bg-white dark:bg-[#111827] p-2.5 rounded-lg border border-[#0F172A]/10 dark:border-white/10 shadow-2xs">
+                      <span className="text-[#0F172A]/60 dark:text-slate-400 block text-[11px]">DNS lookup</span>
+                      <span className="text-[#0F172A] dark:text-white font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.dns_p50)}</span>
                     </div>
-                    <div className="bg-white dark:bg-[#0F0F13] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
-                      <span className="text-[#2C2C2C]/60 dark:text-slate-400 block text-[11px]">TCP handshake</span>
-                      <span className="text-[#2C2C2C] dark:text-white font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.tcp_p50)}</span>
+                    <div className="bg-white dark:bg-[#111827] p-2.5 rounded-lg border border-[#0F172A]/10 dark:border-white/10 shadow-2xs">
+                      <span className="text-[#0F172A]/60 dark:text-slate-400 block text-[11px]">TCP handshake</span>
+                      <span className="text-[#0F172A] dark:text-white font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.tcp_p50)}</span>
                     </div>
-                    <div className="bg-white dark:bg-[#0F0F13] p-2.5 rounded-lg border border-[#2C2C2C]/10 dark:border-white/10 shadow-2xs">
-                      <span className="text-[#2C2C2C]/60 dark:text-slate-400 block text-[11px]">TLS handshake</span>
-                      <span className="text-[#2C2C2C] dark:text-white font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.tls_p50)}</span>
+                    <div className="bg-white dark:bg-[#111827] p-2.5 rounded-lg border border-[#0F172A]/10 dark:border-white/10 shadow-2xs">
+                      <span className="text-[#0F172A]/60 dark:text-slate-400 block text-[11px]">TLS handshake</span>
+                      <span className="text-[#0F172A] dark:text-white font-sans font-semibold tabular-nums">{formatMs(runDetails.waterfall.tls_p50)}</span>
                     </div>
                   </div>
                 </div>
@@ -529,7 +529,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                 )}
 
                 {/* Multi-Format Export Hub Bar */}
-                <div className="pt-3 border-t border-[#2C2C2C]/10 dark:border-white/10 flex flex-wrap items-center justify-end gap-3">
+                <div className="pt-3 border-t border-[#0F172A]/10 dark:border-white/10 flex flex-wrap items-center justify-end gap-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="outline"
@@ -537,16 +537,16 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                       className="rounded-xl font-medium shadow-2xs"
                       onClick={() => downloadFile(getApiUrl(`/api/export/pdf/${runDetails.id}`), `llmark_report_${runDetails.id}.pdf`)}
                     >
-                      <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+                      <Download className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
                       PDF report
                     </Button>
                     <Button variant="outline" size="sm" asChild className="rounded-xl font-medium shadow-2xs cursor-pointer">
                       <a href={getApiUrl(`/api/export/csv/${runDetails.id}`)} download>
-                        <Download className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+                        <Download className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
                         CSV data
                       </a>
                     </Button>
-                    <Button variant="default" size="sm" asChild className="rounded-xl bg-[#853953] dark:bg-[#D84577] text-white hover:bg-[#612D53] dark:hover:bg-[#E05284] shadow-xs font-medium cursor-pointer">
+                    <Button variant="default" size="sm" asChild className="rounded-xl bg-[#2563EB] dark:bg-[#3B82F6] text-white hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] shadow-xs font-medium cursor-pointer">
                       <a href={getApiUrl(`/api/export/bundle/${runDetails.id}`)} download>
                         <Download className="h-3.5 w-3.5 text-white" />
                         .llmark bundle

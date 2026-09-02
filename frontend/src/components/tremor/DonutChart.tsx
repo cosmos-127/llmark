@@ -44,8 +44,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                 if (active && payload && payload.length) {
                   const item = payload[0];
                   return (
-                    <div className="rounded-xl border border-[#2C2C2C]/15 dark:border-white/10 bg-white dark:bg-[#0F0F13] px-2.5 py-1 text-xs text-[#2C2C2C] dark:text-white shadow-md font-sans z-50">
-                      <p className="font-semibold text-[#853953] dark:text-[#F06A9A] text-[11px]">{item.name}</p>
+                    <div className="rounded-xl border border-[#0F172A]/15 dark:border-white/10 bg-white dark:bg-[#111827] px-2.5 py-1 text-xs text-[#0F172A] dark:text-white shadow-md font-sans z-50">
+                      <p className="font-semibold text-[#2563EB] dark:text-[#60A5FA] text-[11px]">{item.name}</p>
                       <p className="font-sans font-semibold text-xs tabular-nums">{valueFormatter(item.value as number)}</p>
                     </div>
                   );
@@ -75,11 +75,11 @@ export const DonutChart: React.FC<DonutChartProps> = ({
 
         {/* Center label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-1 font-sans">
-          <span className="text-sm sm:text-base font-semibold font-sans text-[#2C2C2C] dark:text-white tracking-tight leading-none truncate max-w-[80px] tabular-nums">
+          <span className="text-sm sm:text-base font-semibold font-sans text-[#0F172A] dark:text-white tracking-tight leading-none truncate max-w-[80px] tabular-nums">
             {valueFormatter(total)}
           </span>
           {label && (
-            <span className="text-[11px] font-sans text-[#2C2C2C]/60 dark:text-slate-400 font-medium pt-0.5 leading-none">
+            <span className="text-[11px] font-sans text-[#0F172A]/60 dark:text-slate-400 font-medium pt-0.5 leading-none">
               {label}
             </span>
           )}
@@ -92,8 +92,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({
           {data.map((item, idx) => (
             <div key={idx} className="flex items-center gap-1.5 shrink-0">
               <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-              <span className="text-[#2C2C2C]/70 dark:text-slate-300 truncate max-w-[100px]">{item.name}:</span>
-              <span className="text-[#2C2C2C] dark:text-white font-medium font-sans tabular-nums shrink-0">{valueFormatter(item.value)}</span>
+              <span className="text-[#0F172A]/70 dark:text-slate-300 truncate max-w-[100px]">{item.name}:</span>
+              <span className="text-[#0F172A] dark:text-white font-medium font-sans tabular-nums shrink-0">{valueFormatter(item.value)}</span>
             </div>
           ))}
         </div>

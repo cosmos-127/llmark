@@ -255,9 +255,9 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
         name: `Model Weights (${modelProfile.displayName})`,
         sizeGb: modelWeightsGb,
         pct: (modelWeightsGb / targetMemoryGb) * 100,
-        color: "bg-[#612D53] dark:bg-[#C14594]",
-        textColor: "text-[#612D53] dark:text-[#E270BB]",
-        border: "border-[#612D53]/40",
+        color: "bg-[#1D4ED8] dark:bg-[#0284C7]",
+        textColor: "text-[#1D4ED8] dark:text-[#38BDF8]",
+        border: "border-[#1D4ED8]/40",
         desc: `Fixed ${modelProfile.precision} parameter weights for ${modelProfile.displayName} resident in GPU HBM.`,
       },
       {
@@ -265,9 +265,9 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
         name: `KV Cache Buffer (${concurrency} streams)`,
         sizeGb: kvCacheGb,
         pct: (kvCacheGb / targetMemoryGb) * 100,
-        color: cacheBust ? "bg-[#853953] dark:bg-[#D84577]" : "bg-emerald-600 dark:bg-emerald-500",
-        textColor: cacheBust ? "text-[#853953] dark:text-[#F06A9A]" : "text-emerald-700 dark:text-emerald-400",
-        border: cacheBust ? "border-[#853953]/40" : "border-emerald-500/40",
+        color: cacheBust ? "bg-[#2563EB] dark:bg-[#3B82F6]" : "bg-emerald-600 dark:bg-emerald-500",
+        textColor: cacheBust ? "text-[#2563EB] dark:text-[#60A5FA]" : "text-emerald-700 dark:text-emerald-400",
+        border: cacheBust ? "border-[#2563EB]/40" : "border-emerald-500/40",
         desc: cacheBust
           ? `Cold KV cache buffer allocated across ${concurrency} independent streams (${modelProfile.layers} layers).`
           : `Prefix-shared KV cache buffer (+${sharedPromptSavingsGb}GB VRAM saved).`,
@@ -287,9 +287,9 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
         name: "Available Headroom (Free VRAM)",
         sizeGb: freeGb,
         pct: (freeGb / targetMemoryGb) * 100,
-        color: "bg-[#F3F4F4] dark:bg-[#14141B] border border-dashed border-[#2C2C2C]/20",
-        textColor: "text-[#2C2C2C]/60 dark:text-slate-400",
-        border: "border-[#2C2C2C]/20",
+        color: "bg-[#F1F5F9] dark:bg-[#1E293B] border border-dashed border-[#0F172A]/20",
+        textColor: "text-[#0F172A]/60 dark:text-slate-400",
+        border: "border-[#0F172A]/20",
         desc: `Unallocated GPU high-bandwidth memory available for additional concurrency on ${activeGpu.shortName}.`,
       },
     ];
@@ -298,20 +298,20 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
   }, [modelWeightsGb, modelProfile, kvCacheGb, totalAllocatedGb, targetMemoryGb, concurrency, cacheBust, sharedPromptSavingsGb, activeGpu]);
 
   return (
-    <div className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 bg-white dark:bg-[#0F0F13] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#111827] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar with GPU Architecture Selector */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-xl border ${
             isOverVramLimit
               ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-400"
-              : "bg-[#853953]/10 dark:bg-[#D84577]/15 border-[#853953]/30 text-[#853953] dark:text-[#F06A9A]"
+              : "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/30 text-[#2563EB] dark:text-[#60A5FA]"
           } shadow-2xs`}>
             <HardDrive className="h-5 w-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#2C2C2C] dark:text-white">
+              <span className="text-sm font-bold text-[#0F172A] dark:text-white">
                 GPU VRAM Allocation & KV Cache Sizing Matrix
               </span>
               <Badge
@@ -319,21 +319,21 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
                 className={`text-[10px] font-sans py-0 px-2 ${
                   isOverVramLimit
                     ? "text-rose-700 dark:text-rose-400 border-rose-300 bg-rose-50 dark:bg-rose-950/30 font-bold"
-                    : "text-[#853953] dark:text-[#F06A9A]"
+                    : "text-[#2563EB] dark:text-[#60A5FA]"
                 }`}
               >
                 {isOverVramLimit ? "VRAM Capacity Warning (>92%)" : `${vramUtilizationPct}% VRAM Occupancy`}
               </Badge>
             </div>
-            <p className="text-xs text-[#2C2C2C]/65 dark:text-white/65 mt-0.5">
+            <p className="text-xs text-[#0F172A]/65 dark:text-white/65 mt-0.5">
               Hardware simulation for {activeGpu.name} ({activeGpu.memoryGb}GB HBM3e • {activeGpu.bandwidthTb} TB/s bandwidth).
             </p>
           </div>
         </div>
 
         {/* Interactive GPU Model Switcher */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#F3F4F4] dark:bg-[#14141B] border border-[#2C2C2C]/10 shadow-inner">
-          <span className="text-[10px] font-sans text-[#2C2C2C]/50 dark:text-slate-400 px-1.5 font-semibold flex items-center gap-1">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#F1F5F9] dark:bg-[#1E293B] border border-[#0F172A]/10 shadow-inner">
+          <span className="text-[10px] font-sans text-[#0F172A]/50 dark:text-slate-400 px-1.5 font-semibold flex items-center gap-1">
             <Server className="h-3.5 w-3.5" /> Target GPU:
           </span>
           {GPU_PROFILES.map((gpu) => (
@@ -343,8 +343,8 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
               onClick={() => setSelectedGpuId(gpu.id)}
               className={`text-[11px] font-sans font-medium px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                 selectedGpuId === gpu.id
-                  ? "bg-[#853953] text-white shadow-xs"
-                  : "text-[#2C2C2C]/70 dark:text-slate-300 hover:bg-white dark:hover:bg-[#1A1A24]"
+                  ? "bg-[#2563EB] text-white shadow-xs"
+                  : "text-[#0F172A]/70 dark:text-slate-300 hover:bg-white dark:hover:bg-[#1E293B]"
               }`}
             >
               {gpu.shortName}
@@ -354,20 +354,20 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
       </div>
 
       {/* Visual Memory Allocation Bar */}
-      <div className="space-y-2 p-4 sm:p-5 rounded-2xl bg-[#F3F4F4]/70 dark:bg-[#14141B] border border-[#2C2C2C]/10">
-        <div className="flex items-center justify-between text-xs font-sans text-[#2C2C2C]/70 dark:text-slate-300">
-          <span className="font-semibold text-[#2C2C2C] dark:text-white flex items-center gap-2">
+      <div className="space-y-2 p-4 sm:p-5 rounded-2xl bg-[#F1F5F9]/70 dark:bg-[#1E293B] border border-[#0F172A]/10">
+        <div className="flex items-center justify-between text-xs font-sans text-[#0F172A]/70 dark:text-slate-300">
+          <span className="font-semibold text-[#0F172A] dark:text-white flex items-center gap-2">
             <span>{activeGpu.name} Memory Partition</span>
-            <span className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 font-normal">
-              (Target: <strong className="text-[#612D53] dark:text-[#E270BB] font-semibold">{modelProfile.displayName}</strong>)
+            <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-normal">
+              (Target: <strong className="text-[#1D4ED8] dark:text-[#38BDF8] font-semibold">{modelProfile.displayName}</strong>)
             </span>
           </span>
-          <span className={`tabular-nums font-bold text-xs ${isOverVramLimit ? "text-rose-700 dark:text-rose-400" : "text-[#853953] dark:text-[#F06A9A]"}`}>
+          <span className={`tabular-nums font-bold text-xs ${isOverVramLimit ? "text-rose-700 dark:text-rose-400" : "text-[#2563EB] dark:text-[#60A5FA]"}`}>
             {totalAllocatedGb} / {targetMemoryGb} GB ({vramUtilizationPct}%)
           </span>
         </div>
 
-        <div className="h-7 w-full rounded-xl bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 p-0.5 flex items-center overflow-hidden gap-1 select-none shadow-inner">
+        <div className="h-7 w-full rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 p-0.5 flex items-center overflow-hidden gap-1 select-none shadow-inner">
           {segments.map((seg) => (
             <motion.div
               key={seg.id}
@@ -377,7 +377,7 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
               onMouseEnter={() => setHoveredSegment(seg)}
               onMouseLeave={() => setHoveredSegment(null)}
               className={`h-full rounded-lg ${seg.color} cursor-pointer transition-all flex items-center justify-center text-xs font-sans font-bold text-white truncate px-1 shadow-2xs hover:brightness-110 ${
-                seg.id === "free" ? "text-[#2C2C2C]/60 dark:text-slate-400" : ""
+                seg.id === "free" ? "text-[#0F172A]/60 dark:text-slate-400" : ""
               }`}
             >
               {seg.pct >= 6 && <span>{seg.sizeGb} GB</span>}
@@ -392,23 +392,23 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
               initial={{ opacity: 0, y: 3 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 3 }}
-              className="p-2.5 rounded-xl bg-[#2C2C2C]/95 dark:bg-black/95 text-white text-xs flex items-center justify-between shadow-lg backdrop-blur-md border border-white/10"
+              className="p-2.5 rounded-xl bg-[#0F172A]/95 dark:bg-black/95 text-white text-xs flex items-center justify-between shadow-lg backdrop-blur-md border border-white/10"
             >
               <div className="flex items-center gap-2.5">
-                <span className="font-bold text-white">{hoveredSegment.name}</span>
-                <span className="text-[#A74B6A] font-sans font-extrabold">{hoveredSegment.sizeGb} GB ({Math.round(hoveredSegment.pct)}%)</span>
+                <span className="font-semibold text-white">{hoveredSegment.name}</span>
+                <span className="text-[#3B82F6] font-sans font-bold">{hoveredSegment.sizeGb} GB ({Math.round(hoveredSegment.pct)}%)</span>
               </div>
               <span className="text-[11px] text-white/75 font-sans">{hoveredSegment.desc}</span>
             </motion.div>
           ) : (
-            <div className="flex items-center justify-between text-xs font-sans text-[#2C2C2C]/70 dark:text-slate-300 pt-1">
+            <div className="flex items-center justify-between text-xs font-sans text-[#0F172A]/70 dark:text-slate-300 pt-1">
               <div className="flex items-center gap-3.5 flex-wrap">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-[#612D53] dark:bg-[#C14594]" />
+                  <span className="h-2.5 w-2.5 rounded-xs bg-[#1D4ED8] dark:bg-[#0284C7]" />
                   <span>{modelProfile.displayName} Weights ({modelWeightsGb}GB)</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className={`h-2.5 w-2.5 rounded-xs ${cacheBust ? "bg-[#853953] dark:bg-[#D84577]" : "bg-emerald-600 dark:bg-emerald-500"}`} />
+                  <span className={`h-2.5 w-2.5 rounded-xs ${cacheBust ? "bg-[#2563EB] dark:bg-[#3B82F6]" : "bg-emerald-600 dark:bg-emerald-500"}`} />
                   <span>KV Cache ({kvCacheGb}GB)</span>
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -426,18 +426,18 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
 
       {/* Physics Insight Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Cpu className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
+          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Cpu className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
             KV Cache Allocation State
           </span>
-          <div className="font-bold text-[#853953] dark:text-[#F06A9A] text-xs truncate">
+          <div className="font-bold text-[#2563EB] dark:text-[#60A5FA] text-xs truncate">
             {cacheBust ? "Cold Prefill (Independent Slots)" : "Prefix Shared (Reused Blocks)"}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
+          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             Prefix Cache VRAM Savings
           </span>
@@ -446,26 +446,26 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 space-y-1">
-          <span className="text-[11px] text-[#2C2C2C]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Layers className="h-3.5 w-3.5 text-[#612D53] dark:text-[#E270BB]" />
+        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
+          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Layers className="h-3.5 w-3.5 text-[#1D4ED8] dark:text-[#38BDF8]" />
             Target Architecture Spec
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#2C2C2C] dark:text-white text-xs truncate">
+          <div className="font-sans tabular-nums font-semibold text-[#0F172A] dark:text-white text-xs truncate">
             {concurrency} streams @ {maxTokens} tok ({modelProfile.layers} layers)
           </div>
         </div>
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F3F4F4]/80 dark:bg-[#14141B] border border-[#2C2C2C]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#1E293B] border border-[#0F172A]/10 space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#2C2C2C] dark:text-white cursor-pointer hover:text-[#853953] dark:hover:text-[#F06A9A]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[#0F172A] dark:text-white cursor-pointer hover:text-[#2563EB] dark:hover:text-[#60A5FA]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+            <BookOpen className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
             <span>KV Cache Architecture: MHA, GQA, MLA & PagedAttention</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -477,25 +477,25 @@ export const VramAllocationMatrix: React.FC<VramAllocationMatrixProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#2C2C2C]/10 dark:border-white/10"
+              className="space-y-3 pt-2 text-xs border-t border-[#0F172A]/10 dark:border-white/10"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#853953] dark:text-[#F06A9A]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
+                  <span className="font-semibold text-[#2563EB] dark:text-[#60A5FA]">
                     KV Cache Size Formulation (per token):
                   </span>
                   <MathFormula math="\text{Bytes}_{\text{KV}} = 2 \times n_{\text{layers}} \times n_{\text{heads\_kv}} \times d_{\text{head}} \times b_{\text{elem}}" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
                     Grouped-Query Attention (GQA) with 8 KV heads reduces KV memory footprint by up to 8x compared to Multi-Head Attention (MHA).
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 space-y-1.5">
-                  <span className="font-semibold text-[#612D53] dark:text-[#E270BB]">
+                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
+                  <span className="font-semibold text-[#1D4ED8] dark:text-[#38BDF8]">
                     Prefix Caching Compression Savings:
                   </span>
                   <MathFormula math="\Delta \text{VRAM}_{\text{saved}} = (B - 1) \cdot N_{\text{prompt}} \cdot \text{Bytes}_{\text{KV\_per\_token}}" block />
-                  <p className="text-[11px] text-[#2C2C2C]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
                     Radix trees in PagedAttention share immutable system prompts across concurrent streams <MathFormula math="B" />, unlocking massive concurrency on fixed VRAM.
                   </p>
                 </div>

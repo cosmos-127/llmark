@@ -26,21 +26,21 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
 
   if (!dist || !dist.bins || dist.bins.length === 0) {
     return (
-      <Card className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 shadow-xs bg-white dark:bg-[#121217]">
+      <Card className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 shadow-xs bg-white dark:bg-[#0F172A]">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+              <BarChart3 className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
               <CardTitle className="text-sm font-semibold font-sans">
                 Tail Latency Distribution Histogram
               </CardTitle>
             </div>
           </div>
-          <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
+          <CardDescription className="text-xs text-[#0F172A]/60 dark:text-slate-400">
             Measures population dispersion, queue stalls, and bimodal execution patterns.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6 text-center text-xs text-[#2C2C2C]/50 dark:text-slate-400">
+        <CardContent className="p-6 text-center text-xs text-[#0F172A]/50 dark:text-slate-400">
           Awaiting completion of at least 2 requests to generate population distribution bins...
         </CardContent>
       </Card>
@@ -53,30 +53,30 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
   const isHighJitter = dist.cv >= 0.35;
 
   return (
-    <Card className="rounded-2xl border border-[#2C2C2C]/10 dark:border-white/10 shadow-xs bg-white dark:bg-[#121217]">
-      <CardHeader className="p-4 pb-2 border-b border-[#2C2C2C]/5 dark:border-white/5">
+    <Card className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 shadow-xs bg-white dark:bg-[#0F172A]">
+      <CardHeader className="p-4 pb-2 border-b border-[#0F172A]/5 dark:border-white/5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-[#853953] dark:text-[#F06A9A]" />
+            <BarChart3 className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
             <div>
               <CardTitle className="text-sm font-semibold font-sans">
                 Tail Latency Distribution Histogram
               </CardTitle>
-              <CardDescription className="text-[11px] text-[#2C2C2C]/60 dark:text-slate-400">
+              <CardDescription className="text-[11px] text-[#0F172A]/60 dark:text-slate-400">
                 Frequency distribution across {dist.count} completed requests with dispersion & peak analysis.
               </CardDescription>
             </div>
           </div>
 
           {/* Metric Mode Pill Switcher */}
-          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#F3F4F4] dark:bg-[#0B0B0E] border border-[#2C2C2C]/10 dark:border-white/10 text-xs">
+          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 text-xs">
             <button
               type="button"
               onClick={() => setMetricMode("ttft")}
               className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
                 metricMode === "ttft"
-                  ? "bg-white dark:bg-[#1C1C26] text-[#853953] dark:text-[#F06A9A] shadow-2xs font-semibold"
-                  : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
+                  ? "bg-white dark:bg-[#1E293B] text-[#2563EB] dark:text-[#60A5FA] shadow-2xs font-semibold"
+                  : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
               }`}
             >
               TTFT (Prefill)
@@ -86,8 +86,8 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
               onClick={() => setMetricMode("e2e")}
               className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
                 metricMode === "e2e"
-                  ? "bg-white dark:bg-[#1C1C26] text-[#853953] dark:text-[#F06A9A] shadow-2xs font-semibold"
-                  : "text-[#2C2C2C]/70 dark:text-slate-400 hover:text-[#2C2C2C] dark:hover:text-white"
+                  ? "bg-white dark:bg-[#1E293B] text-[#2563EB] dark:text-[#60A5FA] shadow-2xs font-semibold"
+                  : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
               }`}
             >
               E2E Turnaround
@@ -97,17 +97,17 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
 
         {/* Statistical Summary Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 font-sans">
-          <div className="p-2.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/5 dark:border-white/5">
-            <span className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 block font-medium">Mean ± StdDev</span>
-            <span className="text-xs font-semibold tabular-nums text-[#2C2C2C] dark:text-white">
+          <div className="p-2.5 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/5 dark:border-white/5">
+            <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 block font-medium">Mean ± StdDev</span>
+            <span className="text-xs font-semibold tabular-nums text-[#0F172A] dark:text-white">
               {dist.mean_ms.toFixed(0)} ms ± {dist.std_dev_ms.toFixed(0)} ms
             </span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/5 dark:border-white/5">
-            <span className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 block font-medium">Jitter CV (σ / μ)</span>
+          <div className="p-2.5 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/5 dark:border-white/5">
+            <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 block font-medium">Jitter CV (σ / μ)</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-xs font-semibold tabular-nums text-[#2C2C2C] dark:text-white">
+              <span className="text-xs font-semibold tabular-nums text-[#0F172A] dark:text-white">
                 {dist.cv.toFixed(2)}
               </span>
               <Badge
@@ -123,21 +123,21 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
             </div>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/5 dark:border-white/5">
-            <span className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 block font-medium">Tail Spread (P99 / P50)</span>
-            <span className="text-xs font-semibold tabular-nums text-[#612D53] dark:text-[#E270BB]">
+          <div className="p-2.5 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/5 dark:border-white/5">
+            <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 block font-medium">Tail Spread (P99 / P50)</span>
+            <span className="text-xs font-semibold tabular-nums text-[#1D4ED8] dark:text-[#38BDF8]">
               {tailRatio}x Spread
             </span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-[#F3F4F4]/50 dark:bg-[#0B0B0E] border border-[#2C2C2C]/5 dark:border-white/5">
-            <span className="text-[10px] text-[#2C2C2C]/60 dark:text-slate-400 block font-medium">Distribution Profile</span>
+          <div className="p-2.5 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/5 dark:border-white/5">
+            <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 block font-medium">Distribution Profile</span>
             <div className="flex items-center gap-1 mt-0.5">
               <Badge
                 variant="outline"
                 className={`text-[10px] px-1.5 py-0 border-0 font-medium ${
                   dist.bimodal_detected
-                    ? "bg-[#853953]/15 text-[#853953] dark:text-[#F06A9A]"
+                    ? "bg-[#2563EB]/15 text-[#2563EB] dark:text-[#60A5FA]"
                     : "bg-blue-500/10 text-blue-700 dark:text-blue-400"
                 }`}
               >
@@ -149,13 +149,13 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
 
         {/* Bimodal Alert Banner if detected */}
         {dist.bimodal_detected && dist.bimodal_description && (
-          <div className="mt-2 p-2.5 rounded-xl bg-[#853953]/10 border border-[#853953]/20 flex items-start gap-2 text-xs">
-            <AlertCircle className="h-4 w-4 text-[#853953] dark:text-[#F06A9A] shrink-0 mt-0.5" />
+          <div className="mt-2 p-2.5 rounded-xl bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-start gap-2 text-xs">
+            <AlertCircle className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA] shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-[#853953] dark:text-[#F06A9A]">
+              <p className="font-semibold text-[#2563EB] dark:text-[#60A5FA]">
                 {dist.bimodal_description}
               </p>
-              <p className="text-[11px] text-[#2C2C2C]/70 dark:text-slate-300 mt-0.5">
+              <p className="text-[11px] text-[#0F172A]/70 dark:text-slate-300 mt-0.5">
                 Latency clusters into two operational modes. Typically caused by prompt prefix cache hits vs misses, or continuous batching queue preemption.
               </p>
             </div>
@@ -189,7 +189,7 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="rounded-xl bg-[#1A1A24] border border-white/10 p-2.5 text-white text-xs shadow-xl space-y-1">
+                      <div className="rounded-xl bg-[#1E293B] border border-white/10 p-2.5 text-white text-xs shadow-xl space-y-1">
                         <p className="font-semibold text-[11px] text-slate-300">
                           Range: {data.bin_start_ms}ms - {data.bin_end_ms}ms
                         </p>
@@ -206,7 +206,7 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
                 {dist.bins.map((entry, index) => {
                   const isNearP95 = entry.bin_start_ms <= p95 && entry.bin_end_ms >= p95;
                   const isNearP50 = entry.bin_start_ms <= p50 && entry.bin_end_ms >= p50;
-                  let fill = "#853953";
+                  let fill = "#2563EB";
                   if (isNearP95) fill = "#DC2626";
                   else if (isNearP50) fill = "#10B981";
                   return <Cell key={`cell-${index}`} fill={fill} opacity={0.85} />;
@@ -242,7 +242,7 @@ export const LatencyDistributionChart: React.FC<LatencyDistributionChartProps> =
           </ResponsiveContainer>
         </div>
 
-        <div className="flex items-center justify-between pt-2 text-[10px] text-[#2C2C2C]/50 dark:text-slate-400 border-t border-[#2C2C2C]/5 dark:border-white/5 font-sans">
+        <div className="flex items-center justify-between pt-2 text-[10px] text-[#0F172A]/50 dark:text-slate-400 border-t border-[#0F172A]/5 dark:border-white/5 font-sans">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />

@@ -99,11 +99,41 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  /* User Specified Palette: Dark to Light */
-  --color-palette-charcoal: #2C2C2C;
-  --color-palette-deepplum: #612D53;
-  --color-palette-mulberry: #853953;
-  --color-palette-light: #F3F4F4;
+  /* ── Exact Named Tokens from theme.css ───────────────────────────── */
+  --color-bg-app: var(--bg-app);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-elevated: var(--bg-surface-elevated);
+  --color-bg-surface-subtle: var(--bg-surface-subtle);
+  --color-bg-surface-hover: var(--bg-surface-hover);
+  --color-bg-header: var(--bg-header);
+  --color-bg-sidebar: var(--bg-sidebar);
+  --color-bg-card: var(--bg-card);
+  --color-bg-input: var(--bg-input);
+  --color-bg-dialog: var(--bg-dialog);
+  --color-bg-popover: var(--bg-popover);
+
+  --color-text-heading: var(--text-heading);
+  --color-text-subheading: var(--text-subheading);
+  --color-text-body: var(--text-body);
+  --color-text-label: var(--text-label);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-text-placeholder: var(--text-placeholder);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-border-subtle: var(--border-subtle);
+  --color-border-medium: var(--border-medium);
+  --color-border-strong: var(--border-strong);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-primary-light: var(--brand-primary-light);
+  --color-brand-primary-border: var(--brand-primary-border);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-hover: var(--brand-secondary-hover);
+  --color-brand-secondary-light: var(--brand-secondary-light);
+  --color-brand-secondary-border: var(--brand-secondary-border);
 }
 
 /* Animations */

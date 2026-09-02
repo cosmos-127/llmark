@@ -39,46 +39,46 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 }) => {
   const accentColorMap = {
     mulberry: {
-      text: "text-[#853953] dark:text-[#F06A9A]",
-      bg: "bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/40",
-      border: "hover:border-[#853953] dark:hover:border-[#E05284]",
-      ring: "hover:shadow-[#853953]/5 dark:hover:shadow-[#E05284]/10",
+      text: "text-[#2563EB] dark:text-[#60A5FA]",
+      bg: "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/40",
+      border: "hover:border-[#2563EB] dark:hover:border-[#3B82F6]",
+      ring: "hover:shadow-[#2563EB]/5 dark:hover:shadow-[#3B82F6]/10",
     },
     amber: {
-      text: "text-[#853953] dark:text-[#F06A9A]",
-      bg: "bg-[#853953]/10 dark:bg-[#E05284]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/40",
-      border: "hover:border-[#853953] dark:hover:border-[#E05284]",
-      ring: "hover:shadow-[#853953]/5 dark:hover:shadow-[#E05284]/10",
+      text: "text-[#2563EB] dark:text-[#60A5FA]",
+      bg: "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/40",
+      border: "hover:border-[#2563EB] dark:hover:border-[#3B82F6]",
+      ring: "hover:shadow-[#2563EB]/5 dark:hover:shadow-[#3B82F6]/10",
     },
     deepplum: {
-      text: "text-[#612D53] dark:text-[#E270BB]",
-      bg: "bg-[#612D53]/10 dark:bg-[#C14594]/15 text-[#612D53] dark:text-[#E270BB] border border-[#612D53]/25 dark:border-[#C14594]/40",
-      border: "hover:border-[#612D53] dark:hover:border-[#C14594]",
-      ring: "hover:shadow-[#612D53]/5 dark:hover:shadow-[#C14594]/10",
+      text: "text-[#1D4ED8] dark:text-[#38BDF8]",
+      bg: "bg-[#1D4ED8]/10 dark:bg-[#0284C7]/15 text-[#1D4ED8] dark:text-[#38BDF8] border border-[#1D4ED8]/25 dark:border-[#0284C7]/40",
+      border: "hover:border-[#1D4ED8] dark:hover:border-[#0284C7]",
+      ring: "hover:shadow-[#1D4ED8]/5 dark:hover:shadow-[#0284C7]/10",
     },
     violet: {
-      text: "text-[#612D53] dark:text-[#E270BB]",
-      bg: "bg-[#612D53]/10 dark:bg-[#C14594]/15 text-[#612D53] dark:text-[#E270BB] border border-[#612D53]/25 dark:border-[#C14594]/40",
-      border: "hover:border-[#612D53] dark:hover:border-[#C14594]",
-      ring: "hover:shadow-[#612D53]/5 dark:hover:shadow-[#C14594]/10",
+      text: "text-[#1D4ED8] dark:text-[#38BDF8]",
+      bg: "bg-[#1D4ED8]/10 dark:bg-[#0284C7]/15 text-[#1D4ED8] dark:text-[#38BDF8] border border-[#1D4ED8]/25 dark:border-[#0284C7]/40",
+      border: "hover:border-[#1D4ED8] dark:hover:border-[#0284C7]",
+      ring: "hover:shadow-[#1D4ED8]/5 dark:hover:shadow-[#0284C7]/10",
     },
     sky: {
-      text: "text-[#612D53] dark:text-[#38BDF8]",
-      bg: "bg-[#612D53]/10 dark:bg-sky-950/50 text-[#612D53] dark:text-sky-300 border border-[#612D53]/25 dark:border-sky-800/80",
-      border: "hover:border-[#612D53] dark:hover:border-sky-600",
-      ring: "hover:shadow-[#612D53]/5 dark:hover:shadow-sky-500/10",
+      text: "text-[#1D4ED8] dark:text-[#38BDF8]",
+      bg: "bg-[#1D4ED8]/10 dark:bg-sky-950/50 text-[#1D4ED8] dark:text-sky-300 border border-[#1D4ED8]/25 dark:border-sky-800/80",
+      border: "hover:border-[#1D4ED8] dark:hover:border-sky-600",
+      ring: "hover:shadow-[#1D4ED8]/5 dark:hover:shadow-sky-500/10",
     },
     charcoal: {
-      text: "text-[#2C2C2C] dark:text-white",
-      bg: "bg-[#2C2C2C]/10 dark:bg-white/[0.06] text-[#2C2C2C] dark:text-white border border-[#2C2C2C]/20 dark:border-white/10",
-      border: "hover:border-[#2C2C2C] dark:hover:border-white/30",
-      ring: "hover:shadow-[#2C2C2C]/5",
+      text: "text-[#0F172A] dark:text-white",
+      bg: "bg-[#0F172A]/10 dark:bg-white/[0.06] text-[#0F172A] dark:text-white border border-[#0F172A]/20 dark:border-white/10",
+      border: "hover:border-[#0F172A] dark:hover:border-white/30",
+      ring: "hover:shadow-[#0F172A]/5",
     },
     zinc: {
-      text: "text-[#2C2C2C] dark:text-white",
-      bg: "bg-[#2C2C2C]/10 dark:bg-white/[0.06] text-[#2C2C2C] dark:text-white border border-[#2C2C2C]/20 dark:border-white/10",
-      border: "hover:border-[#2C2C2C] dark:hover:border-white/30",
-      ring: "hover:shadow-[#2C2C2C]/5",
+      text: "text-[#0F172A] dark:text-white",
+      bg: "bg-[#0F172A]/10 dark:bg-white/[0.06] text-[#0F172A] dark:text-white border border-[#0F172A]/20 dark:border-white/10",
+      border: "hover:border-[#0F172A] dark:hover:border-white/30",
+      ring: "hover:shadow-[#0F172A]/5",
     },
     emerald: {
       text: "text-emerald-700 dark:text-emerald-400",
@@ -104,7 +104,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             {value}
           </span>
           {unit && (
-            <span className="text-xs sm:text-sm font-medium text-[#2C2C2C]/50 dark:text-slate-400">
+            <span className="text-xs sm:text-sm font-medium text-[#0F172A]/50 dark:text-slate-400">
               {unit}
             </span>
           )}
@@ -128,7 +128,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             {num}
           </span>
           {finalUnit && (
-            <span className="text-xs sm:text-sm font-medium text-[#2C2C2C]/50 dark:text-slate-400 ml-1">
+            <span className="text-xs sm:text-sm font-medium text-[#0F172A]/50 dark:text-slate-400 ml-1">
               {finalUnit}
             </span>
           )}
@@ -146,7 +146,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   const cardContent = (
     <Card
       className={cn(
-        "group h-full flex flex-col justify-between transition-all duration-150 cursor-pointer bg-white dark:bg-[#0F0F13] border border-[#2C2C2C]/10 dark:border-white/[0.08] shadow-2xs hover:shadow-xs hover:border-[#853953]/35 dark:hover:border-[#E05284]/40",
+        "group h-full flex flex-col justify-between transition-all duration-150 cursor-pointer bg-white dark:bg-[#111827] border border-[#0F172A]/10 dark:border-white/[0.08] shadow-2xs hover:shadow-xs hover:border-[#2563EB]/35 dark:hover:border-[#3B82F6]/40",
         currentTheme.border,
         className
       )}
@@ -154,7 +154,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
         <CardContent className="p-4 sm:p-5 flex flex-col justify-between h-full">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-[#2C2C2C]/80 dark:text-slate-200 tracking-tight font-sans">
+              <span className="text-xs font-semibold text-[#0F172A]/80 dark:text-slate-200 tracking-tight font-sans">
                 {title}
               </span>
               {badge && (
@@ -192,7 +192,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           </div>
 
           {subtext && (
-            <div className="text-xs font-sans font-normal text-[#2C2C2C]/60 dark:text-slate-400 truncate flex items-center justify-between pt-2 border-t border-[#2C2C2C]/5 dark:border-white/[0.06] tabular-nums">
+            <div className="text-xs font-sans font-normal text-[#0F172A]/60 dark:text-slate-400 truncate flex items-center justify-between pt-2 border-t border-[#0F172A]/5 dark:border-white/[0.06] tabular-nums">
               <span>{subtext}</span>
             </div>
           )}

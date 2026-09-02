@@ -307,9 +307,9 @@ export const LLMarkLogo: React.FC<BrandLogoProps> = ({ className = "h-5 w-5", si
   >
     <defs>
       <linearGradient id="llmark-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#E05284" />
-        <stop offset="50%" stopColor="#853953" />
-        <stop offset="100%" stopColor="#612D53" />
+        <stop offset="0%" stopColor="#3B82F6" />
+        <stop offset="50%" stopColor="#2563EB" />
+        <stop offset="100%" stopColor="#1D4ED8" />
       </linearGradient>
     </defs>
     <rect width="28" height="28" rx="7.5" fill="url(#llmark-logo-grad)" />
@@ -322,6 +322,6 @@ export const LLMarkLogo: React.FC<BrandLogoProps> = ({ className = "h-5 w-5", si
       strokeLinejoin="round"
     />
     {/* Precision latency impulse spark dot */}
-    <circle cx="20.5" cy="8" r="1.75" fill="#FCE7F3" />
+    <circle cx="20.5" cy="8" r="1.75" fill="#EFF6FF" />
   </svg>
 );

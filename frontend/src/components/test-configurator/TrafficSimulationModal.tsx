@@ -49,17 +49,17 @@ export const TrafficSimulationModal: React.FC<TrafficSimulationModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-5xl lg:max-w-6xl p-6 sm:p-7 rounded-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-4 border-b border-[#2C2C2C]/10 dark:border-white/10">
+        <DialogHeader className="pb-4 border-b border-[#0F172A]/10 dark:border-white/10">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#853953]/10 dark:bg-[#D84577]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35 shadow-xs">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35 shadow-xs">
                 <Waves className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-base sm:text-lg font-bold text-[#2C2C2C] dark:text-white">
+                <DialogTitle className="text-base sm:text-lg font-bold text-[#0F172A] dark:text-white">
                   Traffic Dispatch Waveform & Hardware VRAM Simulation
                 </DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm text-[#2C2C2C]/65 dark:text-white/65">
+                <DialogDescription className="text-xs sm:text-sm text-[#0F172A]/65 dark:text-white/65">
                   Simulate dynamic request arrival curves, token bucket quota drainage, and GPU VRAM KV-cache partitioning.
                 </DialogDescription>
               </div>
@@ -83,7 +83,7 @@ export const TrafficSimulationModal: React.FC<TrafficSimulationModalProps> = ({
                       onOpenExpert("caching-vram", "Hardware VRAM & KV Cache", "How is KV cache memory calculated per stream?");
                     }
                   }}
-                  className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-xl text-xs font-semibold bg-[#853953]/10 dark:bg-[#D84577]/15 text-[#853953] dark:text-[#F06A9A] hover:bg-[#853953]/20 border border-[#853953]/30 dark:border-[#E05284]/40 transition-all cursor-pointer shadow-2xs"
+                  className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-xl text-xs font-semibold bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] hover:bg-[#2563EB]/20 border border-[#2563EB]/30 dark:border-[#3B82F6]/40 transition-all cursor-pointer shadow-2xs"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   <span>Ask Expert</span>
@@ -108,8 +108,8 @@ export const TrafficSimulationModal: React.FC<TrafficSimulationModalProps> = ({
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 py-2 px-3.5 rounded-xl text-xs font-medium transition-all cursor-pointer shadow-2xs ${
                     isActive
-                      ? "bg-[#853953] text-white dark:bg-[#D84577] shadow-xs font-semibold"
-                      : "bg-[#F3F4F4] dark:bg-[#0B0B0E] text-[#2C2C2C]/70 dark:text-slate-300 hover:bg-[#853953]/10 hover:text-[#853953] dark:hover:text-[#F06A9A]"
+                      ? "bg-[#2563EB] text-white dark:bg-[#3B82F6] shadow-xs font-semibold"
+                      : "bg-[#F1F5F9] dark:bg-[#0F172A] text-[#0F172A]/70 dark:text-slate-300 hover:bg-[#2563EB]/10 hover:text-[#2563EB] dark:hover:text-[#60A5FA]"
                   }`}
                 >
                   <Icon className="h-4 w-4" />

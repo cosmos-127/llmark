@@ -939,21 +939,21 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
       <CardHeader className="p-4 sm:p-5 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#853953]/10 dark:bg-[#D84577]/15 text-[#853953] dark:text-[#F06A9A] border border-[#853953]/25 dark:border-[#E05284]/35">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35">
               <Activity className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-medium text-[#2C2C2C] dark:text-white">
+              <CardTitle className="text-sm font-medium text-[#0F172A] dark:text-white">
                 Preset-Targeted KPI Benchmark Matrix
               </CardTitle>
-              <CardDescription className="text-xs text-[#2C2C2C]/60 dark:text-slate-400">
-                Filtered strictly to target metrics relevant for workload preset: <strong className="font-semibold text-[#853953] dark:text-[#F06A9A]">{preset.replace("_", " ")}</strong>
+              <CardDescription className="text-xs text-[#0F172A]/60 dark:text-slate-400">
+                Filtered strictly to target metrics relevant for workload preset: <strong className="font-semibold text-[#2563EB] dark:text-[#60A5FA]">{preset.replace("_", " ")}</strong>
               </CardDescription>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono text-[10.5px] uppercase tracking-wider bg-white dark:bg-[#14141B] border-[#853953]/30 text-[#853953] dark:text-[#F06A9A] font-semibold">
+            <Badge variant="outline" className="font-mono text-[10.5px] uppercase tracking-wider bg-white dark:bg-[#1E293B] border-[#2563EB]/30 text-[#2563EB] dark:text-[#60A5FA] font-semibold">
               {rows.length} Relevant Metrics
             </Badge>
 
@@ -971,7 +971,7 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                 </>
               ) : (
                 <>
-                  <Copy className="h-3.5 w-3.5 text-[#853953] dark:text-[#F06A9A]" />
+                  <Copy className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
                   <span>Copy table</span>
                 </>
               )}
@@ -984,20 +984,20 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#2C2C2C]/5 dark:bg-[#F3F4F4]/5 hover:bg-[#2C2C2C]/5 dark:hover:bg-[#F3F4F4]/5 border-b border-[#2C2C2C]/10 dark:border-white/10">
-                <TableHead className="w-[34%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3 pl-4">
+              <TableRow className="bg-[#0F172A]/5 dark:bg-[#F1F5F9]/5 hover:bg-[#0F172A]/5 dark:hover:bg-[#F1F5F9]/5 border-b border-[#0F172A]/10 dark:border-white/10">
+                <TableHead className="w-[34%] font-semibold text-[11px] tracking-tight text-[#0F172A]/70 dark:text-slate-300 py-3 pl-4">
                   Dimension & Metric
                 </TableHead>
-                <TableHead className="w-[18%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
+                <TableHead className="w-[18%] font-semibold text-[11px] tracking-tight text-[#0F172A]/70 dark:text-slate-300 py-3">
                   P50 / Nominal
                 </TableHead>
-                <TableHead className="w-[22%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
+                <TableHead className="w-[22%] font-semibold text-[11px] tracking-tight text-[#0F172A]/70 dark:text-slate-300 py-3">
                   Tail / Measured
                 </TableHead>
-                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3">
+                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#0F172A]/70 dark:text-slate-300 py-3">
                   SLO Target
                 </TableHead>
-                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#2C2C2C]/70 dark:text-slate-300 py-3 text-right pr-4">
+                <TableHead className="w-[13%] font-semibold text-[11px] tracking-tight text-[#0F172A]/70 dark:text-slate-300 py-3 text-right pr-4">
                   Compliance
                 </TableHead>
               </TableRow>
@@ -1008,8 +1008,8 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                 const DimIcon = dimData.icon;
                 return (
                   <React.Fragment key={gIdx}>
-                    <TableRow className="bg-[#2C2C2C]/3 dark:bg-[#F3F4F4]/3 hover:bg-[#2C2C2C]/3 dark:hover:bg-[#F3F4F4]/3 border-y border-[#2C2C2C]/10 dark:border-white/10">
-                      <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#853953] dark:text-[#F06A9A] tracking-tight text-[11px] font-sans">
+                    <TableRow className="bg-[#0F172A]/3 dark:bg-[#F1F5F9]/3 hover:bg-[#0F172A]/3 dark:hover:bg-[#F1F5F9]/3 border-y border-[#0F172A]/10 dark:border-white/10">
+                      <TableCell colSpan={5} className="py-2.5 px-4 font-semibold text-[#2563EB] dark:text-[#60A5FA] tracking-tight text-[11px] font-sans">
                         <div className="flex items-center gap-1.5">
                           <DimIcon className="h-3.5 w-3.5" />
                           <span>{dimName}</span>
@@ -1018,26 +1018,26 @@ export const KpiSummaryTable: React.FC<KpiSummaryTableProps> = ({ snapshot, conf
                     </TableRow>
 
                     {dimData.rows.map((row, rIdx) => (
-                      <TableRow key={rIdx} className="hover:bg-[#F3F4F4]/50 dark:hover:bg-white/[0.03] transition-colors">
+                      <TableRow key={rIdx} className="hover:bg-[#F1F5F9]/50 dark:hover:bg-white/[0.03] transition-colors">
                         <TableCell className="font-medium pl-4">
                           <div className="flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-[#853953] dark:bg-[#D84577]" />
-                            <span className="font-medium text-[#2C2C2C] dark:text-white">{row.metric}</span>
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] dark:bg-[#3B82F6]" />
+                            <span className="font-medium text-[#0F172A] dark:text-white">{row.metric}</span>
                           </div>
-                          <p className="text-[11px] text-[#2C2C2C]/50 dark:text-slate-400 pl-3.5">
+                          <p className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 pl-3.5">
                             {row.description}
                           </p>
                         </TableCell>
 
-                        <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#2C2C2C] dark:text-white">
+                        <TableCell className="font-sans tabular-nums font-semibold text-sm text-[#0F172A] dark:text-white">
                           {row.p50}
                         </TableCell>
 
-                        <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/80 dark:text-slate-200">
+                        <TableCell className="font-sans tabular-nums text-xs text-[#0F172A]/80 dark:text-slate-200">
                           {row.tail}
                         </TableCell>
 
-                        <TableCell className="font-sans tabular-nums text-xs text-[#2C2C2C]/70 dark:text-slate-300">
+                        <TableCell className="font-sans tabular-nums text-xs text-[#0F172A]/70 dark:text-slate-300">
                           {row.slo}
                         </TableCell>
 

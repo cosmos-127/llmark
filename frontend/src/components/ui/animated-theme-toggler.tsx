@@ -364,8 +364,8 @@ export const AnimatedThemeToggler = React.forwardRef<HTMLButtonElement, Animated
         onClick={handleClick}
         className={cn(
           "relative flex h-8 w-8 items-center justify-center rounded-xl border transition-all duration-300 cursor-pointer select-none overflow-hidden",
-          "bg-white dark:bg-[#0F0F13] border-[#853953]/25 dark:border-[#E05284]/40 text-[#853953] dark:text-[#F06A9A]",
-          "hover:scale-105 active:scale-95 shadow-xs hover:shadow-sm",
+          "bg-[var(--toggle-btn-bg)] border-[var(--toggle-btn-border)] text-[var(--toggle-btn-text)]",
+          "hover:bg-[var(--toggle-btn-hover)] hover:border-[var(--brand-primary)] hover:scale-105 active:scale-95 shadow-xs hover:shadow-sm",
           className
         )}
         {...props}
@@ -375,7 +375,7 @@ export const AnimatedThemeToggler = React.forwardRef<HTMLButtonElement, Animated
         ) : isDark ? (
           <Sun className="h-4 w-4 text-amber-400 transition-transform duration-300 hover:rotate-45" />
         ) : (
-          <Moon className="h-4 w-4 fill-current text-[#853953] transition-transform duration-300 hover:-rotate-12" />
+          <Moon className="h-4 w-4 fill-current text-[var(--toggle-btn-text)] transition-transform duration-300 hover:-rotate-12" />
         )}
         <span className="sr-only">Toggle theme</span>
       </button>

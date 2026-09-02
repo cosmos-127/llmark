@@ -32,13 +32,13 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] gap-4 border border-[#2C2C2C]/15 dark:border-white/10 bg-white dark:bg-[#14141B] p-6 sm:p-7 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-3xl max-h-[90vh] overflow-y-auto text-[#2C2C2C] dark:text-white transition-colors duration-150",
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] gap-4 border border-[var(--border-subtle)] bg-[var(--bg-dialog)] p-6 sm:p-7 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 rounded-3xl max-h-[90vh] overflow-y-auto text-[var(--text-main)] transition-colors duration-150",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xl p-2 text-[#2C2C2C]/50 dark:text-slate-400 opacity-70 ring-offset-background transition-opacity hover:opacity-100 hover:bg-[#F3F4F4] dark:hover:bg-white/10 hover:text-[#2C2C2C] dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none cursor-pointer">
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xl p-2 text-[var(--text-muted)] opacity-70 ring-offset-background transition-opacity hover:opacity-100 hover:bg-[var(--bg-surface-hover)] hover:text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 disabled:pointer-events-none cursor-pointer">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -67,7 +67,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-3 border-t border-[#2C2C2C]/10 dark:border-white/[0.08]",
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-3 border-t border-[var(--border-subtle)]",
       className
     )}
     {...props}
@@ -82,7 +82,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-base font-semibold leading-snug tracking-tight text-[#2C2C2C] dark:text-white font-sans",
+      "text-base font-semibold leading-snug tracking-tight text-[var(--text-heading)] font-sans",
       className
     )}
     {...props}
@@ -96,7 +96,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-xs text-[#2C2C2C]/60 dark:text-slate-400 font-normal leading-relaxed font-sans", className)}
+    className={cn("text-xs text-[var(--text-muted)] font-normal leading-relaxed font-sans", className)}
     {...props}
   />
 ));
