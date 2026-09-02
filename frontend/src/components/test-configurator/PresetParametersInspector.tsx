@@ -45,21 +45,21 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
     ];
 
     return (
-      <Card className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 shadow-2xs bg-white dark:bg-[#111827] overflow-hidden">
-        <CardHeader className="p-4 pb-3 border-b border-[#0F172A]/5 dark:border-white/5 bg-[#F1F5F9]/30 dark:bg-[#0F172A]/50">
+      <Card className="rounded-2xl border border-[var(--border-subtle)] shadow-2xs bg-[var(--bg-card)] overflow-hidden">
+        <CardHeader className="p-4 pb-3 border-b border-[var(--border-subtle)] dark:border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/30 dark:bg-[var(--bg-surface-subtle)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#2563EB]/10 text-[#2563EB] dark:text-[#60A5FA] animate-pulse">
+              <div className="p-2 rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] animate-pulse">
                 <Sliders className="h-4.5 w-4.5" />
               </div>
               <div>
-                <CardTitle className="text-xs sm:text-sm font-bold font-sans text-[#0F172A] dark:text-white flex items-center gap-2">
+                <CardTitle className="text-xs sm:text-sm font-bold font-sans text-[var(--text-main)] flex items-center gap-2">
                   Preset Specifications
                   <Badge variant="outline" className="text-[10px] font-sans opacity-60">
                     Awaiting Selection
                   </Badge>
                 </CardTitle>
-                <CardDescription className="text-xs text-[#0F172A]/60 dark:text-slate-400">
+                <CardDescription className="text-xs text-[var(--text-muted)]">
                   Calibrated token lengths, cache policies, and decoding boundaries.
                 </CardDescription>
               </div>
@@ -85,24 +85,24 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
               return (
                 <div
                   key={idx}
-                  className="p-3 rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-white/60 dark:bg-[#0F172A]/60 space-y-2.5 transition-all"
+                  className="p-3 rounded-xl border border-[var(--border-subtle)] bg-white/60 dark:bg-[var(--bg-surface-subtle)] space-y-2.5 transition-all"
                 >
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-semibold flex items-center gap-1.5">
-                      <Icon className="h-3.5 w-3.5 text-[#2563EB]/50 dark:text-[#60A5FA]/50 shrink-0" />
+                    <span className="text-xs text-[var(--text-muted)] font-semibold flex items-center gap-1.5">
+                      <Icon className="h-3.5 w-3.5 text-[var(--brand-primary)]/50 dark:text-[var(--brand-primary)]/50 shrink-0" />
                       {card.label}
                     </span>
                     <div className="h-4 w-12 bg-slate-200/70 dark:bg-white/5 rounded-md animate-pulse" />
                   </div>
 
                   <div className="flex items-baseline justify-between pt-0.5">
-                    <span className="text-sm font-bold text-[#0F172A]/40 dark:text-slate-600 font-mono">
+                    <span className="text-sm font-bold text-[var(--text-placeholder)] dark:text-slate-600 font-mono">
                       {card.defaultVal}
                     </span>
                     <div className="h-3 w-16 bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
                   </div>
 
-                  <div className="space-y-1 pt-1 border-t border-[#0F172A]/5 dark:border-white/5">
+                  <div className="space-y-1 pt-1 border-t border-[var(--border-subtle)] dark:border-[var(--border-subtle)]">
                     <div className="h-2.5 w-full bg-slate-200/50 dark:bg-white/5 rounded animate-pulse" />
                     <div className="h-2.5 w-3/4 bg-slate-200/40 dark:bg-white/5 rounded animate-pulse" />
                   </div>
@@ -112,14 +112,14 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
           </div>
 
           {/* Shimmer Footnote */}
-          <div className="p-3 rounded-xl bg-[#F1F5F9]/40 dark:bg-[#0F172A] border border-[#0F172A]/5 dark:border-white/5 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)]/40 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] dark:border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-2.5 text-xs">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-500 font-medium">Focus:</span>
+              <span className="text-[11px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)] font-medium">Focus:</span>
               <div className="h-4 w-36 bg-slate-200/70 dark:bg-white/5 rounded animate-pulse" />
             </div>
 
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-500 font-medium">Metrics:</span>
+              <span className="text-[11px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)] font-medium">Metrics:</span>
               <div className="h-4 w-16 bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
               <div className="h-4 w-16 bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
               <div className="h-4 w-16 bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
@@ -216,21 +216,21 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
   ];
 
   return (
-    <Card className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 shadow-2xs bg-white dark:bg-[#111827] overflow-hidden">
-      <CardHeader className="p-4 pb-3 border-b border-[#0F172A]/5 dark:border-white/5 bg-[#F1F5F9]/30 dark:bg-[#0F172A]/50">
+    <Card className="rounded-2xl border border-[var(--border-subtle)] shadow-2xs bg-[var(--bg-card)] overflow-hidden">
+      <CardHeader className="p-4 pb-3 border-b border-[var(--border-subtle)] dark:border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/30 dark:bg-[var(--bg-surface-subtle)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-[#2563EB]/10 text-[#2563EB] dark:text-[#60A5FA]">
+            <div className="p-2 rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)]">
               <Sliders className="h-4.5 w-4.5" />
             </div>
             <div>
-              <CardTitle className="text-xs sm:text-sm font-bold font-sans text-[#0F172A] dark:text-white flex items-center gap-2">
+              <CardTitle className="text-xs sm:text-sm font-bold font-sans text-[var(--text-main)] flex items-center gap-2">
                 Preset Specifications
                 <Badge variant="outline" className="text-[10px] font-sans">
                   {preset.tag}
                 </Badge>
               </CardTitle>
-              <CardDescription className="text-xs text-[#0F172A]/60 dark:text-slate-400">
+              <CardDescription className="text-xs text-[var(--text-muted)]">
                 Key settings configured for this preset.
               </CardDescription>
             </div>
@@ -266,14 +266,14 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
                 key={idx}
                 className={`p-3 rounded-xl border transition-all flex flex-col justify-between ${
                   param.isLocked
-                    ? "bg-[#F1F5F9]/50 dark:bg-[#111827]/80 border-amber-500/20 dark:border-amber-500/25"
-                    : "bg-white dark:bg-[#0F172A] border-[#0F172A]/10 dark:border-white/10"
+                    ? "bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface)] border-amber-500/20 dark:border-amber-500/25"
+                    : "bg-white dark:bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)]"
                 }`}
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs text-[#0F172A]/70 dark:text-slate-300 font-semibold flex items-center gap-1.5 truncate">
-                      <Icon className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA] shrink-0" />
+                    <span className="text-xs text-[var(--text-body)] font-semibold flex items-center gap-1.5 truncate">
+                      <Icon className="h-3.5 w-3.5 text-[var(--brand-primary)] shrink-0" />
                       {param.label}
                     </span>
                     {param.isLocked ? (
@@ -295,16 +295,16 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
                   </div>
 
                   <div className="flex items-baseline justify-between pt-0.5">
-                    <span className="text-sm font-bold text-[#0F172A] dark:text-white tabular-nums">
+                    <span className="text-sm font-bold text-[var(--text-main)] tabular-nums">
                       {param.value}
                     </span>
-                    <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 font-medium truncate ml-2">
+                    <span className="text-[10px] text-[var(--text-subtle)] font-medium truncate ml-2">
                       {param.statusLabel}
                     </span>
                   </div>
                 </div>
 
-                <p className="text-[11px] text-[#0F172A]/65 dark:text-slate-300 mt-2 leading-relaxed border-t border-[#0F172A]/5 dark:border-white/5 pt-1.5">
+                <p className="text-[11px] text-[var(--text-muted)] dark:text-[var(--text-body)] mt-2 leading-relaxed border-t border-[var(--border-subtle)] dark:border-[var(--border-subtle)] pt-1.5">
                   {param.impact}
                 </p>
               </div>
@@ -313,16 +313,16 @@ export const PresetParametersInspector: React.FC<PresetParametersInspectorProps>
         </div>
 
         {/* Focus & Monitored Metrics Footer */}
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/40 dark:bg-[#0F172A] border border-[#0F172A]/5 dark:border-white/5 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)]/40 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] dark:border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-2.5 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-[#0F172A]/60 dark:text-slate-400 font-medium">Focus:</span>
-            <span className="font-semibold text-xs text-[#2563EB] dark:text-[#60A5FA]">
+            <span className="text-[11px] text-[var(--text-muted)] font-medium">Focus:</span>
+            <span className="font-semibold text-xs text-[var(--brand-primary)]">
               {promptDetails?.targetStressDimension || preset.tag}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] text-[#0F172A]/60 dark:text-slate-400 font-medium">Metrics:</span>
+            <span className="text-[11px] text-[var(--text-muted)] font-medium">Metrics:</span>
             {preset.metrics.map((metric, i) => (
               <Badge
                 key={i}

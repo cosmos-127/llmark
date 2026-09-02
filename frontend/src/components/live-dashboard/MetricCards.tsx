@@ -32,22 +32,22 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ snapshot, workloadPres
   const preset = (snapshot?.workload_preset || workloadPreset || "chat") as string;
 
   const kneeBanner = (snapshot?.saturation_knee_detected || snapshot?.saturation_knee_concurrency) ? (
-    <div className="col-span-full mb-1 p-3.5 rounded-xl bg-gradient-to-r from-[#2563EB]/15 via-[#2563EB]/8 to-[#2563EB]/0 dark:from-[#3B82F6]/20 dark:via-[#3B82F6]/10 dark:to-[#3B82F6]/0 border border-[#2563EB]/40 flex items-center justify-between gap-3">
+    <div className="col-span-full mb-1 p-3.5 rounded-xl bg-gradient-to-r from-[var(--brand-primary-light)] via-[var(--brand-primary-light)]/50 to-transparent border border-[var(--brand-primary-border)] flex items-center justify-between gap-3">
       <div className="flex items-center gap-2.5">
-        <div className="p-2 rounded-lg bg-[#2563EB] text-white shadow-2xs">
+        <div className="p-2 rounded-lg bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-2xs">
           <Gauge className="h-4 w-4" />
         </div>
         <div>
-          <div className="text-xs font-bold text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5">
+          <div className="text-xs font-bold text-[var(--brand-primary)] flex items-center gap-1.5">
             Saturation Knee Inflection Discovered
             <Badge variant="destructive" className="text-[10px] py-0 h-4">Inflection Point</Badge>
           </div>
-          <p className="text-[11px] text-[#0F172A]/70 dark:text-slate-300 pt-0.5">
+          <p className="text-[11px] text-[var(--text-body)] pt-0.5">
             Optimal concurrency ceiling identified at <strong>{snapshot.saturation_knee_concurrency || 16} parallel streams</strong>. Concurrency beyond this causes TTFT degradation &gt;50% or upstream queue backpressure.
           </p>
         </div>
       </div>
-      <Badge variant="outline" className="text-xs font-semibold border-[#2563EB]/50 text-[#2563EB] dark:text-[#60A5FA] tabular-nums whitespace-nowrap">
+      <Badge variant="outline" className="text-xs font-semibold border-[var(--brand-primary-border)] text-[var(--brand-primary)] tabular-nums whitespace-nowrap">
         Max Stable: {snapshot.saturation_knee_concurrency || 16} streams
       </Badge>
     </div>

@@ -26,12 +26,16 @@ export interface BrandLogoProps {
  * Official OpenAI Spiral Swirl Logo from @thesvg/react (thesvg)
  */
 export const OpenAILogo: React.FC<BrandLogoProps> = ({ className = "h-4 w-4", size }) => (
-  <Openai
-    className={`inline-block shrink-0 select-none ${className}`}
-    width={size}
-    height={size}
+  <span
+    className={`inline-flex shrink-0 items-center justify-center rounded-sm bg-[#000000] p-[10%] select-none ${className}`}
+    style={size ? { width: size, height: size } : undefined}
     aria-label="OpenAI"
-  />
+  >
+    <Openai
+      className="h-full w-full block"
+      aria-hidden="true"
+    />
+  </span>
 );
 
 /**
@@ -305,23 +309,16 @@ export const LLMarkLogo: React.FC<BrandLogoProps> = ({ className = "h-5 w-5", si
     height={size}
     aria-label="LLMark"
   >
-    <defs>
-      <linearGradient id="llmark-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#3B82F6" />
-        <stop offset="50%" stopColor="#2563EB" />
-        <stop offset="100%" stopColor="#1D4ED8" />
-      </linearGradient>
-    </defs>
-    <rect width="28" height="28" rx="7.5" fill="url(#llmark-logo-grad)" />
+    <rect width="28" height="28" rx="7.5" fill="var(--brand-primary)" className="transition-colors" />
     {/* Twin L latency bars with high-speed benchmark tick */}
     <path
       d="M7.5 7.5V18.5C7.5 19.3 8.2 20 9 20H13M14.5 7.5V18.5C14.5 19.3 15.2 20 16 20H20.5"
-      stroke="white"
+      stroke="var(--text-inverse)"
       strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     {/* Precision latency impulse spark dot */}
-    <circle cx="20.5" cy="8" r="1.75" fill="#EFF6FF" />
+    <circle cx="20.5" cy="8" r="1.75" fill="var(--text-inverse)" opacity="0.85" />
   </svg>
 );

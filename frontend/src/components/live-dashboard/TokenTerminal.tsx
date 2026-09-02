@@ -35,35 +35,35 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden border-[#0F172A]/15 dark:border-white/10 shadow-sm">
+    <Card className="overflow-hidden border-[var(--border-medium)] shadow-sm">
       {/* Terminal Titlebar */}
-      <div className="bg-[#1E293B] dark:bg-[#0B0F17] border-b border-black/10 dark:border-white/[0.08] px-4 py-2.5 flex items-center justify-between">
+      <div className="bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border-b border-black/10 dark:border-[var(--border-subtle)] px-4 py-2.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] dark:bg-[#3B82F6]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[var(--brand-primary)]" />
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
           </div>
-          <div className="flex items-center gap-2 font-sans text-xs text-[#F1F5F9] dark:text-slate-200">
-            <Terminal className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#3B82F6]" />
+          <div className="flex items-center gap-2 font-sans text-xs text-[var(--text-main)] dark:text-[var(--text-subheading)]">
+            <Terminal className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
             <span>live_token_stream.log</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 font-sans text-xs text-[#F1F5F9] dark:text-slate-200">
+          <div className="flex items-center gap-2 font-sans text-xs text-[var(--text-main)] dark:text-[var(--text-subheading)]">
             <Badge variant="emerald" className="font-sans font-semibold text-[11px] py-0 px-2 bg-emerald-950 text-emerald-300 border-emerald-700 tabular-nums">
               {currentTps.toFixed(1)} tok/s
             </Badge>
             <span>•</span>
-            <span className="text-[#F1F5F9]/70 dark:text-slate-400">{completedRequests} streams finished</span>
+            <span className="text-[var(--text-main)]/70 dark:text-[var(--text-muted)]">{completedRequests} streams finished</span>
           </div>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={handleCopy}
-            className="h-7 w-7 text-[#F1F5F9]/70 dark:text-slate-400 hover:text-white hover:bg-[#2563EB] dark:hover:bg-[#3B82F6] cursor-pointer active:scale-[0.96]"
+            className="h-7 w-7 text-[var(--text-main)]/70 dark:text-[var(--text-muted)] hover:text-[var(--text-inverse)] hover:bg-[var(--brand-primary)] dark:hover:bg-[var(--brand-primary)] cursor-pointer active:scale-[0.96]"
           >
             <AnimatePresence mode="wait" initial={false}>
               {copied ? (
@@ -93,20 +93,20 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
       </div>
 
       {/* Terminal Content Body */}
-      <ScrollArea className="h-[185px] p-4 bg-[#111827] dark:bg-[#0B0F17] font-sans tabular-nums text-xs text-[#F1F5F9] dark:text-slate-200">
+      <ScrollArea className="h-[185px] p-4 bg-[var(--bg-surface)] dark:bg-[var(--bg-app)] font-sans tabular-nums text-xs text-[var(--text-main)] dark:text-[var(--text-subheading)]">
         <div className="space-y-3">
           {/* Simulated Reasoning Thinking Stream with Spring Collapse */}
-          <div className="rounded-xl bg-[#1D4ED8]/30 dark:bg-[#0284C7]/15 border border-[#1D4ED8]/50 dark:border-[#0284C7]/30 p-3 space-y-1">
+          <div className="rounded-xl bg-[var(--brand-secondary-light)] border border-[var(--brand-secondary-border)] p-3 space-y-1">
             <div
               onClick={() => setShowReasoning(!showReasoning)}
-              className="flex items-center justify-between gap-1.5 text-[11px] font-medium text-[#F1F5F9] dark:text-slate-200 cursor-pointer select-none"
+              className="flex items-center justify-between gap-1.5 text-[11px] font-medium text-[var(--text-main)] dark:text-[var(--text-subheading)] cursor-pointer select-none"
             >
               <div className="flex items-center gap-1.5">
-                <Brain className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#3B82F6]" />
+                <Brain className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                 <span>Reasoning Thinking Trace (TTFA Isolation)</span>
               </div>
               <motion.div animate={{ rotate: showReasoning ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="h-3 w-3 text-[#F1F5F9]/60 dark:text-slate-400" />
+                <ChevronDown className="h-3 w-3 text-[var(--text-main)]/60 dark:text-[var(--text-muted)]" />
               </motion.div>
             </div>
             <AnimatePresence initial={false}>
@@ -116,7 +116,7 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-[11px] text-[#F1F5F9]/80 dark:text-slate-300 leading-relaxed italic overflow-hidden font-sans"
+                  className="text-[11px] text-[var(--text-main)]/80 dark:text-[var(--text-body)] leading-relaxed italic overflow-hidden font-sans"
                 >
                   Analyzing concurrency parameters... Evaluating KV cache memory saturation... Calculating optimal time to first answer...
                 </motion.p>
@@ -125,21 +125,21 @@ export const TokenTerminal: React.FC<TokenTerminalProps> = ({
           </div>
 
           {/* Streaming Answer Tokens with Micro-Transitions */}
-          <div className="text-[#F1F5F9] dark:text-slate-200 leading-relaxed space-x-1 pt-1 font-sans">
-            <span className="text-[#2563EB] dark:text-[#3B82F6] font-bold select-none">&gt;&gt;</span>
+          <div className="text-[var(--text-main)] dark:text-[var(--text-subheading)] leading-relaxed space-x-1 pt-1 font-sans">
+            <span className="text-[var(--brand-primary)] font-bold select-none">&gt;&gt;</span>
             {sampleTokens.map((word, i) => (
               <motion.span
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.15, delay: i * 0.02 }}
-                className="inline-block bg-white/[0.08] dark:bg-white/[0.06] px-1.5 py-0.5 rounded text-[#F1F5F9] dark:text-slate-200 border border-white/[0.08] dark:border-white/[0.06] text-xs font-sans tabular-nums"
+                className="inline-block bg-white/[0.08] dark:bg-white/[0.06] px-1.5 py-0.5 rounded text-[var(--text-main)] dark:text-[var(--text-subheading)] border border-white/[0.08] dark:border-[var(--border-subtle)] text-xs font-sans tabular-nums"
               >
                 {word}
               </motion.span>
             ))}
             {status === "running" && (
-              <span className="inline-block h-3.5 w-2 bg-[#2563EB] dark:bg-[#3B82F6] animate-blink ml-1 align-middle" />
+              <span className="inline-block h-3.5 w-2 bg-[var(--brand-primary)] animate-blink ml-1 align-middle" />
             )}
           </div>
         </div>

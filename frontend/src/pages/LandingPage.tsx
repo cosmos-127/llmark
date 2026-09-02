@@ -203,7 +203,7 @@ const SpotlightCard: React.FC<{
   children: React.ReactNode;
   className?: string;
   glowColor?: string;
-}> = ({ children, className = "", glowColor = "rgba(133, 57, 83, 0.08)" }) => {
+}> = ({ children, className = "", glowColor = "var(--brand-primary-light)" }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
   const [isHovered, setIsHovered] = useState(false);
@@ -230,16 +230,17 @@ const SpotlightCard: React.FC<{
       transition={{ duration: 0.2, ease: "easeOut" }}
       className={`relative overflow-hidden rounded-2xl transition-all duration-200 ${
         isHovered
-          ? "shadow-lg shadow-[#2563EB]/5 dark:shadow-[#3B82F6]/15 border-[#2563EB]/40 dark:border-[#3B82F6]/50"
-          : "shadow-2xs border-[#0F172A]/10 dark:border-white/[0.08]"
+          ? "shadow-lg shadow-[var(--brand-primary-light)] border-[var(--brand-primary-border)]"
+          : "shadow-2xs border-[var(--border-subtle)]"
       } ${className}`}
     >
-      {/* Subtle ambient radial cursor spotlight */}
+      {/* Subtle ambient radial cursor spotlight with soft feathered falloff */}
       <div
-        className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 z-10"
+        className="pointer-events-none absolute -inset-2 opacity-0 transition-opacity duration-300 z-10"
         style={{
-          opacity: isHovered ? 1 : 0,
-          background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, ${glowColor}, transparent 70%)`,
+          opacity: isHovered ? 0.75 : 0,
+          background: `radial-gradient(550px circle at ${mousePos.x + 8}px ${mousePos.y + 8}px, ${glowColor} 0%, transparent 65%)`,
+          filter: "blur(16px)",
         }}
       />
       {children}
@@ -563,7 +564,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       icon: Icons.Benchmark,
       badgeText: "100Hz Live",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.25)",
+      glowColor: "var(--brand-primary-light)",
       features: [
         "DNS + TCP + TLS + TTFT + Decode waterfall",
         "Real-time SSE token stream at 100Hz",
@@ -581,7 +582,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       icon: Icons.Diff,
       badgeText: "Statistical Diff",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.25)",
+      glowColor: "var(--brand-primary-light)",
       features: [
         "Side-by-side latency & throughput distributions",
         "Token price & generation cost breakdown",
@@ -599,7 +600,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       icon: Icons.History,
       badgeText: "Local SQLite",
       badgeVariant: "default" as const,
-      glowColor: "rgba(133, 57, 83, 0.25)",
+      glowColor: "var(--brand-primary-light)",
       features: [
         "Granular P50, P95, and P99 tail percentiles",
         "Zero-cloud local storage (SQLite WAL)",
@@ -987,10 +988,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   return (
     <div
       ref={containerRef}
-      className="relative flex-1 w-full flex flex-col justify-between selection:bg-[#2563EB]/20 selection:text-[#2563EB] dark:selection:bg-[#3B82F6]/30 dark:selection:text-[#60A5FA]"
+      className="relative flex-1 w-full flex flex-col justify-between selection:bg-[var(--brand-primary-light)] selection:text-[var(--brand-primary)]"
     >
       {/* Precision Scroll Progress Line */}
-      <div className="gsap-scroll-progress fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#2563EB] z-50 origin-left scale-x-0 pointer-events-none opacity-90 shadow-sm" />
+      <div className="gsap-scroll-progress fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand-secondary)] to-[var(--brand-primary)] z-50 origin-left scale-x-0 pointer-events-none opacity-90 shadow-sm" />
 
       {/* Main Spacious Landing Canvas */}
       <main className="flex-1 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16 space-y-16 sm:space-y-20 lg:space-y-24">
@@ -1001,18 +1002,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           <div id="hero-content" className="space-y-6 sm:space-y-7">
             <div className="space-y-5">
               {/* Minimal Micro-Badge */}
-              <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border border-[#2563EB]/25 dark:border-[#3B82F6]/35 text-[#2563EB] dark:text-[#60A5FA] text-xs font-mono font-medium shadow-xs tracking-wide">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB] dark:bg-[#3B82F6] animate-pulse" />
+              <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] text-[var(--brand-primary)] text-xs font-mono font-medium shadow-xs tracking-wide">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary)] animate-pulse" />
                 <span>LIVE INFERENCE BENCHMARKING</span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="gsap-hero-title text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#0F172A] dark:text-white font-sans leading-[1.12]">
+              <h1 className="gsap-hero-title text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[var(--text-main)] font-sans leading-[1.12]">
                 Precision Load Testing & <span className="text-gradient-brand">Inference Telemetry</span>
               </h1>
 
               {/* Sub-headline Description */}
-              <p className="gsap-hero-desc text-base sm:text-lg text-[#0F172A]/70 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              <p className="gsap-hero-desc text-base sm:text-lg text-[var(--text-body)] max-w-2xl mx-auto leading-relaxed">
                 Stress-test LLMs with microsecond socket waterfalls, real-time concurrency profiling, and cost guard rails.
               </p>
             </div>
@@ -1021,7 +1022,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <div className="flex flex-wrap items-center justify-center gap-4 pt-1">
               <Button
                 onClick={() => onNavigate("benchmark")}
-                className="gsap-hero-btn btn-brand-glow text-white shadow-lg shadow-[#2563EB]/25 dark:shadow-[#3B82F6]/30 h-12 px-7 rounded-xl text-sm font-semibold flex items-center gap-2.5 cursor-pointer group"
+                className="gsap-hero-btn btn-brand-glow text-white shadow-lg shadow-[var(--brand-primary-light)] h-12 px-7 rounded-xl text-sm font-semibold flex items-center gap-2.5 cursor-pointer group"
               >
                 <Icons.Play className="h-4 w-4" />
                 <span>Open Studio</span>
@@ -1031,9 +1032,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <Button
                 variant="outline"
                 onClick={() => onNavigate("diff")}
-                className="gsap-hero-btn h-12 px-6 rounded-xl text-sm font-semibold bg-white/80 dark:bg-[#111827]/90 border-[#0F172A]/15 dark:border-white/10 hover:border-[#2563EB]/40 dark:hover:border-[#3B82F6]/40 text-[#0F172A] dark:text-white flex items-center gap-2 cursor-pointer transition-all shadow-xs"
+                className="gsap-hero-btn h-12 px-6 rounded-xl text-sm font-semibold bg-[var(--bg-card)] border-[var(--border-medium)] hover:border-[var(--brand-primary-border)] text-[var(--text-main)] flex items-center gap-2 cursor-pointer transition-all shadow-xs"
               >
-                <Icons.Diff className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
+                <Icons.Diff className="h-4 w-4 text-[var(--brand-primary)]" />
                 <span>Compare Models</span>
               </Button>
             </div>
@@ -1046,13 +1047,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <section id="telemetry-section" className="space-y-6">
           {/* Section Heading */}
           <div className="gsap-telemetry-header text-center max-w-2xl mx-auto space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] text-[11px] font-semibold uppercase tracking-wider font-mono">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
               01 // LIVE SANDBOX
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
               Instant Telemetry Probe
             </h2>
-            <p className="text-sm text-[#0F172A]/65 dark:text-slate-400">
+            <p className="text-sm text-[var(--text-muted)]">
               Run a live 5-packet test to inspect socket handshakes, prefill latency, and streaming speed.
             </p>
           </div>
@@ -1060,19 +1061,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           {/* Telemetry Showcase Card Wrapper */}
           <div className="gsap-telemetry-card-wrap">
             <SpotlightCard
-              glowColor="rgba(133, 57, 83, 0.16)"
-              className="bg-white/95 dark:bg-[#111827]/95 border border-[#0F172A]/10 dark:border-white/[0.08] p-6 sm:p-8 group shadow-sm space-y-6"
+              glowColor="var(--brand-primary-light)"
+              className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-6 sm:p-8 group shadow-sm space-y-6"
             >
               {/* Card Header with Title, Live Status, Model Selector & Instant Probe Action */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-[#0F172A]/8 dark:border-white/[0.06]">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-[var(--border-subtle)]">
                 {/* Left: Title, Live Status & Active Model Tagline */}
                 <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] shrink-0">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] shrink-0">
                     <Icons.Activity className="h-6 w-6" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-base font-semibold text-[#0F172A] dark:text-white font-sans">
+                      <span className="text-base font-semibold text-[var(--text-main)] font-sans">
                         Instant Telemetry Probe
                       </span>
                       <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 font-mono font-medium flex items-center gap-1">
@@ -1080,7 +1081,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                         <span>100Hz Live Sandbox</span>
                       </Badge>
                     </div>
-                    <span className="text-xs text-[#0F172A]/50 dark:text-slate-400 font-sans">
+                    <span className="text-xs text-[var(--text-subtle)] font-sans">
                       {activeProbeModel.tagline}
                     </span>
                   </div>
@@ -1089,7 +1090,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 {/* Right: Model Select Tabs & Run Instant Probe CTA */}
                 <div className="flex items-center gap-2.5 flex-nowrap shrink-0 overflow-x-auto py-0.5">
                   {/* Model Selector Tabs */}
-                  <div className="flex items-center gap-1 p-1 rounded-xl bg-[#F1F5F9] dark:bg-[#0B0F17] border border-[#0F172A]/8 dark:border-white/[0.06] shrink-0">
+                  <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--bg-surface-subtle)] dark:bg-[var(--bg-app)] border border-[var(--border-subtle)] shrink-0">
                     {PROBE_MODELS.map((m) => {
                       const isSelected = activeProbeModel.id === m.id;
                       return (
@@ -1100,8 +1101,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                           disabled={probeState === "probing"}
                           className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 select-none shrink-0 ${
                             isSelected
-                              ? "bg-white dark:bg-[#1E293B] text-[#2563EB] dark:text-[#60A5FA] font-semibold shadow-2xs border border-[#2563EB]/25 dark:border-[#3B82F6]/35"
-                              : "text-[#0F172A]/65 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                              ? "bg-[var(--bg-surface-elevated)] text-[var(--brand-primary)] font-semibold shadow-2xs border border-[var(--brand-primary-border)]"
+                              : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                           } ${probeState === "probing" ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                           <ProviderLogo vendor={m.vendor} className="h-3.5 w-3.5 shrink-0" />
@@ -1119,7 +1120,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     className={`h-9 px-3.5 sm:px-4 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer shrink-0 transition-all shadow-xs whitespace-nowrap ${
                       probeState === "probing"
                         ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 ring-2 ring-amber-500/20"
-                        : "btn-brand-glow text-white shadow-md shadow-[#2563EB]/25 dark:shadow-[#3B82F6]/30 hover:scale-[1.02]"
+                        : "btn-brand-glow text-white shadow-md shadow-[var(--brand-primary-light)] hover:scale-[1.02]"
                     }`}
                   >
                     {probeState === "probing" ? (
@@ -1146,10 +1147,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </div>
 
               {/* 5-Packet Live Pipeline Ribbon */}
-              <div className="rounded-xl bg-[#F1F5F9]/70 dark:bg-[#0B0F17]/80 border border-[#0F172A]/8 dark:border-white/[0.06] p-3 space-y-2">
+              <div className="rounded-xl bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-app)] border border-[var(--border-subtle)] p-3 space-y-2">
                 <div className="flex items-center justify-between text-xs font-sans">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[#0F172A] dark:text-white font-sans text-xs">
+                    <span className="font-semibold text-[var(--text-main)] font-sans text-xs">
                       5-Packet Live Telemetry Stream
                     </span>
                     {probeState === "probing" && (
@@ -1163,7 +1164,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                       </Badge>
                     )}
                   </div>
-                  <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-sans">
+                  <span className="text-[11px] text-[var(--text-subtle)] font-sans">
                     {probeState === "completed" ? "Click a packet to inspect granular breakdown" : "Sub-ms network & prefill profiling"}
                   </span>
                 </div>
@@ -1176,11 +1177,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     onClick={() => setSelectedInspectPacket(null)}
                     className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium text-left flex flex-col justify-between border transition-all cursor-pointer ${
                       selectedInspectPacket === null
-                        ? "bg-white dark:bg-[#1E293B] border-[#2563EB] dark:border-[#3B82F6] text-[#2563EB] dark:text-[#60A5FA] shadow-xs"
-                        : "bg-white/40 dark:bg-[#111827]/40 border-[#0F172A]/8 dark:border-white/5 text-[#0F172A]/70 dark:text-slate-400 hover:border-[#0F172A]/20 dark:hover:border-white/15"
+                        ? "bg-[var(--bg-surface-elevated)] border-[var(--brand-primary)] text-[var(--brand-primary)] shadow-xs"
+                        : "bg-white/40 dark:bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--border-subtle)] dark:hover:border-white/15"
                     }`}
                   >
-                    <span className="text-[10px] uppercase tracking-wider text-[#0F172A]/50 dark:text-slate-400 font-sans font-semibold">
+                    <span className="text-[10px] uppercase tracking-wider text-[var(--text-subtle)] font-sans font-semibold">
                       Composite
                     </span>
                     <span className="font-bold tabular-nums text-xs">P95 Aggregate</span>
@@ -1203,12 +1204,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                         disabled={!isCompleted && !isRunning}
                         className={`px-2.5 py-1.5 rounded-lg text-xs font-mono text-left flex flex-col justify-between border transition-all ${
                           isSelected
-                            ? "bg-white dark:bg-[#1E293B] border-[#2563EB] dark:border-[#3B82F6] text-[#2563EB] dark:text-[#60A5FA] shadow-xs cursor-pointer"
+                            ? "bg-[var(--bg-surface-elevated)] border-[var(--brand-primary)] text-[var(--brand-primary)] shadow-xs cursor-pointer"
                             : isRunning
                             ? "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300 animate-pulse"
                             : isCompleted
-                            ? "bg-white/60 dark:bg-[#111827]/60 border-emerald-500/20 text-[#0F172A] dark:text-slate-200 hover:border-emerald-500/40 cursor-pointer"
-                            : "bg-white/20 dark:bg-[#111827]/20 border-transparent text-[#0F172A]/40 dark:text-slate-600 opacity-60 cursor-not-allowed"
+                            ? "bg-white/60 dark:bg-[var(--bg-surface)] border-emerald-500/20 text-[var(--text-main)] dark:text-[var(--text-subheading)] hover:border-emerald-500/40 cursor-pointer"
+                            : "bg-white/20 dark:bg-[var(--bg-surface)] border-transparent text-[var(--text-placeholder)] dark:text-slate-600 opacity-60 cursor-not-allowed"
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -1218,7 +1219,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                           ) : isCompleted ? (
                             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
                           ) : (
-                            <span className="text-[10px] text-[#0F172A]/40 dark:text-slate-600">--</span>
+                            <span className="text-[10px] text-[var(--text-placeholder)] dark:text-slate-600">--</span>
                           )}
                         </div>
                         <span className="font-bold tabular-nums text-xs">
@@ -1234,7 +1235,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <div className="gsap-waterfall-container space-y-3">
                 <div className="flex items-center justify-between text-xs font-sans">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-[#0F172A]/80 dark:text-slate-200">
+                    <span className="text-xs font-semibold text-[var(--text-subheading)]">
                       {selectedInspectPacket !== null ? `Packet #${selectedInspectPacket} Waterfall Breakdown` : "Socket Connection & Prefill Waterfall"}
                     </span>
                     {probeState === "probing" && (
@@ -1247,13 +1248,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                       </Badge>
                     )}
                   </div>
-                  <span className="text-xs font-mono text-[#2563EB] dark:text-[#60A5FA] font-bold tabular-nums">
-                    Total Latency: <NumberTicker value={currentTotal} decimalPlaces={1} className="text-[#2563EB] dark:text-[#60A5FA]" />ms
+                  <span className="text-xs font-mono text-[var(--brand-primary)] font-bold tabular-nums">
+                    Total Latency: <NumberTicker value={currentTotal} decimalPlaces={1} className="text-[var(--brand-primary)]" />ms
                   </span>
                 </div>
 
                 {/* Segmented Timeline Bar with dynamic active glow & stage scale */}
-                <div className="h-4 w-full rounded-full bg-[#F1F5F9] dark:bg-[#0B0F17] overflow-hidden flex shadow-inner p-0.5 border border-[#0F172A]/5 dark:border-white/5">
+                <div className="h-4 w-full rounded-full bg-[var(--bg-surface-subtle)] dark:bg-[var(--bg-app)] overflow-hidden flex shadow-inner p-0.5 border border-[var(--border-subtle)] dark:border-[var(--border-subtle)]">
                   <div
                     style={{ width: `${dnsWidth}%` }}
                     className={`gsap-waterfall-dns origin-left bg-sky-500 rounded-l-full transition-all duration-300 ${
@@ -1277,8 +1278,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   />
                   <div
                     style={{ width: `${ttftWidth}%` }}
-                    className={`gsap-waterfall-ttft origin-left bg-[#2563EB] dark:bg-[#3B82F6] transition-all duration-300 ${
-                      probePhase === "ttft" ? "ring-2 ring-[#2563EB] dark:ring-[#60A5FA] brightness-125 animate-pulse z-10" : "opacity-90 hover:opacity-100"
+                    className={`gsap-waterfall-ttft origin-left bg-[var(--brand-primary)] transition-all duration-300 ${
+                      probePhase === "ttft" ? "ring-2 ring-[var(--brand-primary)] brightness-125 animate-pulse z-10" : "opacity-90 hover:opacity-100"
                     }`}
                     title={`Prefill / TTFT: ${currentTtft}ms`}
                   />
@@ -1292,7 +1293,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 </div>
 
                 {/* Waterfall Stage Labels */}
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[#0F172A]/65 dark:text-slate-400 pt-0.5">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-[var(--text-muted)] pt-0.5">
                   <div className={`gsap-waterfall-label flex items-center gap-1.5 transition-colors ${probePhase === "dns" ? "text-sky-600 dark:text-sky-400 font-bold scale-105" : ""}`}>
                     <span className="h-2 w-2 rounded-full bg-sky-500" />
                     <span>DNS: <NumberTicker value={currentDns} decimalPlaces={1} />ms</span>
@@ -1305,9 +1306,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     <span className="h-2 w-2 rounded-full bg-amber-500" />
                     <span>TLS: <NumberTicker value={currentTls} decimalPlaces={1} />ms</span>
                   </div>
-                  <div className={`gsap-waterfall-label flex items-center gap-1.5 font-semibold text-[#2563EB] dark:text-[#60A5FA] transition-colors ${probePhase === "ttft" ? "scale-105 font-bold" : ""}`}>
-                    <span className="h-2 w-2 rounded-full bg-[#2563EB] dark:bg-[#3B82F6]" />
-                    <span>TTFT (Prefill): <NumberTicker value={currentTtft} decimalPlaces={1} className="text-[#2563EB] dark:text-[#60A5FA]" />ms</span>
+                  <div className={`gsap-waterfall-label flex items-center gap-1.5 font-semibold text-[var(--brand-primary)] transition-colors ${probePhase === "ttft" ? "scale-105 font-bold" : ""}`}>
+                    <span className="h-2 w-2 rounded-full bg-[var(--brand-primary)]" />
+                    <span>TTFT (Prefill): <NumberTicker value={currentTtft} decimalPlaces={1} className="text-[var(--brand-primary)]" />ms</span>
                   </div>
                   <div className={`gsap-waterfall-label flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold transition-colors ${probePhase === "decode" ? "scale-105 font-bold" : ""}`}>
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -1317,21 +1318,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               </div>
 
               {/* Live Stream Terminal Ticker */}
-              <div className="rounded-xl bg-[#F1F5F9]/70 dark:bg-[#0B0F17]/90 border border-[#0F172A]/8 dark:border-white/[0.06] p-3 font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all">
+              <div className="rounded-xl bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-app)] border border-[var(--border-subtle)] p-3 font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-all">
                 <div className="flex items-center gap-2 overflow-hidden flex-1">
                   <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded transition-colors shrink-0 ${
                     probeState === "probing"
                       ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
                       : probeState === "completed"
                       ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                      : "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA]"
+                      : "bg-[var(--brand-primary-light)] text-[var(--brand-primary)]"
                   }`}>
                     {probeState === "probing" ? `Streaming Pkt #${activePacketIdx + 1}` : probeState === "completed" ? "5-Packets Verified" : "Live Socket"}
                   </span>
-                  <div className="truncate text-[#0F172A]/80 dark:text-slate-300">
+                  <div className="truncate text-[var(--text-subheading)] dark:text-[var(--text-body)]">
                     {(inspectedPacket ? inspectedPacket.tokens : probeTokens).length > 0 ? (
                       (inspectedPacket ? inspectedPacket.tokens : probeTokens).map((tok, i) => (
-                        <span key={i} className="inline-block text-[#0F172A] dark:text-white font-medium">
+                        <span key={i} className="inline-block text-[var(--text-main)] font-medium">
                           {tok}
                         </span>
                       ))
@@ -1343,12 +1344,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                         {probePhase === "ttft" && "Measuring Time to First Token (prefill queue)..."}
                       </span>
                     ) : (
-                      <span className="text-[#0F172A]/50 dark:text-slate-500">
+                      <span className="text-[var(--text-subtle)] dark:text-[var(--text-subtle)]">
                         Click "Instant Probe (5-Packet Ping)" to execute live telemetry test...
                       </span>
                     )}
                     {probeState === "probing" && (
-                      <span className="inline-block w-1.5 h-3.5 ml-1 bg-[#2563EB] dark:bg-[#3B82F6] animate-pulse align-middle" />
+                      <span className="inline-block w-1.5 h-3.5 ml-1 bg-[var(--brand-primary)] animate-pulse align-middle" />
                     )}
                   </div>
                 </div>
@@ -1358,7 +1359,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     <button
                       type="button"
                       onClick={handleCopyTrace}
-                      className="text-[11px] px-2 py-0.5 rounded-lg bg-white/80 dark:bg-[#1E293B] border border-[#0F172A]/10 dark:border-white/10 hover:border-[#2563EB]/30 text-[#0F172A]/70 dark:text-slate-300 flex items-center gap-1 cursor-pointer transition-all"
+                      className="text-[11px] px-2 py-0.5 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary-border)] text-[var(--text-body)] flex items-center gap-1 cursor-pointer transition-all"
                       title="Copy Telemetry JSON Trace"
                     >
                       {copiedTrace ? (
@@ -1377,7 +1378,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   <Badge variant="outline" className="text-[10px] px-2 py-0 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 font-mono font-medium">
                     <NumberTicker value={currentDecodeSpeed} decimalPlaces={1} className="text-emerald-600 dark:text-emerald-400" /> tok/s
                   </Badge>
-                  <span className="text-[11px] text-[#0F172A]/40 dark:text-slate-500 font-mono">
+                  <span className="text-[11px] text-[var(--text-placeholder)] font-mono">
                     {activeProbeModel.id}
                   </span>
                 </div>
@@ -1385,52 +1386,52 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
               {/* 4 Metric Chips with Spring animated NumberTicker counters */}
               <div className="gsap-metric-chips-grid grid grid-cols-2 sm:grid-cols-4 gap-4 pt-1">
-                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[#F1F5F9]/80 dark:bg-[#0B0F17]/80 border ${
-                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[#0F172A]/5 dark:border-white/5"
+                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[var(--bg-surface-subtle)]/80 dark:bg-[var(--bg-app)] border ${
+                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[var(--border-subtle)] dark:border-[var(--border-subtle)]"
                 } space-y-1`}>
-                  <div className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">TTFT (P95 Tail)</div>
-                  <div className="text-xl font-bold text-[#0F172A] dark:text-white tabular-nums">
-                    <NumberTicker value={activeProbeModel.ttft} decimalPlaces={1} className="text-xl font-bold text-[#0F172A] dark:text-white" /> <span className="text-xs font-normal text-[#0F172A]/50 dark:text-slate-400">ms</span>
+                  <div className="text-xs text-[var(--text-muted)] font-sans">TTFT (P95 Tail)</div>
+                  <div className="text-xl font-bold text-[var(--text-main)] tabular-nums">
+                    <NumberTicker value={activeProbeModel.ttft} decimalPlaces={1} className="text-xl font-bold text-[var(--text-main)]" /> <span className="text-xs font-normal text-[var(--text-subtle)]">ms</span>
                   </div>
                   <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
                     {probeState === "completed" ? "Verified across 5 packets" : "Sub-ms handshake"}
                   </div>
                 </div>
 
-                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[#F1F5F9]/80 dark:bg-[#0B0F17]/80 border ${
-                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[#0F172A]/5 dark:border-white/5"
+                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[var(--bg-surface-subtle)]/80 dark:bg-[var(--bg-app)] border ${
+                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[var(--border-subtle)] dark:border-[var(--border-subtle)]"
                 } space-y-1`}>
-                  <div className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">ITL Tail (P99)</div>
-                  <div className="text-xl font-bold text-[#0F172A] dark:text-white tabular-nums">
-                    <NumberTicker value={activeProbeModel.itlTail} decimalPlaces={1} className="text-xl font-bold text-[#0F172A] dark:text-white" /> <span className="text-xs font-normal text-[#0F172A]/50 dark:text-slate-400">ms</span>
+                  <div className="text-xs text-[var(--text-muted)] font-sans">ITL Tail (P99)</div>
+                  <div className="text-xl font-bold text-[var(--text-main)] tabular-nums">
+                    <NumberTicker value={activeProbeModel.itlTail} decimalPlaces={1} className="text-xl font-bold text-[var(--text-main)]" /> <span className="text-xs font-normal text-[var(--text-subtle)]">ms</span>
                   </div>
                   <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Jitter &lt; 2ms</div>
                 </div>
 
-                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[#F1F5F9]/80 dark:bg-[#0B0F17]/80 border ${
-                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[#0F172A]/5 dark:border-white/5"
+                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[var(--bg-surface-subtle)]/80 dark:bg-[var(--bg-app)] border ${
+                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[var(--border-subtle)] dark:border-[var(--border-subtle)]"
                 } space-y-1`}>
-                  <div className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">Goodput SLO</div>
+                  <div className="text-xs text-[var(--text-muted)] font-sans">Goodput SLO</div>
                   <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                     <NumberTicker value={activeProbeModel.goodput} decimalPlaces={1} className="text-xl font-bold text-emerald-600 dark:text-emerald-400" />%
                   </div>
-                  <div className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-medium">Target: &gt;95.0%</div>
+                  <div className="text-[11px] text-[var(--text-subtle)] font-medium">Target: &gt;95.0%</div>
                 </div>
 
-                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[#F1F5F9]/80 dark:bg-[#0B0F17]/80 border ${
-                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[#0F172A]/5 dark:border-white/5"
+                <div className={`gsap-metric-chip p-4 rounded-xl transition-all duration-300 bg-[var(--bg-surface-subtle)]/80 dark:bg-[var(--bg-app)] border ${
+                  probeState === "completed" ? "border-emerald-500/30 shadow-2xs shadow-emerald-500/5" : "border-[var(--border-subtle)] dark:border-[var(--border-subtle)]"
                 } space-y-1`}>
-                  <div className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">Spend Guard</div>
-                  <div className="text-xl font-bold text-[#2563EB] dark:text-[#60A5FA] tabular-nums">
-                    $<NumberTicker value={activeProbeModel.spend * 5} decimalPlaces={6} className="text-xl font-bold text-[#2563EB] dark:text-[#60A5FA]" />
+                  <div className="text-xs text-[var(--text-muted)] font-sans">Spend Guard</div>
+                  <div className="text-xl font-bold text-[var(--brand-primary)] tabular-nums">
+                    $<NumberTicker value={activeProbeModel.spend * 5} decimalPlaces={6} className="text-xl font-bold text-[var(--brand-primary)]" />
                   </div>
-                  <div className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-medium">Hard Cap: $1.00</div>
+                  <div className="text-[11px] text-[var(--text-subtle)] font-medium">Hard Cap: $1.00</div>
                 </div>
               </div>
 
               {/* Zero-Setup Conversion Action Row */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#0F172A]/8 dark:border-white/[0.06]">
-                <div className="flex items-center gap-2 text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--border-subtle)]">
+                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] font-sans">
                   <Icons.ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Ready for full concurrency stress test with zero configuration.</span>
                 </div>
@@ -1440,9 +1441,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     type="button"
                     variant="outline"
                     onClick={() => handleLaunchDiffWithModel(activeProbeModel)}
-                    className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-white/80 dark:bg-[#1E293B] border-[#0F172A]/15 dark:border-white/10 hover:border-[#2563EB]/35 dark:hover:border-[#3B82F6]/40 text-[#0F172A] dark:text-white flex items-center gap-1.5 cursor-pointer transition-all"
+                    className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-[var(--bg-surface-elevated)] border-[var(--border-medium)] hover:border-[var(--brand-primary-border)] text-[var(--text-main)] flex items-center gap-1.5 cursor-pointer transition-all"
                   >
-                    <Icons.Diff className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                    <Icons.Diff className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                     <span>Compare Models</span>
                   </Button>
 
@@ -1466,13 +1467,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             =================================================================== */}
         <section id="capabilities-section" className="space-y-6">
           <div className="gsap-capabilities-header text-center max-w-2xl mx-auto space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] text-[11px] font-semibold uppercase tracking-wider font-mono">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
               02 // WORKSPACES
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
               Three Dedicated Workspaces
             </h2>
-            <p className="text-sm text-[#0F172A]/65 dark:text-slate-400">
+            <p className="text-sm text-[var(--text-muted)]">
               Stress-test throughput, compare model latency deltas, and inspect historical audit runs.
             </p>
           </div>
@@ -1484,38 +1485,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <div key={op.id} className="gsap-capability-card-wrap flex flex-col h-full">
                   <SpotlightCard
                     glowColor={op.glowColor}
-                    className="bg-white/90 dark:bg-[#111827]/90 border border-[#0F172A]/10 dark:border-white/[0.08] hover:border-[#2563EB]/35 dark:hover:border-[#3B82F6]/40 flex-1 flex flex-col justify-between p-6 sm:p-7 relative group transition-colors"
+                    className="bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary-border)] flex-1 flex flex-col justify-between p-6 sm:p-7 relative group transition-colors"
                   >
                     <div className="space-y-4">
                       {/* Header: Icon + Badge */}
                       <div className="flex items-start justify-between">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] shadow-2xs group-hover:scale-105 transition-transform">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] shadow-2xs group-hover:scale-105 transition-transform">
                           <Icon className="h-5 w-5" />
                         </div>
-                        <Badge variant={op.badgeVariant} className="text-[10px] px-2 py-0.5 font-medium border-[#2563EB]/25 dark:border-[#3B82F6]/35 text-[#2563EB] dark:text-[#60A5FA] bg-[#2563EB]/5 dark:bg-[#3B82F6]/10">
+                        <Badge variant={op.badgeVariant} className="text-[10px] px-2 py-0.5 font-medium border-[var(--brand-primary-border)] text-[var(--brand-primary)] bg-[var(--brand-primary-light)]">
                           {op.badgeText}
                         </Badge>
                       </div>
 
                       {/* Titles */}
                       <div className="space-y-0.5">
-                        <h3 className="text-base font-semibold text-[#0F172A] dark:text-white tracking-tight">
+                        <h3 className="text-base font-semibold text-[var(--text-main)] tracking-tight">
                           {op.title}
                         </h3>
-                        <p className="text-xs font-medium text-[#2563EB] dark:text-[#60A5FA]">
+                        <p className="text-xs font-medium text-[var(--brand-primary)]">
                           {op.tagline}
                         </p>
                       </div>
 
                       {/* Description */}
-                      <p className="text-xs text-[#0F172A]/70 dark:text-slate-400 leading-relaxed">
+                      <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                         {op.description}
                       </p>
 
                       {/* Feature bullet list */}
-                      <div className="space-y-2 pt-2 border-t border-[#0F172A]/8 dark:border-white/[0.06]">
+                      <div className="space-y-2 pt-2 border-t border-[var(--border-subtle)]">
                         {op.features.map((f, i) => (
-                          <div key={i} className="flex items-start gap-2 text-xs text-[#0F172A]/80 dark:text-slate-300">
+                          <div key={i} className="flex items-start gap-2 text-xs text-[var(--text-subheading)] dark:text-[var(--text-body)]">
                             <Icons.CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                             <span className="leading-snug">{f}</span>
                           </div>
@@ -1527,7 +1528,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     <div className="pt-5">
                       <Button
                         onClick={() => onNavigate(op.id)}
-                        className="w-full h-10 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all btn-brand-glow text-white shadow-md shadow-[#2563EB]/20"
+                        className="w-full h-10 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all btn-brand-glow text-white shadow-md shadow-[var(--brand-primary-light)]"
                       >
                         <span>{op.buttonLabel}</span>
                         <Icons.ArrowRight className="h-3.5 w-3.5 opacity-70 group-hover:translate-x-1 transition-transform" />
@@ -1545,13 +1546,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             =================================================================== */}
         <section id="providers-section" className="space-y-6">
           <div className="gsap-providers-header text-center max-w-2xl mx-auto space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] text-[11px] font-semibold uppercase tracking-wider font-mono">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[11px] font-semibold uppercase tracking-wider font-mono">
               03 // COMPATIBILITY
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
               Supported Endpoints
             </h2>
-            <p className="text-sm text-[#0F172A]/65 dark:text-slate-400">
+            <p className="text-sm text-[var(--text-muted)]">
               Zero-overhead benchmarking for frontier models, custom OpenAI proxies, and local clusters.
             </p>
           </div>
@@ -1562,16 +1563,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <motion.div
                   whileHover={{ y: -3, scale: 1.02 }}
                   transition={{ duration: 0.18 }}
-                  className="p-3.5 rounded-xl bg-white/80 dark:bg-[#111827]/90 border border-[#0F172A]/8 dark:border-white/[0.08] hover:border-[#2563EB]/35 dark:hover:border-[#3B82F6]/45 text-center cursor-default transition-all flex flex-col items-center justify-between gap-2 shadow-2xs group h-full"
+                  className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary-border)] text-center cursor-default transition-all flex flex-col items-center justify-between gap-2 shadow-2xs group h-full"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F1F5F9] dark:bg-[#0F172A] text-[#0F172A]/80 dark:text-slate-200 group-hover:text-[#2563EB] dark:group-hover:text-[#60A5FA] transition-colors">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-surface-subtle)] text-[var(--text-subheading)] group-hover:text-[var(--brand-primary)] dark:group-hover:text-[var(--brand-primary)] transition-colors">
                     <ProviderLogo vendor={pr.vendor} className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-[#0F172A] dark:text-white truncate">
+                    <div className="text-xs font-semibold text-[var(--text-main)] truncate">
                       {pr.name}
                     </div>
-                    <div className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 truncate font-sans">
+                    <div className="text-[10px] text-[var(--text-subtle)] truncate font-sans">
                       {pr.sub}
                     </div>
                   </div>
@@ -1587,14 +1588,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
         <section id="cta-section" className="pb-4">
           <div className="gsap-cta-card-wrap">
             <SpotlightCard
-              glowColor="rgba(133, 57, 83, 0.18)"
-              className="bg-gradient-to-br from-white/95 via-white/90 to-[#2563EB]/5 dark:from-[#111827]/95 dark:via-[#111827]/90 dark:to-[#2563EB]/15 border border-[#2563EB]/25 dark:border-[#3B82F6]/35 p-8 sm:p-10 text-center space-y-5 group shadow-md"
+              glowColor="var(--brand-primary-light)"
+              className="bg-gradient-to-br from-white/95 via-white/90 to-[var(--brand-primary-light)] dark:from-[var(--bg-surface-elevated)]/95 dark:via-[var(--bg-surface)] dark:to-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] p-8 sm:p-10 text-center space-y-5 group shadow-md"
             >
               <div className="max-w-2xl mx-auto space-y-2.5">
-                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white">
+                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
                   Ready to Benchmark Your Models?
                 </h3>
-                <p className="text-sm text-[#0F172A]/70 dark:text-slate-300">
+                <p className="text-sm text-[var(--text-body)]">
                   Run deterministic stress tests, isolate latency bottlenecks, and export audit reports in seconds.
                 </p>
               </div>
@@ -1602,7 +1603,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
               <div className="flex items-center justify-center pt-1">
                 <Button
                   onClick={() => onNavigate("benchmark")}
-                  className="btn-brand-glow text-white shadow-md shadow-[#2563EB]/30 dark:shadow-[#3B82F6]/35 h-11 px-7 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2.5 cursor-pointer group"
+                  className="btn-brand-glow text-white shadow-md shadow-[var(--brand-primary-light)] h-11 px-7 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2.5 cursor-pointer group"
                 >
                   <Icons.Play className="h-4 w-4" />
                   <span>Open Studio</span>

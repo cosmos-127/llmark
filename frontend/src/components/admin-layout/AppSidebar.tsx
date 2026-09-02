@@ -151,11 +151,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     className={cn(
                       "relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors",
                       isActive
-                        ? "bg-[var(--brand-primary)] text-white shadow-xs"
+                        ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
                         : "bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] group-hover:text-[var(--text-main)] group-hover:bg-[var(--bg-surface-hover)]"
                     )}
                   >
-                    <Icon className={cn("h-3.5 w-3.5", isActive && "fill-white")} />
+                    <Icon className={cn("h-3.5 w-3.5", isActive && "text-[var(--text-inverse)]")} />
                   </div>
                   {!collapsed && (
                     <div className="relative z-10 flex flex-1 items-center justify-between truncate">

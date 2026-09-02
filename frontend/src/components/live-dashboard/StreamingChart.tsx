@@ -44,23 +44,23 @@ const CustomChartTooltip: React.FC<CustomTooltipProps> = ({ active, payload, lab
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-xl border border-[#0F172A]/15 dark:border-white/15 bg-white/95 dark:bg-[#1E293B]/95 p-3 shadow-xl backdrop-blur-md text-xs font-sans space-y-2 min-w-[190px]">
-      <div className="flex items-center justify-between border-b border-[#0F172A]/10 dark:border-white/10 pb-1.5 gap-2">
-        <span className="font-semibold text-[#0F172A] dark:text-slate-200">Elapsed</span>
-        <span className="rounded-md bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 px-2 py-0.5 text-[11px] font-semibold text-[#2563EB] dark:text-[#60A5FA] tabular-nums">
+    <div className="rounded-xl border border-[var(--border-medium)] bg-white/95 dark:bg-[var(--bg-surface-elevated)] p-3 shadow-xl backdrop-blur-md text-xs font-sans space-y-2 min-w-[190px]">
+      <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-1.5 gap-2">
+        <span className="font-semibold text-[var(--text-main)] dark:text-[var(--text-subheading)]">Elapsed</span>
+        <span className="rounded-md bg-[var(--brand-primary-light)] px-2 py-0.5 text-[11px] font-semibold text-[var(--brand-primary)] tabular-nums">
           T + {label}
         </span>
       </div>
       <div className="space-y-1.5 pt-0.5">
         {payload.map((item, idx) => {
-          const color = item.stroke || item.color || item.fill || "#2563EB";
+          const color = item.stroke || item.color || item.fill || "var(--brand-primary)";
           return (
             <div key={idx} className="flex items-center justify-between gap-3 text-[11px]">
               <div className="flex items-center gap-1.5 truncate">
                 <span className="h-2 w-2 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: color }} />
-                <span className="text-[#0F172A]/75 dark:text-slate-300 truncate max-w-[140px] font-medium">{item.name}</span>
+                <span className="text-[var(--text-main)]/75 dark:text-[var(--text-body)] truncate max-w-[140px] font-medium">{item.name}</span>
               </div>
-              <span className="font-semibold tabular-nums text-[#0F172A] dark:text-white shrink-0">
+              <span className="font-semibold tabular-nums text-[var(--text-main)] shrink-0">
                 {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
               </span>
             </div>
@@ -213,10 +213,10 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
   const latest = data[data.length - 1] || null;
 
   // Theme palette colors
-  const primaryColor = isDark ? "#3B82F6" : "#2563EB";
-  const plumColor = isDark ? "#0284C7" : "#1D4ED8";
+  const primaryColor = isDark ? "var(--brand-primary)" : "var(--brand-primary)";
+  const plumColor = isDark ? "var(--brand-secondary)" : "var(--brand-secondary)";
   const emeraldColor = isDark ? "#34D399" : "#059669";
-  const cyanColor = isDark ? "#38BDF8" : "#0284C7";
+  const cyanColor = isDark ? "var(--brand-secondary)" : "var(--brand-secondary)";
   const roseColor = isDark ? "#F87171" : "#E11D48";
   const amberColor = isDark ? "#FBBF24" : "#D97706";
   const gridStroke = isDark ? "rgba(255, 255, 255, 0.05)" : "#e1e4e4";
@@ -230,11 +230,11 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
   });
 
   return (
-    <Card className="shadow-xs border-[#0F172A]/10 dark:border-white/[0.08]">
+    <Card className="shadow-xs border-[var(--border-subtle)]">
       <CardHeader className="p-5 pb-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)]">
               <Icons.Activity className="h-4 w-4" />
               {data && data.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -245,7 +245,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <CardTitle className="text-sm font-semibold text-[#0F172A] dark:text-white font-sans">
+                <CardTitle className="text-sm font-semibold text-[var(--text-main)] font-sans">
                   Real-Time Telemetry Stream
                 </CardTitle>
                 {data && data.length > 0 && (
@@ -255,14 +255,14 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                   </span>
                 )}
               </div>
-              <CardDescription className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">
+              <CardDescription className="text-xs text-[var(--text-muted)] font-sans">
                 Live 100Hz telemetry trajectory • Mode: {((workloadPreset as string) || "standard").replace("_", " ")}
               </CardDescription>
             </div>
           </div>
 
           {/* Metric Selector Tabs */}
-          <div className="flex flex-wrap items-center gap-1 rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] p-1 border border-[#0F172A]/10 dark:border-white/10 text-xs font-sans">
+          <div className="flex flex-wrap items-center gap-1 rounded-xl bg-[var(--bg-surface-subtle)] p-1 border border-[var(--border-subtle)] text-xs font-sans">
             <Button
               type="button"
               variant="ghost"
@@ -270,8 +270,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               onClick={() => setActiveMetric("overview")}
               className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                 activeMetric === "overview"
-                  ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
-                  : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                  ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
             >
               <Icons.Sliders className="h-3 w-3 mr-1" />
@@ -286,8 +286,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("ratelimit")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "ratelimit"
-                    ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
-                    : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                    ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <Icons.ShieldCheck className="h-3 w-3 mr-1" />
@@ -303,8 +303,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("latency")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "latency"
-                    ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
-                    : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                    ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <Icons.Gauge className="h-3 w-3 mr-1" />
@@ -324,8 +324,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("throughput")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "throughput"
-                    ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
-                    : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                    ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <Icons.Zap className="h-3 w-3 mr-1" />
@@ -341,8 +341,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
                 onClick={() => setActiveMetric("thinking")}
                 className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                   activeMetric === "thinking"
-                    ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
-                    : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                    ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 }`}
               >
                 <Icons.Home className="h-3 w-3 mr-1" />
@@ -357,8 +357,8 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               onClick={() => setActiveMetric("goodput")}
               className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                 activeMetric === "goodput"
-                  ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
-                  : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                  ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
             >
               <Icons.CheckCircle className="h-3 w-3 mr-1" />
@@ -372,22 +372,22 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
               onClick={() => setActiveMetric("cost")}
               className={`h-7 px-2.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                 activeMetric === "cost"
-                  ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
-                  : "text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white"
+                  ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
             >
               <Icons.Dollar className="h-3 w-3 mr-1" />
               Spend ($)
             </Button>
 
-            <div className="h-4 w-px bg-[#0F172A]/15 dark:bg-white/15 mx-0.5" />
+            <div className="h-4 w-px bg-[var(--border-subtle)] dark:bg-white/15 mx-0.5" />
 
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-7 w-7 p-0 rounded-lg text-[#0F172A]/70 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-white cursor-pointer"
+              className="h-7 w-7 p-0 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
               title={isExpanded ? "Collapse chart height (320px)" : "Expand chart height (500px)"}
             >
               {isExpanded ? <Icons.Minimize className="h-3.5 w-3.5" /> : <Icons.Maximize className="h-3.5 w-3.5" />}
@@ -399,7 +399,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 font-sans text-xs">
           <div className="flex flex-wrap items-center gap-3">
             {activeMetric === "overview" && (
-              <div className="flex flex-wrap items-center gap-3 text-[#0F172A]/70 dark:text-slate-300">
+              <div className="flex flex-wrap items-center gap-3 text-[var(--text-body)]">
                 {isRateLimit ? (
                   <>
                     <div className="flex items-center gap-1.5">
@@ -464,7 +464,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             )}
 
             {activeMetric === "latency" && (
-              <div className="flex flex-wrap items-center gap-3 text-[#0F172A]/70 dark:text-slate-300">
+              <div className="flex flex-wrap items-center gap-3 text-[var(--text-body)]">
                 <div className="flex items-center gap-1.5">
                   <span>Instant TTFT:</span>
                   <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
@@ -487,7 +487,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             )}
 
             {activeMetric === "throughput" && (
-              <div className="flex flex-wrap items-center gap-3 text-[#0F172A]/70 dark:text-slate-300">
+              <div className="flex flex-wrap items-center gap-3 text-[var(--text-body)]">
                 <div className="flex items-center gap-1.5">
                   <span>Decode Output TPS:</span>
                   <Badge variant="emerald" className="font-sans text-xs font-semibold tabular-nums">
@@ -506,7 +506,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             )}
 
             {activeMetric === "goodput" && (
-              <div className="flex flex-wrap items-center gap-3 text-[#0F172A]/70 dark:text-slate-300">
+              <div className="flex flex-wrap items-center gap-3 text-[var(--text-body)]">
                 <div className="flex items-center gap-1.5">
                   <span>SLO Yield (Yield %):</span>
                   <Badge variant={(latest?.goodput || 0) >= 95 ? "emerald" : "destructive"} className="font-sans text-xs font-semibold tabular-nums">
@@ -523,7 +523,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             )}
 
             {activeMetric === "cost" && (
-              <div className="flex items-center gap-2 text-[#0F172A]/70 dark:text-slate-300">
+              <div className="flex items-center gap-2 text-[var(--text-body)]">
                 <span>Total Accrued:</span>
                 <Badge variant="default" className="font-sans text-xs font-semibold tabular-nums">
                   {formatUsd(latest?.spend || 0)}
@@ -532,7 +532,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             )}
 
             {activeMetric === "ratelimit" && (
-              <div className="flex items-center gap-3 text-[#0F172A]/70 dark:text-slate-300">
+              <div className="flex items-center gap-3 text-[var(--text-body)]">
                 <div className="flex items-center gap-1.5">
                   <span>HTTP 429 Rate:</span>
                   <Badge variant={(latest?.rate_limit_pct || 0) > 0 ? "destructive" : "emerald"} className="font-sans text-xs font-semibold tabular-nums">
@@ -549,7 +549,7 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
             )}
 
             {activeMetric === "thinking" && (
-              <div className="flex items-center gap-3 text-[#0F172A]/70 dark:text-slate-300">
+              <div className="flex items-center gap-3 text-[var(--text-body)]">
                 <div className="flex items-center gap-1.5">
                   <span>Thinking Budget:</span>
                   <Badge variant="secondary" className="font-sans text-xs font-semibold tabular-nums">
@@ -568,10 +568,10 @@ export const StreamingChart: React.FC<StreamingChartProps> = ({ data, workloadPr
 
           {/* Quick Peak & Average Pill */}
           {metricStats && (
-            <div className="hidden sm:flex items-center gap-2.5 px-2.5 py-1 rounded-lg bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 text-[11px] text-[#0F172A]/70 dark:text-slate-300 font-sans tabular-nums">
-              <span>Peak: <strong className="text-[#0F172A] dark:text-white font-semibold">{metricStats.max}</strong></span>
-              <span className="text-[#0F172A]/30 dark:text-white/30">•</span>
-              <span>Avg: <strong className="text-[#0F172A] dark:text-white font-semibold">{metricStats.avg}</strong></span>
+            <div className="hidden sm:flex items-center gap-2.5 px-2.5 py-1 rounded-lg bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] text-[11px] text-[var(--text-body)] font-sans tabular-nums">
+              <span>Peak: <strong className="text-[var(--text-main)] font-semibold">{metricStats.max}</strong></span>
+              <span className="text-[var(--text-main)]/30 dark:text-white/30">•</span>
+              <span>Avg: <strong className="text-[var(--text-main)] font-semibold">{metricStats.avg}</strong></span>
             </div>
           )}
         </div>

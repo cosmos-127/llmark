@@ -1,193 +1,189 @@
 /* ==========================================================================
    LLMARK COLOR PALETTE & THEME SPECIFICATION
    
-   Palette: Cool Slate & Precision Blue
-   - #0F172A / rgb(15, 23, 42)    -> Slate 900 (High contrast dark slate)
-   - #2563EB / rgb(37, 99, 235)   -> Blue 600 (Primary Precision Accent Light)
-   - #3B82F6 / rgb(59, 130, 246)  -> Blue 500 (Primary Luminous Accent Dark)
-   - #F8FAFC / rgb(248, 250, 252) -> Slate 50 (Crisp Cool Light Surface)
-   - #0B0F17 / rgb(11, 15, 23)    -> Deep Obsidian Navy (Dark Mode Base)
+   Palette: Titanium Monochrome & Pure Onyx (Apple / Vercel Minimalist)
+   - #000000 / rgb(0, 0, 0)        -> True OLED Pitch Black (Dark Mode Base)
+   - #09090B / rgb(9, 9, 11)       -> Zinc 950 (Dark Card / Light Accent)
+   - #FAFAFA / rgb(250, 250, 250)  -> Zinc 50 (Dark Accent / Light App Base)
+   - #71717A / rgb(113, 113, 122)  -> Zinc 500 (Balanced Neutral Muted)
+   - #FFFFFF / rgb(255, 255, 255)  -> Pure White Surface
 
-   Theme Personality: "Cool Minimalist Professional"
-   Includes full Light Mode and Dark Mode counter-balance with consistent hover states.
+   Theme Personality: "Titanium Monochrome & Pure Onyx"
+   Stark contrast, hyper-clean typography, zero chromatic distraction,
+   allowing data visualizations and telemetry metrics to be the hero.
    ========================================================================== */
 
 :root {
   /* Raw Palette Constants */
-  --color-slate-900: #0F172A;
-  --color-slate-800: #1E293B;
-  --color-slate-700: #334155;
-  --color-slate-600: #475569;
-  --color-slate-500: #64748B;
-  --color-slate-400: #94A3B8;
-  --color-slate-300: #CBD5E1;
-  --color-slate-200: #E2E8F0;
-  --color-slate-100: #F1F5F9;
-  --color-slate-50:  #F8FAFC;
-
-  --color-blue-600:  #2563EB;
-  --color-blue-500:  #3B82F6;
-  --color-blue-400:  #60A5FA;
-  --color-sky-500:   #0284C7;
-  --color-sky-400:   #38BDF8;
+  --color-zinc-950: #09090B;
+  --color-zinc-900: #18181B;
+  --color-zinc-800: #27272A;
+  --color-zinc-700: #3F3F46;
+  --color-zinc-600: #52525B;
+  --color-zinc-500: #71717A;
+  --color-zinc-400: #A1A1AA;
+  --color-zinc-300: #D4D4D8;
+  --color-zinc-200: #E4E4E7;
+  --color-zinc-100: #F4F4F5;
+  --color-zinc-50:  #FAFAFA;
 
   /* Light Theme (Default) */
-  --bg-app: #F8FAFC;
+  --bg-app: #FAFAFA;
   --bg-surface: #FFFFFF;
   --bg-surface-elevated: #FFFFFF;
-  --bg-surface-subtle: #F1F5F9;
-  --bg-surface-hover: #F1F5F9;
-  --bg-header: rgba(255, 255, 255, 0.94);
-  --bg-sidebar: rgba(255, 255, 255, 0.96);
+  --bg-surface-subtle: #F4F4F5;
+  --bg-surface-hover: #F4F4F5;
+  --bg-header: rgba(255, 255, 255, 0.92);
+  --bg-sidebar: rgba(255, 255, 255, 0.95);
   --bg-card: #FFFFFF;
   --bg-input: #FFFFFF;
   --bg-dialog: #FFFFFF;
   --bg-popover: #FFFFFF;
 
   /* Typography Hierarchy - Light */
-  --text-heading: #0F172A;
-  --text-subheading: #334155;
-  --text-body: #475569;
-  --text-label: #1E293B;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --text-subtle: #94A3B8;
-  --text-placeholder: #94A3B8;
+  --text-heading: #09090B;
+  --text-subheading: #27272A;
+  --text-body: #52525B;
+  --text-label: #18181B;
+  --text-main: #09090B;
+  --text-muted: #71717A;
+  --text-subtle: #A1A1AA;
+  --text-placeholder: #A1A1AA;
   --text-inverse: #FFFFFF;
 
   /* Borders & Dividers - Light */
-  --border-subtle: #E2E8F0;
-  --border-medium: #CBD5E1;
-  --border-strong: #94A3B8;
+  --border-subtle: #E4E4E7;
+  --border-medium: #D4D4D8;
+  --border-strong: #A1A1AA;
 
   /* Brand / Primary Action Accents - Light */
-  --brand-primary: #2563EB;
-  --brand-primary-hover: #1D4ED8;
-  --brand-primary-light: rgba(37, 99, 235, 0.08);
-  --brand-primary-border: rgba(37, 99, 235, 0.25);
-  --brand-secondary: #0284C7;
-  --brand-secondary-hover: #0369A1;
-  --brand-secondary-light: rgba(2, 132, 199, 0.08);
-  --brand-secondary-border: rgba(2, 132, 199, 0.25);
+  --brand-primary: #09090B;
+  --brand-primary-hover: #27272A;
+  --brand-primary-light: rgba(9, 9, 11, 0.06);
+  --brand-primary-border: rgba(9, 9, 11, 0.20);
+  --brand-secondary: #52525B;
+  --brand-secondary-hover: #3F3F46;
+  --brand-secondary-light: rgba(82, 82, 91, 0.08);
+  --brand-secondary-border: rgba(82, 82, 91, 0.20);
 
-  --chart-grid: #E2E8F0;
+  --chart-grid: #E4E4E7;
   --chart-tooltip-bg: rgba(255, 255, 255, 0.98);
-  --chart-tooltip-border: #CBD5E1;
-  --chart-text: #64748B;
+  --chart-tooltip-border: #D4D4D8;
+  --chart-text: #71717A;
 
   /* HSL Component Tokens for Radix / Tailwind shadcn */
-  --background: 210 40% 98%;      /* #F8FAFC */
-  --foreground: 222 47% 11%;      /* #0F172A */
+  --background: 0 0% 98%;         /* #FAFAFA */
+  --foreground: 240 10% 4%;       /* #09090B */
   --card: 0 0% 100%;              /* #FFFFFF */
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 240 10% 4%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --primary: 221 83% 53%;         /* #2563EB */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96%;       /* #F1F5F9 */
-  --secondary-foreground: 222 47% 11%;
-  --muted: 210 40% 96%;           /* #F1F5F9 */
-  --muted-foreground: 215 16% 47%;/* #64748B */
-  --accent: 210 40% 96%;
-  --accent-foreground: 221 83% 53%;
+  --popover-foreground: 240 10% 4%;
+  --primary: 240 10% 4%;          /* #09090B */
+  --primary-foreground: 0 0% 98%; /* #FAFAFA */
+  --secondary: 240 5% 96%;        /* #F4F4F5 */
+  --secondary-foreground: 240 10% 4%;
+  --muted: 240 5% 96%;            /* #F4F4F5 */
+  --muted-foreground: 240 4% 46%; /* #71717A */
+  --accent: 240 5% 96%;
+  --accent-foreground: 240 10% 4%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 214 32% 91%;          /* #E2E8F0 */
-  --input: 214 32% 91%;           /* #E2E8F0 */
-  --ring: 221 83% 53%;            /* #2563EB */
+  --border: 240 6% 90%;           /* #E4E4E7 */
+  --input: 240 6% 90%;            /* #E4E4E7 */
+  --ring: 240 10% 4%;             /* #09090B */
   --radius: 0.75rem;
 
   /* Ambient Glows & Grids */
-  --ambient-plum: rgba(37, 99, 235, 0.12);
-  --ambient-deepplum: rgba(2, 132, 199, 0.10);
-  --ambient-charcoal: rgba(15, 23, 42, 0.05);
-  --grid-dots: rgba(15, 23, 42, 0.08);
+  --ambient-plum: rgba(0, 0, 0, 0.04);
+  --ambient-deepplum: rgba(0, 0, 0, 0.02);
+  --ambient-charcoal: rgba(0, 0, 0, 0.02);
+  --grid-dots: rgba(0, 0, 0, 0.06);
 
   --toggle-btn-bg: #FFFFFF;
-  --toggle-btn-border: #CBD5E1;
-  --toggle-btn-hover: #F1F5F9;
-  --toggle-btn-text: #2563EB;
-  --toggle-btn-glow: rgba(37, 99, 235, 0.18);
+  --toggle-btn-border: #E4E4E7;
+  --toggle-btn-hover: #F4F4F5;
+  --toggle-btn-text: #09090B;
+  --toggle-btn-glow: rgba(0, 0, 0, 0.08);
 }
 
 /* ==========================================================================
-   Dark Theme Counterpart ("Deep Obsidian Cool Navy & Radiant Blue")
+   Dark Theme Counterpart ("True OLED Pure Onyx & Titanium Crisp White")
    ========================================================================== */
 .dark, [data-theme="dark"] {
-  --bg-app: #0B0F17;
-  --bg-surface: #111827;
-  --bg-surface-elevated: #1E293B;
-  --bg-surface-subtle: #0F172A;
-  --bg-surface-hover: #1E293B;
-  --bg-header: rgba(11, 15, 23, 0.90);
-  --bg-sidebar: rgba(11, 15, 23, 0.95);
-  --bg-card: #111827;
-  --bg-input: #0F172A;
-  --bg-dialog: #1E293B;
-  --bg-popover: #1E293B;
+  --bg-app: #000000;
+  --bg-surface: #09090B;
+  --bg-surface-elevated: #141417;
+  --bg-surface-subtle: #0F0F12;
+  --bg-surface-hover: #18181B;
+  --bg-header: rgba(0, 0, 0, 0.88);
+  --bg-sidebar: rgba(0, 0, 0, 0.92);
+  --bg-card: #09090B;
+  --bg-input: #09090B;
+  --bg-dialog: #121214;
+  --bg-popover: #121214;
 
   /* Typography Hierarchy - Dark */
-  --text-heading: #F8FAFC;
-  --text-subheading: #CBD5E1;
-  --text-body: #94A3B8;
-  --text-label: #E2E8F0;
-  --text-main: #F8FAFC;
-  --text-muted: #64748B;
-  --text-subtle: #475569;
-  --text-placeholder: #475569;
-  --text-inverse: #0B0F17;
+  --text-heading: #EDEDED;
+  --text-subheading: #D4D4D8;
+  --text-body: #A1A1AA;
+  --text-label: #E4E4E7;
+  --text-main: #EDEDED;
+  --text-muted: #71717A;
+  --text-subtle: #52525B;
+  --text-placeholder: #52525B;
+  --text-inverse: #09090B;
 
   /* Borders & Dividers - Dark */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.14);
-  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-medium: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.26);
 
   /* Brand / Primary Action Accents - Dark */
-  --brand-primary: #3B82F6;
-  --brand-primary-hover: #60A5FA;
-  --brand-primary-light: rgba(59, 130, 246, 0.15);
-  --brand-primary-border: rgba(59, 130, 246, 0.35);
-  --brand-secondary: #38BDF8;
-  --brand-secondary-hover: #7DD3FC;
-  --brand-secondary-light: rgba(56, 189, 248, 0.15);
-  --brand-secondary-border: rgba(56, 189, 248, 0.35);
+  --brand-primary: #FAFAFA;
+  --brand-primary-hover: #FFFFFF;
+  --brand-primary-light: rgba(250, 250, 250, 0.12);
+  --brand-primary-border: rgba(250, 250, 250, 0.35);
+  --brand-secondary: #A1A1AA;
+  --brand-secondary-hover: #D4D4D8;
+  --brand-secondary-light: rgba(161, 161, 170, 0.12);
+  --brand-secondary-border: rgba(161, 161, 170, 0.35);
 
   --chart-grid: rgba(255, 255, 255, 0.05);
-  --chart-tooltip-bg: rgba(17, 24, 39, 0.96);
-  --chart-tooltip-border: rgba(255, 255, 255, 0.12);
-  --chart-text: #94A3B8;
+  --chart-tooltip-bg: rgba(9, 9, 11, 0.96);
+  --chart-tooltip-border: rgba(255, 255, 255, 0.15);
+  --chart-text: #A1A1AA;
 
-  /* HSL Component Tokens for Deep Obsidian Dark */
-  --background: 222 47% 7%;        /* #0B0F17 */
-  --foreground: 210 40% 98%;       /* #F8FAFC */
-  --card: 222 47% 11%;             /* #111827 */
-  --card-foreground: 210 40% 98%;
-  --popover: 217 33% 17%;          /* #1E293B */
-  --popover-foreground: 210 40% 98%;
-  --primary: 217 91% 60%;          /* #3B82F6 */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 217 33% 17%;        /* #1E293B */
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217 33% 17%;            /* #1E293B */
-  --muted-foreground: 215 16% 65%; /* #94A3B8 */
-  --accent: 217 91% 60%;
-  --accent-foreground: 0 0% 100%;
+  /* HSL Component Tokens for Pure Onyx Dark */
+  --background: 0 0% 0%;           /* #000000 */
+  --foreground: 0 0% 93%;          /* #EDEDED */
+  --card: 240 10% 4%;              /* #09090B */
+  --card-foreground: 0 0% 93%;
+  --popover: 240 10% 7%;           /* #121214 */
+  --popover-foreground: 0 0% 93%;
+  --primary: 0 0% 98%;             /* #FAFAFA */
+  --primary-foreground: 240 10% 4%;/* #09090B */
+  --secondary: 240 5% 12%;         /* #18181B */
+  --secondary-foreground: 0 0% 93%;
+  --muted: 240 5% 12%;             /* #18181B */
+  --muted-foreground: 240 4% 56%;  /* #A1A1AA */
+  --accent: 240 5% 14%;
+  --accent-foreground: 0 0% 98%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 217 33% 17%;           /* #1E293B */
-  --input: 222 47% 11%;            /* #0F172A */
-  --ring: 217 91% 60%;
+  --border: 240 5% 16%;            /* #27272A */
+  --input: 240 10% 4%;             /* #09090B */
+  --ring: 0 0% 90%;
 
-  --ambient-plum: rgba(59, 130, 246, 0.16);
-  --ambient-deepplum: rgba(56, 189, 248, 0.12);
-  --ambient-charcoal: rgba(59, 130, 246, 0.06);
-  --grid-dots: rgba(255, 255, 255, 0.04);
+  --ambient-plum: rgba(255, 255, 255, 0.05);
+  --ambient-deepplum: rgba(255, 255, 255, 0.03);
+  --ambient-charcoal: rgba(255, 255, 255, 0.02);
+  --grid-dots: rgba(255, 255, 255, 0.05);
 
-  --toggle-btn-bg: #1E293B;
-  --toggle-btn-border: rgba(59, 130, 246, 0.35);
-  --toggle-btn-hover: #334155;
-  --toggle-btn-text: #3B82F6;
-  --toggle-btn-glow: rgba(59, 130, 246, 0.30);
+  --toggle-btn-bg: #141417;
+  --toggle-btn-border: rgba(255, 255, 255, 0.18);
+  --toggle-btn-hover: #1F1F24;
+  --toggle-btn-text: #FAFAFA;
+  --toggle-btn-glow: rgba(255, 255, 255, 0.18);
 }
 
 /* ==========================================================================
@@ -241,7 +237,7 @@
 
 /* Text Gradient Brand Utility */
 .text-gradient-brand {
-  background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #2563EB 100%);
+  background: linear-gradient(135deg, #09090B 0%, #27272A 50%, #52525B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -249,7 +245,7 @@
 
 .dark .text-gradient-brand,
 [data-theme="dark"] .text-gradient-brand {
-  background: linear-gradient(135deg, #F8FAFC 0%, #CBD5E1 40%, #60A5FA 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #D4D4D8 45%, #A1A1AA 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -258,8 +254,8 @@
 /* Glass panel & cards adhering to theme variables */
 .glass-panel {
   background: var(--bg-header);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-subtle);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
@@ -291,36 +287,37 @@
 
 /* Brand Glowing Action Buttons */
 .btn-brand-glow, .btn-amber-glow {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
-  border: 1px solid rgba(37, 99, 235, 0.35);
+  background: linear-gradient(135deg, #18181B 0%, #09090B 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark .btn-brand-glow, .dark .btn-amber-glow,
 [data-theme="dark"] .btn-brand-glow, [data-theme="dark"] .btn-amber-glow {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 16px -2px rgba(59, 130, 246, 0.45);
-  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: linear-gradient(135deg, #FFFFFF 0%, #E4E4E7 100%) !important;
+  color: #09090B !important;
+  box-shadow: 0 4px 16px -2px rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
 .btn-brand-glow:hover, .btn-amber-glow:hover {
-  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%) !important;
-  box-shadow: 0 6px 18px 0px rgba(37, 99, 235, 0.45);
+  background: linear-gradient(135deg, #27272A 0%, #18181B 100%) !important;
+  box-shadow: 0 6px 18px 0px rgba(0, 0, 0, 0.35);
   transform: translateY(-1px);
 }
 
 .dark .btn-brand-glow:hover, .dark .btn-amber-glow:hover,
 [data-theme="dark"] .btn-brand-glow:hover, [data-theme="dark"] .btn-amber-glow:hover {
-  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%) !important;
-  box-shadow: 0 6px 20px 0px rgba(59, 130, 246, 0.55);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F4F4F5 100%) !important;
+  color: #09090B !important;
+  box-shadow: 0 6px 20px 0px rgba(255, 255, 255, 0.30);
 }
 
 .btn-brand-glow:active, .btn-amber-glow:active {
   transform: translateY(0px);
-  box-shadow: 0 2px 8px -1px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.2);
 }
 
 /* Scrollbars adapting to current theme */

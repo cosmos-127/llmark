@@ -75,15 +75,15 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
     <TooltipProvider>
       <div className="space-y-6 font-sans">
         {/* Top Control Bar & Run Status */}
-        <Card className="border-[#0F172A]/10 dark:border-white/[0.08] shadow-xs">
+        <Card className="border-[var(--border-subtle)] shadow-xs">
           <CardContent className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-[#1E293B] border border-[#0F172A]/10 dark:border-white/10 shadow-xs p-1.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] shadow-xs p-1.5">
                 <ProviderLogo vendor={config.vendor} className="h-6 w-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-semibold text-[#0F172A] dark:text-white tracking-tight">
+                  <h3 className="text-base font-semibold text-[var(--text-main)] tracking-tight">
                     {config.model}
                   </h3>
                   <Badge variant="outline" className="text-[11px] font-sans capitalize">
@@ -105,7 +105,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                     </Badge>
                   )}
                 </div>
-                <p className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans mt-0.5">
+                <p className="text-xs text-[var(--text-muted)] font-sans mt-0.5">
                   Concurrency: {config.concurrency} streams • Preset: {config.workload_preset} • Run: <span className="font-sans font-medium">{benchmarkId.slice(0, 16)}...</span>
                 </p>
               </div>
@@ -113,8 +113,8 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
 
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <div className="text-xs text-[#0F172A]/50 dark:text-slate-400 font-sans">Elapsed Time</div>
-                <div className="text-sm font-semibold font-sans text-[#0F172A] dark:text-white tabular-nums">
+                <div className="text-xs text-[var(--text-subtle)] font-sans">Elapsed Time</div>
+                <div className="text-sm font-semibold font-sans text-[var(--text-main)] tabular-nums">
                   {snapshot?.elapsed_seconds ? `${snapshot.elapsed_seconds.toFixed(1)}s` : "0.0s"}
                 </div>
               </div>
@@ -155,9 +155,9 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
             >
-              <Card className="border-[#2563EB]/30 dark:border-[#3B82F6]/40 bg-[#2563EB]/10 dark:bg-[#3B82F6]/15">
-                <CardContent className="p-4 flex items-center gap-3 text-[#2563EB] dark:text-[#60A5FA] text-xs">
-                  <AlertTriangle className="h-5 w-5 text-[#2563EB] dark:text-[#60A5FA] shrink-0" />
+              <Card className="border-[var(--brand-primary-border)] bg-[var(--brand-primary-light)]">
+                <CardContent className="p-4 flex items-center gap-3 text-[var(--brand-primary)] text-xs">
+                  <AlertTriangle className="h-5 w-5 text-[var(--brand-primary)] shrink-0" />
                   <div>
                     <p className="font-semibold">Hard spend cap breached</p>
                     <p>{budgetWarning}</p>
@@ -201,7 +201,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                       className="rounded-xl font-medium shadow-2xs hover:shadow-xs text-xs cursor-pointer"
                       onClick={() => downloadFile(getApiUrl(`/api/export/pdf/${benchmarkId}`), `llmark_report_${benchmarkId}.pdf`)}
                     >
-                      <Download className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                      <Download className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                       Download PDF
                     </Button>
 
@@ -228,7 +228,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
                               initial={{ scale: 0.6, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               exit={{ scale: 0.6, opacity: 0 }}
-                              className="flex items-center gap-1 text-[#2563EB] dark:text-[#60A5FA] font-medium"
+                              className="flex items-center gap-1 text-[var(--brand-primary)] font-medium"
                             >
                               <Copy className="h-3.5 w-3.5" /> Copy Summary
                             </motion.span>
@@ -263,7 +263,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
               </TabsTrigger>
             </TabsList>
 
-            <span className="text-xs text-[#0F172A]/50 dark:text-slate-400 hidden sm:inline-block font-sans font-medium">
+            <span className="text-xs text-[var(--text-subtle)] hidden sm:inline-block font-sans font-medium">
               Live updates every 100ms
             </span>
           </div>

@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white shadow-xs border border-[var(--brand-primary-border)] active:scale-[0.98]",
+          "bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-[var(--text-inverse)] shadow-xs border border-[var(--brand-primary-border)] active:scale-[0.98]",
         destructive:
           "bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shadow-2xs active:scale-[0.98]",
         outline:
@@ -20,7 +20,7 @@ const buttonVariants = cva(
           "text-[var(--text-main)] hover:bg-[var(--brand-primary-light)] hover:text-[var(--brand-primary)] active:scale-[0.98]",
         link: "text-[var(--brand-primary)] underline-offset-4 hover:underline",
         amberGlow:
-          "btn-brand-glow text-white font-semibold shadow-md border border-[var(--brand-primary-border)] active:scale-[0.98]",
+          "btn-brand-glow text-[var(--text-inverse)] font-semibold shadow-md border border-[var(--brand-primary-border)] active:scale-[0.98]",
       },
       size: {
         default: "h-9 px-4 py-2 text-xs",

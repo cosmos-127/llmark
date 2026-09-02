@@ -241,8 +241,8 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
         return {
           title: "Constant Flat",
           badge: "Baseline Profiling",
-          color: "text-[#2563EB] dark:text-[#60A5FA]",
-          bg: "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/30",
+          color: "text-[var(--brand-primary)]",
+          bg: "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)]",
           desc: "Maintains uninterrupted maximum concurrency to isolate steady-state streaming token throughput.",
           formula: "c(t) = C",
           icon: Activity,
@@ -251,8 +251,8 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
         return {
           title: "Linear Ramp-Up",
           badge: "Concurrency Search",
-          color: "text-blue-700 dark:text-blue-400",
-          bg: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/40",
+          color: "text-[var(--brand-primary)]",
+          bg: "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)]",
           desc: "Gradually increases load from 1 worker up to peak capacity to reveal where latency begins degrading.",
           formula: "c(t) = 1 + (C - 1) \\cdot \\frac{t}{T}",
           icon: TrendingUp,
@@ -299,7 +299,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
   }, [points, concurrency]);
 
   return (
-    <div className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#111827] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar with pattern badge and live streams */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -308,7 +308,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#0F172A] dark:text-white">
+              <span className="text-sm font-bold text-[var(--text-main)]">
                 Traffic Dispatch Waveform Simulation
               </span>
               <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
@@ -318,24 +318,24 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
                 {patternMetadata.title}
               </Badge>
             </div>
-            <p className="text-xs text-[#0F172A]/65 dark:text-white/65 mt-0.5">
+            <p className="text-xs text-[var(--text-muted)] dark:text-white/65 mt-0.5">
               {patternMetadata.desc}
             </p>
           </div>
         </div>
 
         <div className="text-right flex flex-col items-end">
-          <span className="text-sm font-bold font-sans tabular-nums text-[#2563EB] dark:text-[#60A5FA]">
+          <span className="text-sm font-bold font-sans tabular-nums text-[var(--brand-primary)]">
             {concurrency} Max In-Flight Streams
           </span>
-          <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-sans tabular-nums">
+          <span className="text-[11px] text-[var(--text-subtle)] font-sans tabular-nums">
             ~{avgConcurrency} avg in-flight load
           </span>
         </div>
       </div>
 
       {/* Interactive Waveform SVG Canvas */}
-      <div className="relative w-full rounded-2xl bg-[#F1F5F9]/70 dark:bg-[#1E293B] border border-[#0F172A]/10 dark:border-white/10 p-2 overflow-hidden select-none">
+      <div className="relative w-full rounded-2xl bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-2 overflow-hidden select-none">
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto cursor-crosshair overflow-visible"
@@ -345,9 +345,9 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           <defs>
             {/* Primary Gradient Fill */}
             <linearGradient id="waveformGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#2563EB" stopOpacity="0.4" />
-              <stop offset="60%" stopColor="#2563EB" stopOpacity="0.14" />
-              <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="var(--brand-primary)" stopOpacity="0.4" />
+              <stop offset="60%" stopColor="var(--brand-primary)" stopOpacity="0.14" />
+              <stop offset="100%" stopColor="var(--brand-primary)" stopOpacity="0.0" />
             </linearGradient>
 
             {/* Warmup Hatching Pattern */}
@@ -363,7 +363,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 
             {/* Glow Filter for Active Line */}
             <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#2563EB" floodOpacity="0.3" />
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="var(--brand-primary)" floodOpacity="0.3" />
             </filter>
           </defs>
 
@@ -499,12 +499,12 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
           <path
             d={linePath}
             fill="none"
-            stroke="#2563EB"
+            stroke="var(--brand-primary)"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
             filter="url(#lineGlow)"
-            className="dark:stroke-[#3B82F6]"
+            className="dark:stroke-[var(--brand-primary)]"
           />
 
           {/* Y-Axis Labels */}
@@ -556,7 +556,7 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
             x={PADDING.left + PLOT_WIDTH}
             y={SVG_HEIGHT - 8}
             textAnchor="end"
-            className="text-[11px] font-sans tabular-nums font-bold fill-[#2563EB] dark:fill-[#3B82F6]"
+            className="text-[11px] font-sans tabular-nums font-bold fill-[var(--brand-primary)] dark:fill-[var(--brand-primary)]"
           >
             {totalScopeLabel}
           </text>
@@ -569,16 +569,16 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
                 y1={PADDING.top}
                 x2={hoveredPoint.x}
                 y2={PADDING.top + PLOT_HEIGHT}
-                stroke="#2563EB"
+                stroke="var(--brand-primary)"
                 strokeWidth="1.5"
                 strokeDasharray="2 2"
-                className="dark:stroke-[#3B82F6]"
+                className="dark:stroke-[var(--brand-primary)]"
               />
               <circle
                 cx={hoveredPoint.x}
                 cy={hoveredPoint.y}
                 r="7"
-                fill="#2563EB"
+                fill="var(--brand-primary)"
                 fillOpacity="0.25"
                 className="animate-ping"
               />
@@ -586,10 +586,10 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
                 cx={hoveredPoint.x}
                 cy={hoveredPoint.y}
                 r="5"
-                fill="#2563EB"
+                fill="var(--brand-primary)"
                 stroke="#ffffff"
                 strokeWidth="2"
-                className="dark:fill-[#3B82F6] dark:stroke-[#111827]"
+                className="dark:fill-[var(--brand-primary)] dark:stroke-[#111827]"
               />
             </g>
           )}
@@ -609,11 +609,11 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
                 top: "12px",
                 transform: "translateX(-50%)",
               }}
-              className="pointer-events-none z-20 px-3 py-2 rounded-xl bg-[#0F172A]/95 dark:bg-black/95 text-white text-xs shadow-xl backdrop-blur-md border border-white/15 space-y-1"
+              className="pointer-events-none z-20 px-3 py-2 rounded-xl bg-[var(--bg-surface-elevated)]/95 dark:bg-black/95 text-white text-xs shadow-xl backdrop-blur-md border border-white/15 space-y-1"
             >
               <div className="flex items-center justify-between gap-4 text-xs">
-                <span className="font-bold text-[#F1F5F9]">{hoveredPoint.timeLabel}</span>
-                <span className="text-[#3B82F6] font-sans font-bold text-sm">
+                <span className="font-bold text-[var(--text-main)]">{hoveredPoint.timeLabel}</span>
+                <span className="text-[var(--brand-primary)] font-sans font-bold text-sm">
                   {hoveredPoint.streams} / {concurrency} streams
                 </span>
               </div>
@@ -630,46 +630,46 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
 
       {/* Telemetry Summary Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
-          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Target className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1">
+          <span className="text-[11px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Target className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
             Peak Load Target
           </span>
-          <div className="font-sans tabular-nums font-bold text-[#2563EB] dark:text-[#60A5FA] text-xs">
+          <div className="font-sans tabular-nums font-bold text-[var(--brand-primary)] text-xs">
             {concurrency} streams (100% capacity)
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
-          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-[#1D4ED8] dark:text-[#38BDF8]" />
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1">
+          <span className="text-[11px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-[var(--brand-secondary)]" />
             Test Execution Scope
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#0F172A] dark:text-white text-xs">
+          <div className="font-sans tabular-nums font-semibold text-[var(--text-main)] text-xs">
             {totalScopeLabel}
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
-          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1">
+          <span className="text-[11px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <RotateCw className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             Socket Priming
           </span>
-          <div className="font-sans tabular-nums font-semibold text-[#0F172A] dark:text-white text-xs">
+          <div className="font-sans tabular-nums font-semibold text-[var(--text-main)] text-xs">
             {warmupRequests > 0 ? `${warmupRequests} warmup reqs` : "0 (Immediate cold)"}
           </div>
         </div>
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#1E293B] border border-[#0F172A]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[var(--bg-surface-subtle)]/80 dark:bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#0F172A] dark:text-white cursor-pointer hover:text-[#2563EB] dark:hover:text-[#60A5FA]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[var(--text-main)] cursor-pointer hover:text-[var(--brand-primary)]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
+            <BookOpen className="h-4 w-4 text-[var(--brand-primary)]" />
             <span>Queuing Theory & Load Curve Modeling Mechanics</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -681,25 +681,25 @@ export const WaveformSimulationGraph: React.FC<WaveformSimulationGraphProps> = (
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#0F172A]/10 dark:border-white/10"
+              className="space-y-3 pt-2 text-xs border-t border-[var(--border-subtle)]"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
-                  <span className="font-semibold text-[#2563EB] dark:text-[#60A5FA]">
+                <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1.5">
+                  <span className="font-semibold text-[var(--brand-primary)]">
                     Active Curve Mathematical Formulation:
                   </span>
                   <MathFormula math={patternMetadata.formula} block />
-                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[var(--text-muted)] dark:text-white/65">
                     Modulates dispatch worker allocation over the normalized test lifecycle.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
-                  <span className="font-semibold text-[#1D4ED8] dark:text-[#38BDF8]">
+                <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1.5">
+                  <span className="font-semibold text-[var(--brand-secondary)]">
                     Little's Law & Saturation Knee Dynamics:
                   </span>
                   <MathFormula math="L = \lambda W, \quad W_{\text{queue}} \approx \frac{\rho}{\mu(1 - \rho)}" block />
-                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[var(--text-muted)] dark:text-white/65">
                     As GPU server utilization <MathFormula math="\rho \to 1" />, queuing delays explode asymptotically, causing severe tail TTFT degradation at the saturation knee.
                   </p>
                 </div>

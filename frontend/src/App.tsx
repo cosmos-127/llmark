@@ -40,7 +40,7 @@ export function App() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={200}>
-          <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#0B0F17] text-[#0F172A] dark:text-white flex flex-col font-sans relative overflow-x-clip transition-colors duration-200">
+          <div className="min-h-screen bg-[var(--bg-app)] text-[var(--text-main)] flex flex-col font-sans relative overflow-x-clip transition-colors duration-200">
             {/* Ambient Grid & Palette Glows */}
             <div className="fixed inset-0 bg-grid-pattern opacity-40 pointer-events-none z-0" />
             <div className="fixed -top-28 left-1/2 -translate-x-1/2 w-[900px] max-w-[100vw] h-[450px] ambient-glow-plum pointer-events-none z-0" />
@@ -91,22 +91,22 @@ export function App() {
             </div>
 
             {/* Unified Clean Minimalist Footer */}
-            <footer className="z-10 border-t border-[#0F172A]/10 dark:border-white/[0.08] bg-white/70 dark:bg-[#0B0F17]/90 backdrop-blur-xs py-4 px-6 text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans transition-colors duration-200">
+            <footer className="z-10 border-t border-[var(--border-subtle)] bg-[var(--bg-header)] backdrop-blur-xs py-4 px-6 text-xs text-[var(--text-muted)] font-sans transition-colors duration-200">
               <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <button
                     onClick={() => setActiveTab("landing")}
-                    className="flex items-center gap-2 font-semibold text-[#0F172A] dark:text-white hover:text-[#2563EB] dark:hover:text-[#60A5FA] cursor-pointer transition-colors group"
+                    className="flex items-center gap-2 font-semibold text-[var(--text-main)] hover:text-[var(--brand-primary)] cursor-pointer transition-colors group"
                   >
                     <LLMarkLogo className="h-4.5 w-4.5" />
                     <span>LLMark</span>
                   </button>
-                  <span className="text-[#0F172A]/30 dark:text-white/20">•</span>
-                  <span className="font-normal text-[#0F172A]/70 dark:text-slate-400">
+                  <span className="text-[var(--text-main)]/30 dark:text-white/20">•</span>
+                  <span className="font-normal text-[var(--text-muted)]">
                     High-Precision Inference Telemetry & Load Profiler
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-[11px] font-sans text-[#0F172A]/50 dark:text-slate-400">
+                <div className="flex items-center gap-3 text-[11px] font-sans text-[var(--text-subtle)]">
                   <span className="font-mono">FastAPI + React 19</span>
                   <span>•</span>
                   <span className="font-mono">v0.1.0</span>

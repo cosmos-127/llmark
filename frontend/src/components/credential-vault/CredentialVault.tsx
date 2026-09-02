@@ -61,8 +61,8 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                 transition={{ duration: 0.3 }}
                 className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors ${
                   hasKey
-                    ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/30 dark:border-[#3B82F6]/35 text-[#2563EB] dark:text-[#60A5FA] shadow-xs"
-                    : "bg-[#F1F5F9] dark:bg-[#0F172A] border-[#0F172A]/10 dark:border-white/10 text-[#0F172A]/50 dark:text-slate-400"
+                    ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] shadow-xs"
+                    : "bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)] text-[var(--text-subtle)]"
                 }`}
               >
                 {hasKey ? <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Lock className="h-4 w-4" />}
@@ -77,9 +77,9 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 font-sans">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] font-sans">
                 <ProviderLogo vendor={vendor} className="h-3.5 w-3.5" />
-                <span className="text-[11px] font-sans font-medium capitalize text-[#0F172A]/80 dark:text-slate-200">
+                <span className="text-[11px] font-sans font-medium capitalize text-[var(--text-subheading)]">
                   {vendor.replace("_", " ")}
                 </span>
               </div>
@@ -111,24 +111,24 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                   onClick={() => onChange({ ...credential, gcp_auth_mode: "api_key" })}
                   className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                     (credential.gcp_auth_mode || "api_key") === "api_key"
-                      ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/30 shadow-xs"
-                      : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] text-[#0F172A] dark:text-white"
+                      ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/30 shadow-xs"
+                      : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                   }`}
                 >
                   <span className="text-xs font-semibold block">Gemini API Key</span>
-                  <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400">Google AI Studio</span>
+                  <span className="text-[10px] text-[var(--text-muted)]">Google AI Studio</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => onChange({ ...credential, gcp_auth_mode: "vertex_ai" })}
                   className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                     credential.gcp_auth_mode === "vertex_ai"
-                      ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/30 shadow-xs"
-                      : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] text-[#0F172A] dark:text-white"
+                      ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/30 shadow-xs"
+                      : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                   }`}
                 >
                   <span className="text-xs font-semibold block">GCP Project ID</span>
-                  <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400">Vertex AI VPC</span>
+                  <span className="text-[10px] text-[var(--text-muted)]">Vertex AI VPC</span>
                 </button>
               </div>
 
@@ -136,7 +136,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="vault-gemini-key">Gemini API key</Label>
-                    <span className="text-xs text-[#2563EB] dark:text-[#60A5FA] font-medium font-sans">
+                    <span className="text-xs text-[var(--brand-primary)] font-medium font-sans">
                       aistudio.google.com
                     </span>
                   </div>
@@ -154,7 +154,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowKey(!showKey)}
-                      className="absolute right-1 top-0.5 h-8 w-8 text-[#0F172A]/50 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-[#F1F5F9]"
+                      className="absolute right-1 top-0.5 h-8 w-8 text-[var(--text-subtle)] hover:text-[var(--text-main)] dark:hover:text-[var(--text-main)]"
                     >
                       {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </Button>
@@ -193,7 +193,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                   <Label htmlFor="vault-api-key">
                     {vendor === "anthropic" ? "Anthropic API key" : "Provider API key"}
                   </Label>
-                  <span className="text-xs font-sans text-[#0F172A]/50 dark:text-slate-400">
+                  <span className="text-xs font-sans text-[var(--text-subtle)]">
                     {hasKey ? "Key loaded" : "Required for live test"}
                   </span>
                 </div>
@@ -211,7 +211,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={() => setShowKey(!showKey)}
-                    className="absolute right-1 top-0.5 h-8 w-8 text-[#0F172A]/50 dark:text-slate-400 hover:text-[#0F172A] dark:hover:text-[#F1F5F9]"
+                    className="absolute right-1 top-0.5 h-8 w-8 text-[var(--text-subtle)] hover:text-[var(--text-main)] dark:hover:text-[var(--text-main)]"
                   >
                     {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </Button>
@@ -223,9 +223,9 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="vault-base-url">
-                      Endpoint base URL <span className="text-[#0F172A]/50 dark:text-slate-400 font-normal lowercase">(optional)</span>
+                      Endpoint base URL <span className="text-[var(--text-subtle)] font-normal lowercase">(optional)</span>
                     </Label>
-                    <span className="text-xs font-sans text-[#0F172A]/50 dark:text-slate-400">vLLM / Ollama / Groq</span>
+                    <span className="text-xs font-sans text-[var(--text-subtle)]">vLLM / Ollama / Groq</span>
                   </div>
                   <div className="relative">
                     <Input
@@ -236,7 +236,7 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
                       placeholder="e.g. http://localhost:8000/v1 or https://api.groq.com/openai/v1"
                       className="pr-9"
                     />
-                    <Server className="absolute right-3 top-2.5 h-4 w-4 text-[#0F172A]/40 dark:text-slate-500 pointer-events-none" />
+                    <Server className="absolute right-3 top-2.5 h-4 w-4 text-[var(--text-placeholder)] pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -246,8 +246,8 @@ export const CredentialVault: React.FC<CredentialVaultProps> = ({
           <Separator className="my-2" />
 
           {/* Security Footnote */}
-          <div className="flex items-center gap-2 text-xs text-[#0F172A]/50 dark:text-slate-400">
-            <Info className="h-3.5 w-3.5 text-[#0F172A]/40 dark:text-slate-500 shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-[var(--text-subtle)]">
+            <Info className="h-3.5 w-3.5 text-[var(--text-placeholder)] shrink-0" />
             <span>Keys are never saved to SQLite, disk storage, or telemetry bundles.</span>
           </div>
         </CardContent>

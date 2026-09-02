@@ -282,17 +282,17 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="pointer-events-auto relative z-[99999] h-full w-full max-w-lg md:max-w-xl bg-white dark:bg-[#111827] border-l border-[#0F172A]/15 dark:border-white/10 shadow-2xl flex flex-col overflow-hidden"
+            className="pointer-events-auto relative z-[99999] h-full w-full max-w-lg md:max-w-xl bg-[var(--bg-card)] border-l border-[var(--border-medium)] shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header: Minimal yet Effective */}
-            <div className="p-4 sm:p-5 border-b border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/80 dark:bg-[#1E293B]/95 backdrop-blur-md flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/80 dark:bg-[var(--bg-surface-elevated)] backdrop-blur-md flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2563EB]/15 dark:bg-[#3B82F6]/20 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/30 dark:border-[#3B82F6]/40 shadow-xs">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)] shadow-xs">
                   <Sparkles className="h-4.5 w-4.5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-[#0F172A] dark:text-white font-sans">
+                    <h3 className="text-sm font-semibold text-[var(--text-main)] font-sans">
                       Inference Copilot
                     </h3>
                     <button
@@ -320,7 +320,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                       )}
                     </button>
                   </div>
-                  <p className="text-[11px] text-[#0F172A]/60 dark:text-slate-400 truncate max-w-[260px]">
+                  <p className="text-[11px] text-[var(--text-muted)] truncate max-w-[260px]">
                     {context?.title ? `Topic: ${context.title}` : `Target: ${model}`}
                   </p>
                 </div>
@@ -333,7 +333,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                     type="button"
                     onClick={handleReset}
                     title="Clear chat conversation"
-                    className="h-8 px-2.5 rounded-xl text-xs font-medium text-[#0F172A]/70 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-400 hover:bg-rose-500/10 border border-[#0F172A]/10 dark:border-white/10 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="h-8 px-2.5 rounded-xl text-xs font-medium text-[var(--text-body)] hover:text-rose-600 dark:text-[var(--text-body)] dark:hover:text-rose-400 hover:bg-rose-500/10 border border-[var(--border-subtle)] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                     <span className="text-[11px] font-medium">Clear Chat</span>
@@ -347,8 +347,8 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                   title="Configure Groq API Key for live AI responses"
                   className={`h-8 w-8 cursor-pointer relative ${
                     showKeyInput || hasGroqKey
-                      ? "text-[#2563EB] dark:text-[#60A5FA] bg-[#2563EB]/10 dark:bg-[#3B82F6]/15"
-                      : "text-[#0F172A]/60 hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white"
+                      ? "text-[var(--brand-primary)] bg-[var(--brand-primary-light)]"
+                      : "text-[var(--text-muted)] hover:text-[var(--text-main)] dark:text-[var(--text-muted)] dark:hover:text-white"
                   }`}
                 >
                   <Key className="h-3.5 w-3.5" />
@@ -362,7 +362,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                   size="icon"
                   onClick={onClose}
                   title="Close expert panel (Esc)"
-                  className="h-8 w-8 text-[#0F172A]/60 hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white cursor-pointer"
+                  className="h-8 w-8 text-[var(--text-muted)] hover:text-[var(--text-main)] dark:text-[var(--text-muted)] dark:hover:text-white cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -401,12 +401,12 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                             ? "Active via backend .env (or override here: gsk_...)"
                             : "gsk_..."
                         }
-                        className="pr-8 h-8 text-xs font-mono bg-white dark:bg-[#0F172A] border-[#0F172A]/15 dark:border-white/10 focus:border-[#2563EB]"
+                        className="pr-8 h-8 text-xs font-mono bg-white dark:bg-[var(--bg-surface-subtle)] border-[var(--border-medium)] focus:border-[var(--brand-primary)]"
                       />
                       <button
                         type="button"
                         onClick={() => setShowKeySecret((prev) => !prev)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#0F172A]/40 hover:text-[#0F172A] dark:text-slate-500 cursor-pointer"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-placeholder)] hover:text-[var(--text-main)] dark:text-[var(--text-subtle)] cursor-pointer"
                       >
                         {showKeySecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                       </button>
@@ -422,7 +422,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                       </Button>
                     )}
                   </div>
-                  <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 mt-1.5 leading-tight flex items-center justify-between">
+                  <p className="text-[10px] text-[var(--text-muted)] mt-1.5 leading-tight flex items-center justify-between">
                     <span>
                       {backendGroqStatus.has_groq_key
                         ? "Key loaded from .env. Powered by Llama 3.3 70B at 500+ tok/s."
@@ -434,7 +434,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
             </AnimatePresence>
 
             {/* Minimal Topic Selector Ribbon */}
-            <div className="px-4 py-2 bg-[#2563EB]/5 dark:bg-[#3B82F6]/5 border-b border-[#2563EB]/10 dark:border-[#3B82F6]/10 flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px]">
+            <div className="px-4 py-2 bg-[var(--brand-primary-light)] border-b border-[var(--brand-primary-border)] flex items-center gap-1.5 overflow-x-auto scrollbar-none text-[11px]">
               {Object.entries(TOPIC_SUGGESTED_QUESTIONS).map(([key, item]) => {
                 const isActive = activeTopicId === key;
                 return (
@@ -444,8 +444,8 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                     onClick={() => setActiveTopicId(key)}
                     className={`px-2.5 py-1 rounded-md shrink-0 transition-all font-medium text-[11px] cursor-pointer select-none ${
                       isActive
-                        ? "bg-[#2563EB] text-white dark:bg-[#3B82F6] shadow-xs"
-                        : "bg-white dark:bg-[#111827] text-[#0F172A]/70 dark:text-slate-300 hover:bg-[#2563EB]/15 hover:text-[#2563EB] dark:hover:text-[#60A5FA] border border-[#0F172A]/10 dark:border-white/10"
+                        ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] dark:bg-[var(--brand-primary)] shadow-xs"
+                        : "bg-[var(--bg-card)] text-[var(--text-body)] hover:bg-[var(--brand-primary-light)] hover:text-[var(--brand-primary)] border border-[var(--border-subtle)]"
                     }`}
                   >
                     {item.title.split(" ")[0]}
@@ -460,11 +460,11 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
               {messages.length === 0 ? (
                 <div className="py-1 space-y-3 animate-in fade-in duration-200">
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-xs font-semibold text-[#0F172A]/80 dark:text-slate-200 flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-[var(--text-subheading)] flex items-center gap-1.5">
                       <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
                       <span>Suggested Questions • {activeTopicGroup.title.split(" ")[0]}</span>
                     </span>
-                    <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400">
+                    <span className="text-[10px] text-[var(--text-subtle)]">
                       Click to ask
                     </span>
                   </div>
@@ -475,17 +475,17 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                         key={qIdx}
                         type="button"
                         onClick={() => handleSendMessage(qText)}
-                        className="text-left p-3 px-3.5 rounded-xl bg-white dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 hover:border-[#2563EB]/50 dark:hover:border-[#3B82F6]/50 hover:bg-[#2563EB]/5 dark:hover:bg-[#3B82F6]/10 shadow-2xs hover:shadow-xs transition-all group flex items-center justify-between gap-3 cursor-pointer"
+                        className="text-left p-3 px-3.5 rounded-xl bg-white dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary-border)] hover:bg-[var(--brand-primary-light)] dark:hover:bg-[var(--brand-primary-light)] shadow-2xs hover:shadow-xs transition-all group flex items-center justify-between gap-3 cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-md bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] text-[9.5px] font-bold">
+                          <span className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-md bg-[var(--brand-primary-light)] text-[var(--brand-primary)] text-[9.5px] font-bold">
                             {qIdx + 1}
                           </span>
-                          <span className="text-xs font-medium text-[#0F172A]/85 dark:text-white/85 group-hover:text-[#2563EB] dark:group-hover:text-[#60A5FA] transition-colors leading-snug">
+                          <span className="text-xs font-medium text-[var(--text-main)]/85 dark:text-white/85 group-hover:text-[var(--brand-primary)] dark:group-hover:text-[var(--brand-primary)] transition-colors leading-snug">
                             {qText}
                           </span>
                         </div>
-                        <ArrowUpRight className="h-3.5 w-3.5 text-[#0F172A]/30 dark:text-white/20 group-hover:text-[#2563EB] dark:group-hover:text-[#60A5FA] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                        <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-main)]/30 dark:text-white/20 group-hover:text-[var(--brand-primary)] dark:group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
                       </button>
                     ))}
                   </div>
@@ -504,7 +504,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                         transition={{ duration: 0.15 }}
                         className={`flex flex-col ${isUser ? "items-end" : "items-start"} space-y-1`}
                       >
-                        <div className="flex items-center gap-1.5 text-[10px] text-[#0F172A]/50 dark:text-slate-400 px-1">
+                        <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-subtle)] px-1">
                           {isUser ? (
                             <>
                               <span>You</span>
@@ -513,8 +513,8 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                             </>
                           ) : (
                             <>
-                              <Bot className="h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" />
-                              <span className="font-semibold text-[#2563EB] dark:text-[#60A5FA]">
+                              <Bot className="h-3 w-3 text-[var(--brand-primary)]" />
+                              <span className="font-semibold text-[var(--brand-primary)]">
                                 {msg.topic || "Inference Copilot"}
                               </span>
                               {msg.source === "groq_llm" || msg.source === "openai_llm" ? (
@@ -548,8 +548,8 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                         <div
                           className={`relative group ${
                             isUser
-                              ? "max-w-[85%] p-2.5 px-3 bg-[#2563EB] dark:bg-[#3B82F6] text-white rounded-2xl rounded-tr-xs shadow-2xs text-xs font-sans leading-normal"
-                              : "max-w-[92%] p-2.5 px-3.5 bg-[#F1F5F9] dark:bg-[#0F172A] text-[#0F172A] dark:text-white border border-[#0F172A]/10 dark:border-white/10 rounded-2xl rounded-tl-xs shadow-2xs text-xs leading-relaxed"
+                              ? "max-w-[85%] p-2.5 px-3 bg-[var(--brand-primary)] text-[var(--text-inverse)] rounded-2xl rounded-tr-xs shadow-2xs text-xs font-sans leading-normal"
+                              : "max-w-[92%] p-2.5 px-3.5 bg-[var(--bg-surface-subtle)] text-[var(--text-main)] border border-[var(--border-subtle)] rounded-2xl rounded-tl-xs shadow-2xs text-xs leading-relaxed"
                           }`}
                         >
                           {/* Markdown Rendered Content */}
@@ -564,7 +564,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                             <button
                               type="button"
                               onClick={() => handleCopy(msg.id, msg.text)}
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md bg-white/80 dark:bg-[#0F172A]/80 text-[#0F172A]/70 dark:text-slate-300 hover:text-[#2563EB] dark:hover:text-[#60A5FA] shadow-2xs cursor-pointer"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md bg-white/80 dark:bg-[var(--bg-surface-subtle)] text-[var(--text-body)] hover:text-[var(--brand-primary)] shadow-2xs cursor-pointer"
                               title="Copy response"
                             >
                               {copiedId === msg.id ? (
@@ -579,7 +579,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                         {/* Suggested Follow-up Prompt Chips */}
                         {!isUser && msg.suggestedFollowups && msg.suggestedFollowups.length > 0 && (
                           <div className="pt-1 space-y-1 w-full pl-0.5">
-                            <span className="text-[10px] font-semibold text-[#0F172A]/50 dark:text-slate-400 flex items-center gap-1">
+                            <span className="text-[10px] font-semibold text-[var(--text-subtle)] flex items-center gap-1">
                               <Lightbulb className="h-3 w-3 text-amber-500" /> Follow-up inquiries:
                             </span>
                             <div className="flex flex-wrap gap-1">
@@ -594,10 +594,10 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                                     }, 50);
                                   }}
                                   title="Fill question in input field"
-                                  className="text-[10.5px] text-left py-0.5 px-2 rounded-md bg-white dark:bg-[#111827] border border-[#0F172A]/10 dark:border-white/10 hover:border-[#2563EB]/50 dark:hover:border-[#3B82F6]/50 text-[#0F172A]/80 dark:text-slate-200 hover:text-[#2563EB] dark:hover:text-[#60A5FA] hover:bg-[#2563EB]/5 dark:hover:bg-[#3B82F6]/10 shadow-2xs transition-all flex items-center gap-1 group cursor-pointer"
+                                  className="text-[10.5px] text-left py-0.5 px-2 rounded-md bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--brand-primary-border)] text-[var(--text-subheading)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] dark:hover:bg-[var(--brand-primary-light)] shadow-2xs transition-all flex items-center gap-1 group cursor-pointer"
                                 >
                                   <span>{followup}</span>
-                                  <ChevronRight className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform text-[#2563EB] dark:text-[#60A5FA]" />
+                                  <ChevronRight className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform text-[var(--brand-primary)]" />
                                 </button>
                               ))}
                             </div>
@@ -611,15 +611,15 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
 
               {/* Pulsing AI Typing indicator */}
               {isLoading && (
-                <div className="flex items-center gap-2 p-2 px-3 rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10 text-xs text-[#0F172A]/70 dark:text-slate-300 w-fit shadow-2xs">
-                  <Sparkles className="h-3 w-3 text-[#2563EB] dark:text-[#60A5FA] animate-spin" />
+                <div className="flex items-center gap-2 p-2 px-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] text-xs text-[var(--text-body)] w-fit shadow-2xs">
+                  <Sparkles className="h-3 w-3 text-[var(--brand-primary)] animate-spin" />
                   <span className="font-medium text-[11px]">
                     {hasGroqKey ? "Querying Groq Copilot..." : "Synthesizing inference analysis..."}
                   </span>
                   <div className="flex items-center gap-1 pl-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] dark:bg-[#3B82F6] animate-bounce [animation-delay:-0.3s]" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] dark:bg-[#3B82F6] animate-bounce [animation-delay:-0.15s]" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] dark:bg-[#3B82F6] animate-bounce" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-primary)] animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-primary)] animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand-primary)] animate-bounce" />
                   </div>
                 </div>
               )}
@@ -628,7 +628,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
             </div>
 
             {/* Polished Input Bar */}
-            <div className="p-3 sm:p-3.5 px-4 border-t border-[#0F172A]/10 dark:border-white/10 bg-white/95 dark:bg-[#111827]/95 backdrop-blur-xs">
+            <div className="p-3 sm:p-3.5 px-4 border-t border-[var(--border-subtle)] bg-[var(--bg-card)] backdrop-blur-xs">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -647,13 +647,13 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                         ? "Ask anything about LLMs, GPU architectures, or load curves..."
                         : "Ask about TTFT, Goodput, VRAM sizing, or connect Groq..."
                     }
-                    className="pr-8 text-xs h-9 rounded-lg bg-[#F1F5F9]/70 dark:bg-[#0F172A] border-[#0F172A]/15 dark:border-white/10 focus:border-[#2563EB] dark:focus:border-[#3B82F6] transition-all focus:ring-1 focus:ring-[#2563EB]/20"
+                    className="pr-8 text-xs h-9 rounded-lg bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-surface-subtle)] border-[var(--border-medium)] focus:border-[var(--brand-primary)] dark:focus:border-[var(--brand-primary)] transition-all focus:ring-1 focus:ring-[var(--brand-primary)]/20"
                   />
                   {inputQuery && (
                     <button
                       type="button"
                       onClick={() => setInputQuery("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#0F172A]/40 hover:text-[#0F172A] dark:text-slate-500 dark:hover:text-white cursor-pointer p-0.5"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-placeholder)] hover:text-[var(--text-main)] dark:text-[var(--text-subtle)] dark:hover:text-white cursor-pointer p-0.5"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -664,7 +664,7 @@ export const AskExpertDrawer: React.FC<AskExpertDrawerProps> = ({
                   type="submit"
                   disabled={!inputQuery.trim() || isLoading}
                   size="sm"
-                  className="h-9 px-3 rounded-lg bg-[#2563EB] hover:bg-[#1E3A8A] text-white dark:bg-[#3B82F6] dark:hover:bg-[#3B82F6] shadow-xs cursor-pointer flex items-center gap-1 font-medium text-xs"
+                  className="h-9 px-3 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-[var(--text-inverse)] shadow-xs cursor-pointer flex items-center gap-1 font-medium text-xs"
                 >
                   <span>Send</span>
                   <Send className="h-3 w-3" />

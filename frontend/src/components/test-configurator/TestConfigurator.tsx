@@ -841,11 +841,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
     <TooltipProvider>
       <div className="space-y-6">
         {/* Step-by-Step Stepper Header */}
-        <Card className="p-3 sm:p-4 bg-white/90 dark:bg-[#1E293B]/90 backdrop-blur-md border-[#0F172A]/10 dark:border-white/10 shadow-xs">
+        <Card className="p-3 sm:p-4 bg-[var(--bg-surface-elevated)] backdrop-blur-md border-[var(--border-subtle)] shadow-xs">
           {/* Subtle Continuous Progress Trail */}
-          <div className="w-full bg-[#0F172A]/5 dark:bg-[#F1F5F9]/5 h-1 rounded-full overflow-hidden mb-3.5 hidden sm:block">
+          <div className="w-full bg-[var(--border-subtle)]/50 dark:bg-[var(--bg-surface-subtle)]/5 h-1 rounded-full overflow-hidden mb-3.5 hidden sm:block">
             <motion.div
-              className="h-full bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#60A5FA] rounded-full"
+              className="h-full bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand-secondary)] to-[var(--brand-primary)] rounded-full"
               initial={false}
               animate={{ width: `${((currentStep - 1) / 3) * 100}%` }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -867,19 +867,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   }}
                   className={`flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all cursor-pointer font-sans active:scale-[0.99] ${
                     isCurrent
-                      ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/40 dark:border-[#3B82F6]/40 shadow-xs ring-1 ring-[#2563EB]/20 dark:ring-[#3B82F6]/30"
+                      ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] shadow-xs ring-1 ring-[var(--brand-primary)]/20 dark:ring-[var(--brand-primary)]/30"
                       : isDone
-                      ? "bg-[#F1F5F9]/70 dark:bg-[#111827] border-[#2563EB]/25 dark:border-[#3B82F6]/30 hover:bg-[#E2E8F0] dark:hover:bg-[#1E293B]"
-                      : "bg-white/60 dark:bg-[#111827]/60 border-[#0F172A]/8 dark:border-white/[0.08] opacity-60 hover:opacity-85"
+                      ? "bg-[var(--bg-surface-subtle)] border-[var(--brand-primary-border)] hover:bg-[var(--bg-surface-hover)]"
+                      : "bg-white/60 dark:bg-[var(--bg-surface)] border-[var(--border-subtle)] opacity-60 hover:opacity-85"
                   }`}
                 >
                   <div
                     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-sans tabular-nums text-xs font-semibold transition-colors ${
                       isCurrent
-                        ? "bg-[#2563EB] dark:bg-[#3B82F6] text-white shadow-xs"
+                        ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs"
                         : isDone
-                        ? "bg-[#2563EB]/15 dark:bg-[#3B82F6]/20 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/30 dark:border-[#3B82F6]/40"
-                        : "bg-[#F1F5F9] dark:bg-[#0F172A] text-[#0F172A]/60 dark:text-slate-400 border border-[#0F172A]/10 dark:border-white/10"
+                        ? "bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)]"
+                        : "bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] border border-[var(--border-subtle)]"
                     }`}
                   >
                     {isDone ? <Check className="h-3.5 w-3.5" /> : s.num}
@@ -888,15 +888,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     <span
                       className={`text-xs truncate block ${
                         isCurrent
-                          ? "text-[#2563EB] dark:text-[#60A5FA] font-semibold"
+                          ? "text-[var(--brand-primary)] font-semibold"
                           : isDone
-                          ? "text-[#0F172A] dark:text-white font-medium"
-                          : "text-[#0F172A]/60 dark:text-slate-400 font-normal"
+                          ? "text-[var(--text-main)] font-medium"
+                          : "text-[var(--text-muted)] font-normal"
                       }`}
                     >
                       {s.title}
                     </span>
-                    <p className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 truncate hidden sm:block">
+                    <p className="text-[11px] text-[var(--text-subtle)] truncate hidden sm:block">
                       {s.desc}
                     </p>
                   </div>
@@ -931,19 +931,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#1E293B] shadow-xs overflow-hidden"
+                  className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-elevated)] shadow-xs overflow-hidden"
                 >
                   {/* Step 1 Unified Master Header */}
-                  <div className="p-4 sm:p-5 border-b border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/40 dark:bg-[#111827]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/40 dark:bg-[var(--bg-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35 shadow-2xs">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)] shadow-2xs">
                         <Sliders className="h-4.5 w-4.5" />
                       </div>
                       <div>
-                        <h2 className="text-sm sm:text-base font-bold text-[#0F172A] dark:text-white">
+                        <h2 className="text-sm sm:text-base font-bold text-[var(--text-main)]">
                           Step 1: Provider & Model
                         </h2>
-                        <p className="text-xs text-[#0F172A]/60 dark:text-slate-400">
+                        <p className="text-xs text-[var(--text-muted)]">
                           Select your LLM provider, enter credentials, and choose the target model.
                         </p>
                       </div>
@@ -953,7 +953,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <button
                         type="button"
                         onClick={() => handleOpenExpert("provider-routing", "Provider & Routing", "How do providers differ in streaming and response latency?")}
-                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#111827] text-[#2563EB] dark:text-[#60A5FA] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 dark:border-[#3B82F6]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-[var(--bg-card)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>Ask Expert</span>
@@ -965,8 +965,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#0F172A]/10 dark:divide-[#F1F5F9]/10">
                     {/* Left Bento Column: Sub-Step 1A (Provider & Credentials) - 65% */}
                     <div className="lg:col-span-8 p-5 space-y-4">
-                      <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                        <span className="text-xs font-bold tracking-tight text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5 font-sans">
+                      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                        <span className="text-xs font-bold tracking-tight text-[var(--brand-primary)] flex items-center gap-1.5 font-sans">
                           <Sliders className="h-3.5 w-3.5" />
                           1A. Provider & Credentials
                         </span>
@@ -981,7 +981,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           <Label htmlFor="run-name-input" className="text-xs font-semibold">
                             Benchmark Name
                           </Label>
-                          <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-sans">
+                          <span className="text-[11px] text-[var(--text-subtle)] font-sans">
                             Optional label
                           </span>
                         </div>
@@ -990,13 +990,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           value={config.name}
                           onChange={(e) => onChange({ ...config, name: e.target.value })}
                           placeholder="e.g. Production Baseline Test"
-                          className="text-xs font-medium bg-white dark:bg-[#111827]"
+                          className="text-xs font-medium bg-[var(--bg-card)]"
                         />
                       </div>
 
                       {/* 1. Protocol Architecture Selection Grid */}
                       <div className="space-y-2">
-                        <Label className="text-xs font-medium text-[#0F172A] dark:text-white">
+                        <Label className="text-xs font-medium text-[var(--text-main)]">
                           Select Provider
                         </Label>
 
@@ -1058,8 +1058,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 }}
                                 className={`group rounded-xl p-2.5 text-left border transition-all cursor-pointer font-sans select-none flex flex-col justify-between gap-1.5 ${
                                   isSelected
-                                    ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 shadow-xs ring-1 ring-[#2563EB]/30 text-[#2563EB] dark:text-[#60A5FA]"
-                                    : "border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#111827] hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#0F172A] dark:text-white"
+                                    ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] shadow-xs ring-1 ring-[var(--brand-primary)]/30 text-[var(--brand-primary)]"
+                                    : "border-[var(--border-subtle)] bg-[var(--bg-card)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                                 }`}
                               >
                                 <div className="flex items-center justify-between w-full">
@@ -1067,8 +1067,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     <div
                                       className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0.5 transition-all ${
                                         isSelected
-                                          ? "bg-white dark:bg-[#1E293B] border border-[#2563EB]/30 dark:border-[#3B82F6]/30"
-                                          : "bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/5 dark:border-white/[0.06]"
+                                          ? "bg-[var(--bg-surface-elevated)] border border-[var(--brand-primary-border)]"
+                                          : "bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]"
                                       }`}
                                     >
                                       <ProviderLogo vendor={v.vendor} className="h-4 w-4" />
@@ -1079,7 +1079,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     {v.badge}
                                   </Badge>
                                 </div>
-                                <span className="text-[10px] font-sans text-[#0F172A]/50 dark:text-slate-400 truncate block">
+                                <span className="text-[10px] font-sans text-[var(--text-subtle)] truncate block">
                                   {v.sublabel}
                                 </span>
                               </motion.button>
@@ -1091,30 +1091,30 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       {/* 2. Endpoint Connection & Dynamic Ephemeral Credentials */}
                       <div className="space-y-2.5 pt-1">
                         <div className="flex items-center justify-between">
-                          <Label className="text-xs font-medium text-[#0F172A] dark:text-white flex items-center gap-1.5">
-                            <Lock className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                          <Label className="text-xs font-medium text-[var(--text-main)] flex items-center gap-1.5">
+                            <Lock className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                             Credentials & Endpoint URL
                           </Label>
-                          <span className="text-[10px] text-[#2563EB] dark:text-[#60A5FA] font-sans font-medium">
+                          <span className="text-[10px] text-[var(--brand-primary)] font-sans font-medium">
                             In-memory only
                           </span>
                         </div>
 
                         {/* MOCK ENGINE BANNER */}
                         {config.vendor === "mock" && (
-                          <div className="rounded-xl border border-[#2563EB]/25 dark:border-[#3B82F6]/35 bg-[#2563EB]/5 dark:bg-[#3B82F6]/10 p-3 flex items-center gap-2.5">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#2563EB]/15 dark:bg-[#3B82F6]/20 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/30 dark:border-[#3B82F6]/40">
+                          <div className="rounded-xl border border-[var(--brand-primary-border)] bg-[var(--brand-primary-light)] p-3 flex items-center gap-2.5">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)]">
                               <CheckCircle className="h-3.5 w-3.5" />
                             </div>
-                            <p className="text-[11px] text-[#0F172A]/90 dark:text-slate-200 leading-relaxed font-sans">
-                              <strong className="text-[#2563EB] dark:text-[#60A5FA]">Zero Credentials Required:</strong> In-memory microsecond simulator active with realistic token jitter and DeepSeek-R1 reasoning traces.
+                            <p className="text-[11px] text-[var(--text-main)]/90 dark:text-[var(--text-subheading)] leading-relaxed font-sans">
+                              <strong className="text-[var(--brand-primary)]">Zero Credentials Required:</strong> In-memory microsecond simulator active with realistic token jitter and DeepSeek-R1 reasoning traces.
                             </p>
                           </div>
                         )}
 
                         {/* AZURE OPENAI FORM */}
                         {config.vendor === "azure_openai" && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
                             <div className="space-y-1 sm:col-span-2">
                               <Label className="text-xs font-semibold">Azure Resource / Endpoint URL</Label>
                               <Input
@@ -1123,7 +1123,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   onCredentialChange({ ...credential, azure_endpoint: e.target.value, base_url: e.target.value })
                                 }
                                 placeholder="https://my-resource.openai.azure.com"
-                                className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                               />
                             </div>
                             <div className="space-y-1">
@@ -1135,7 +1135,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   onChange({ ...config, model: e.target.value });
                                 }}
                                 placeholder="e.g. gpt-4o-eastus"
-                                className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                               />
                             </div>
                             <div className="space-y-1">
@@ -1144,7 +1144,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 value={credential.azure_api_version || "2024-10-21"}
                                 onValueChange={(val) => onCredentialChange({ ...credential, azure_api_version: val })}
                               >
-                                <SelectTrigger className="h-9 font-sans tabular-nums text-xs bg-white dark:bg-[#111827]">
+                                <SelectTrigger className="h-9 font-sans tabular-nums text-xs bg-[var(--bg-card)]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1159,14 +1159,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                         {/* AWS BEDROCK FORM */}
                         {config.vendor === "aws_bedrock" && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
                             <div className="space-y-1">
                               <Label className="text-xs font-semibold">AWS Region</Label>
                               <Select
                                 value={credential.aws_region || "us-east-1"}
                                 onValueChange={(val) => onCredentialChange({ ...credential, aws_region: val })}
                               >
-                                <SelectTrigger className="h-9 font-sans tabular-nums text-xs bg-white dark:bg-[#111827]">
+                                <SelectTrigger className="h-9 font-sans tabular-nums text-xs bg-[var(--bg-card)]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1182,7 +1182,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 value={credential.aws_access_key_id || ""}
                                 onChange={(e) => onCredentialChange({ ...credential, aws_access_key_id: e.target.value })}
                                 placeholder="AKIA..."
-                                className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-2">
@@ -1192,7 +1192,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 value={credential.aws_secret_access_key || ""}
                                 onChange={(e) => onCredentialChange({ ...credential, aws_secret_access_key: e.target.value })}
                                 placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-                                className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                               />
                             </div>
                           </div>
@@ -1200,10 +1200,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                         {/* GCP / GEMINI FORM WITH 2 AUTH OPTIONS */}
                         {config.vendor === "gcp_vertex" && (
-                          <div className="space-y-3 p-3 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10">
+                          <div className="space-y-3 p-3 rounded-xl bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
                             {/* 2-Option Authentication Mode Selector */}
                             <div className="space-y-1.5">
-                              <Label className="text-xs font-semibold text-[#0F172A] dark:text-white">
+                              <Label className="text-xs font-semibold text-[var(--text-main)]">
                                 Google Authentication Method
                               </Label>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1212,19 +1212,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   onClick={() => onCredentialChange({ ...credential, gcp_auth_mode: "api_key" })}
                                   className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                                     (credential.gcp_auth_mode || "api_key") === "api_key"
-                                      ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/30 shadow-xs"
-                                      : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] text-[#0F172A] dark:text-white"
+                                      ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/30 shadow-xs"
+                                      : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                                   }`}
                                 >
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs font-semibold">Gemini API Key</span>
                                     {(credential.gcp_auth_mode || "api_key") === "api_key" && (
-                                      <Badge variant="default" className="text-[9px] py-0 px-1 bg-[#2563EB] text-white">
+                                      <Badge variant="default" className="text-[9px] py-0 px-1 bg-[var(--brand-primary)] text-[var(--text-inverse)]">
                                         Active
                                       </Badge>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 mt-0.5">
+                                  <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
                                     Google AI Studio Developer Key
                                   </p>
                                 </button>
@@ -1234,19 +1234,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   onClick={() => onCredentialChange({ ...credential, gcp_auth_mode: "vertex_ai" })}
                                   className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                                     credential.gcp_auth_mode === "vertex_ai"
-                                      ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/30 shadow-xs"
-                                      : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] text-[#0F172A] dark:text-white"
+                                      ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/30 shadow-xs"
+                                      : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                                   }`}
                                 >
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs font-semibold">GCP Project ID</span>
                                     {credential.gcp_auth_mode === "vertex_ai" && (
-                                      <Badge variant="default" className="text-[9px] py-0 px-1 bg-[#2563EB] text-white">
+                                      <Badge variant="default" className="text-[9px] py-0 px-1 bg-[var(--brand-primary)] text-[var(--text-inverse)]">
                                         Active
                                       </Badge>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 mt-0.5">
+                                  <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
                                     Google Cloud Vertex AI VPC
                                   </p>
                                 </button>
@@ -1258,7 +1258,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               <div className="space-y-1">
                                 <div className="flex items-center justify-between">
                                   <Label className="text-xs font-semibold">Gemini API Key</Label>
-                                  <span className="text-[10px] text-[#2563EB] dark:text-[#60A5FA] font-medium font-sans">
+                                  <span className="text-[10px] text-[var(--brand-primary)] font-medium font-sans">
                                     Get key at aistudio.google.com
                                   </span>
                                 </div>
@@ -1267,7 +1267,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   value={credential.api_key || ""}
                                   onChange={(e) => onCredentialChange({ ...credential, api_key: e.target.value })}
                                   placeholder="AIzaSy..."
-                                  className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                  className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                                 />
                               </div>
                             ) : (
@@ -1279,7 +1279,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     value={credential.gcp_project_id || ""}
                                     onChange={(e) => onCredentialChange({ ...credential, gcp_project_id: e.target.value })}
                                     placeholder="my-gcp-project-123"
-                                    className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                    className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                                   />
                                 </div>
                                 <div className="space-y-1">
@@ -1288,7 +1288,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     value={credential.gcp_location || "us-central1"}
                                     onValueChange={(val) => onCredentialChange({ ...credential, gcp_location: val })}
                                   >
-                                    <SelectTrigger className="h-9 font-sans tabular-nums text-xs bg-white dark:bg-[#111827]">
+                                    <SelectTrigger className="h-9 font-sans tabular-nums text-xs bg-[var(--bg-card)]">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1301,13 +1301,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   </Select>
                                 </div>
                                 <div className="space-y-1">
-                                  <Label className="text-xs font-semibold">Vertex API Key / Token <span className="text-[#0F172A]/50 dark:text-slate-400 font-normal lowercase">(optional)</span></Label>
+                                  <Label className="text-xs font-semibold">Vertex API Key / Token <span className="text-[var(--text-subtle)] font-normal lowercase">(optional)</span></Label>
                                   <Input
                                     type="password"
                                     value={credential.api_key || ""}
                                     onChange={(e) => onCredentialChange({ ...credential, api_key: e.target.value })}
                                     placeholder="AIzaSy... or Bearer Token"
-                                    className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                    className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                                   />
                                 </div>
                               </div>
@@ -1317,12 +1317,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                         {/* STANDARD OPENAI / ANTHROPIC / CUSTOM FORM */}
                         {config.vendor !== "azure_openai" && config.vendor !== "aws_bedrock" && config.vendor !== "gcp_vertex" && config.vendor !== "mock" && (
-                          <div className="space-y-2.5 p-3 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10">
+                          <div className="space-y-2.5 p-3 rounded-xl bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
                             {/* Base URL */}
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
                                 <Label className="text-xs font-semibold">Endpoint Base URL</Label>
-                                <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 font-sans">
+                                <span className="text-[10px] text-[var(--text-subtle)] font-sans">
                                   Default: {POPULAR_BASE_URLS.find((p) => p.id === config.vendor)?.baseUrl || "https://api.openai.com/v1"}
                                 </span>
                               </div>
@@ -1330,7 +1330,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 value={credential.base_url || ""}
                                 onChange={(e) => onCredentialChange({ ...credential, base_url: e.target.value })}
                                 placeholder={POPULAR_BASE_URLS.find((p) => p.id === config.vendor)?.baseUrl || "https://api.openai.com/v1"}
-                                className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                               />
                             </div>
 
@@ -1351,21 +1351,21 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                       ? "sk-proj-..."
                                       : "sk-or-v1-... or gsk_... (optional for local)"
                                   }
-                                  className="pr-10 font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                  className="pr-10 font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                                 />
                                 <Button
                                   type="button"
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => setShowKey(!showKey)}
-                                  className="absolute right-1 top-0.5 h-7 w-7 text-[#0F172A]/50 dark:text-slate-400 hover:text-[#0F172A] cursor-pointer"
+                                  className="absolute right-1 top-0.5 h-7 w-7 text-[var(--text-subtle)] hover:text-[var(--text-main)] cursor-pointer"
                                 >
                                   {showKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                                 </Button>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-1.5 pt-1 text-[10px] text-[#2563EB] dark:text-[#60A5FA] font-sans">
+                            <div className="flex items-center gap-1.5 pt-1 text-[10px] text-[var(--brand-primary)] font-sans">
                               <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
                               <span>Zero disk storage • In-memory telemetry session only</span>
                             </div>
@@ -1375,10 +1375,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     </div>
 
                     {/* Right Bento Column: Sub-Step 1B (Model Selection & Discovery) - 35% */}
-                    <div className="lg:col-span-4 p-5 space-y-4 bg-[#F1F5F9]/20 dark:bg-[#0F172A]/60 flex flex-col justify-between">
+                    <div className="lg:col-span-4 p-5 space-y-4 bg-[var(--bg-surface-subtle)]/20 dark:bg-[var(--bg-surface-subtle)] flex flex-col justify-between">
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                          <span className="text-xs font-bold tracking-tight text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5 font-sans">
+                        <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                          <span className="text-xs font-bold tracking-tight text-[var(--brand-primary)] flex items-center gap-1.5 font-sans">
                             <Sparkles className="h-3.5 w-3.5" />
                             1B. Model Selection
                           </span>
@@ -1399,7 +1399,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setIsCustomModel(!isCustomModel)}
-                                className="h-7 text-[11px] font-medium px-2 rounded-lg text-[#0F172A]/70 dark:text-slate-300 cursor-pointer"
+                                className="h-7 text-[11px] font-medium px-2 rounded-lg text-[var(--text-body)] cursor-pointer"
                               >
                                 {isCustomModel ? (
                                   <span className="flex items-center gap-1">
@@ -1421,7 +1421,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 className="h-7 text-[11px] px-2.5 rounded-lg font-medium gap-1 cursor-pointer disabled:opacity-40"
                                 title={canFetchModels ? "Query base URL for models" : "Enter credentials above to fetch models"}
                               >
-                                <RotateCw className={`h-3 w-3 ${isLoadingModels ? "animate-spin text-[#2563EB] dark:text-[#60A5FA]" : ""}`} />
+                                <RotateCw className={`h-3 w-3 ${isLoadingModels ? "animate-spin text-[var(--brand-primary)]" : ""}`} />
                                 <span>{isLoadingModels ? "Fetching..." : "Fetch"}</span>
                               </Button>
                             </div>
@@ -1433,9 +1433,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 value={config.model}
                                 onChange={(e) => onChange({ ...config, model: e.target.value })}
                                 placeholder="e.g. gpt-4o or deepseek-ai/deepseek-r1"
-                                className="font-sans tabular-nums text-xs h-9 bg-white dark:bg-[#111827]"
+                                className="font-sans tabular-nums text-xs h-9 bg-[var(--bg-card)]"
                               />
-                              <p className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-sans">
+                              <p className="text-[11px] text-[var(--text-subtle)] font-sans">
                                 Custom model identifier or self-hosted deployment.
                               </p>
                             </div>
@@ -1445,12 +1445,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               onValueChange={(val) => onChange({ ...config, model: val })}
                               disabled={isLoadingModels && availableModels.length === 0}
                             >
-                              <SelectTrigger className="w-full h-9 font-sans tabular-nums text-xs bg-white dark:bg-[#111827]">
+                              <SelectTrigger className="w-full h-9 font-sans tabular-nums text-xs bg-[var(--bg-card)]">
                                 <SelectValue placeholder={isLoadingModels ? "Querying models from endpoint..." : "Select a model..."} />
                               </SelectTrigger>
                               <SelectContent className="max-h-80">
                                 <SelectGroup>
-                                  <SelectLabel className="text-[10px] tracking-wider text-[#0F172A]/50 dark:text-slate-400 font-sans">
+                                  <SelectLabel className="text-[10px] tracking-wider text-[var(--text-subtle)] font-sans">
                                     {availableModels.length > 0 ? `Discovered Models (${availableModels.length})` : "Standard Models"}
                                   </SelectLabel>
                                   {availableModels.map((m) => (
@@ -1480,26 +1480,26 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
 
                       {/* Selected Model Summary Card */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 dark:border-white/10 space-y-2 mt-4 shadow-2xs">
+                      <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2 mt-4 shadow-2xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] tracking-wider font-semibold text-[#2563EB] dark:text-[#60A5FA] font-sans">
+                          <span className="text-[10px] tracking-wider font-semibold text-[var(--brand-primary)] font-sans">
                             Selected Model
                           </span>
                           <Badge variant="outline" className="text-[10px] font-sans capitalize">
                             {config.vendor.replace("_", " ")}
                           </Badge>
                         </div>
-                        <div className="font-mono text-xs font-bold text-[#0F172A] dark:text-white truncate">
+                        <div className="font-mono text-xs font-bold text-[var(--text-main)] truncate">
                           {config.model || "No model selected"}
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#0F172A]/5 dark:border-white/[0.06] font-sans">
+                        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[var(--border-subtle)] font-sans">
                           <div>
-                            <span className="text-[#0F172A]/50 dark:text-slate-400 block text-[10px]">Context Window</span>
-                            <strong className="text-[#0F172A] dark:text-white">128k tokens</strong>
+                            <span className="text-[var(--text-subtle)] block text-[10px]">Context Window</span>
+                            <strong className="text-[var(--text-main)]">128k tokens</strong>
                           </div>
                           <div>
-                            <span className="text-[#0F172A]/50 dark:text-slate-400 block text-[10px]">Streaming</span>
-                            <strong className="text-[#0F172A] dark:text-white">SSE Protocol</strong>
+                            <span className="text-[var(--text-subtle)] block text-[10px]">Streaming</span>
+                            <strong className="text-[var(--text-main)]">SSE Protocol</strong>
                           </div>
                         </div>
                       </div>
@@ -1519,19 +1519,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#1E293B] shadow-xs overflow-hidden"
+                  className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-elevated)] shadow-xs overflow-hidden"
                 >
                   {/* Step 2 Unified Master Header */}
-                  <div className="p-4 sm:p-5 border-b border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/40 dark:bg-[#111827]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/40 dark:bg-[var(--bg-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35 shadow-2xs">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)] shadow-2xs">
                         <Layers className="h-4.5 w-4.5" />
                       </div>
                       <div>
-                        <h2 className="text-sm sm:text-base font-bold text-[#0F172A] dark:text-white">
+                        <h2 className="text-sm sm:text-base font-bold text-[var(--text-main)]">
                           Step 2: Presets & Prompts
                         </h2>
-                        <p className="text-xs text-[#0F172A]/60 dark:text-slate-400">
+                        <p className="text-xs text-[var(--text-muted)]">
                           Choose a benchmark workload preset or enter a custom prompt.
                         </p>
                       </div>
@@ -1541,7 +1541,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsPayloadModalOpen(true)}
-                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-white dark:bg-[#111827] text-[#0F172A]/80 dark:text-slate-200 hover:text-[#2563EB] dark:hover:text-[#60A5FA] hover:bg-[#2563EB]/5 border border-[#0F172A]/10 dark:border-white/10 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-[var(--bg-card)] text-[var(--text-subheading)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] border border-[var(--border-subtle)] transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Activity className="h-3.5 w-3.5" />
                         <span>Inspect Payload</span>
@@ -1550,7 +1550,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <button
                         type="button"
                         onClick={() => handleOpenExpert("workload-preset", "Workload Presets", "How do token ratios (prefill vs. decode) affect benchmarking results?")}
-                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#111827] text-[#2563EB] dark:text-[#60A5FA] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 dark:border-[#3B82F6]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-[var(--bg-card)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>Ask Expert</span>
@@ -1562,8 +1562,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   <div className="divide-y divide-[#0F172A]/10 dark:divide-[#F1F5F9]/10">
                     {/* Top Section: Sub-Step 2A (Workload Presets) - Full Width */}
                     <div className="p-5 space-y-4">
-                      <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                        <span className="text-xs font-bold tracking-tight text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5 font-sans">
+                      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                        <span className="text-xs font-bold tracking-tight text-[var(--brand-primary)] flex items-center gap-1.5 font-sans">
                           <Layers className="h-3.5 w-3.5" />
                           2A. Workload Presets
                         </span>
@@ -1576,19 +1576,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <div className="space-y-2.5">
                         <div className="flex flex-col lg:flex-row gap-2 items-stretch lg:items-center justify-between">
                           <div className="relative flex-1 min-w-[200px]">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#0F172A]/40 dark:text-slate-500" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-placeholder)]" />
                             <Input
                               type="text"
                               placeholder="Search presets (e.g. RAG, code, cot, cache)..."
                               value={workloadSearchQuery}
                               onChange={(e) => setWorkloadSearchQuery(e.target.value)}
-                              className="pl-8.5 pr-8 h-8 text-xs rounded-xl bg-[#F1F5F9]/60 dark:bg-[#0F172A] border-[#0F172A]/10 dark:border-white/10"
+                              className="pl-8.5 pr-8 h-8 text-xs rounded-xl bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)]"
                             />
                             {workloadSearchQuery && (
                               <button
                                 type="button"
                                 onClick={() => setWorkloadSearchQuery("")}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#0F172A]/40 hover:text-[#0F172A] cursor-pointer"
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-placeholder)] hover:text-[var(--text-main)] cursor-pointer"
                               >
                                 <X className="h-3.5 w-3.5" />
                               </button>
@@ -1607,16 +1607,16 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   onClick={() => setSelectedCategory(cat.id)}
                                   className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
                                     isSelected
-                                      ? "bg-[#2563EB] text-white shadow-2xs font-semibold"
-                                      : "bg-[#F1F5F9] dark:bg-[#0F172A] text-[#0F172A]/70 dark:text-slate-300 hover:bg-[#0F172A]/10 dark:hover:bg-white/5"
+                                      ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-2xs font-semibold"
+                                      : "bg-[var(--bg-surface-subtle)] text-[var(--text-body)] hover:bg-[var(--border-subtle)] dark:hover:bg-white/5"
                                   }`}
                                 >
                                   <span>{cat.shortLabel}</span>
                                   <span
                                     className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono tabular-nums ${
                                       isSelected
-                                        ? "bg-white/25 text-white font-bold"
-                                        : "bg-[#0F172A]/10 dark:bg-white/10 text-[#0F172A]/60 dark:text-slate-400"
+                                        ? "bg-black/20 dark:bg-black/30 text-[var(--text-inverse)] font-bold"
+                                        : "bg-[var(--border-subtle)] dark:bg-white/10 text-[var(--text-muted)]"
                                     }`}
                                   >
                                     {count}
@@ -1669,8 +1669,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 }}
                                 className={`group p-2.5 rounded-xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
                                   isSelected
-                                    ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/30 shadow-xs"
-                                    : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#0F172A] dark:text-white"
+                                    ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/30 shadow-xs"
+                                    : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                                 }`}
                               >
                                 <div className="space-y-1.5 w-full">
@@ -1679,8 +1679,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                       <div
                                         className={`p-1 rounded-lg ${
                                           isSelected
-                                            ? "bg-[#2563EB] text-white"
-                                            : "bg-[#F1F5F9] dark:bg-[#0F172A] text-[#0F172A]/70 dark:text-slate-300"
+                                            ? "bg-[var(--brand-primary)] text-[var(--text-inverse)]"
+                                            : "bg-[var(--bg-surface-subtle)] text-[var(--text-body)]"
                                         }`}
                                       >
                                         <Icon className="h-3.5 w-3.5" />
@@ -1691,14 +1691,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                       {preset.tag}
                                     </Badge>
                                   </div>
-                                  <p className="text-[11px] text-[#0F172A]/70 dark:text-slate-300 line-clamp-3 leading-relaxed min-h-[44px]">
+                                  <p className="text-[11px] text-[var(--text-body)] line-clamp-3 leading-relaxed min-h-[44px]">
                                     {preset.desc}
                                   </p>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-1.5 border-t border-[#0F172A]/5 dark:border-white/[0.06] mt-2 text-[10px] font-sans tabular-nums">
+                                <div className="flex items-center justify-between pt-1.5 border-t border-[var(--border-subtle)] mt-2 text-[10px] font-sans tabular-nums">
                                   <span>{preset.promptTokens} in / {preset.genTokens} out</span>
-                                  <span className="text-[#2563EB] dark:text-[#60A5FA] font-semibold">{promptRatio}% prefill</span>
+                                  <span className="text-[var(--brand-primary)] font-semibold">{promptRatio}% prefill</span>
                                 </div>
                               </button>
                             );
@@ -1715,10 +1715,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                         if (!hasPreset) {
                           return (
-                            <div className="p-3.5 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-2.5">
+                            <div className="p-3.5 rounded-xl bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-2.5">
                               <div className="flex items-center justify-between">
-                                <Label className="text-xs font-semibold flex items-center gap-1.5 text-[#0F172A]/70 dark:text-slate-300">
-                                  <Sparkles className="h-3 w-3 text-[#2563EB]/60 dark:text-[#60A5FA]/60" />
+                                <Label className="text-xs font-semibold flex items-center gap-1.5 text-[var(--text-body)]">
+                                  <Sparkles className="h-3 w-3 text-[var(--brand-primary)]/60 dark:text-[var(--brand-primary)]/60" />
                                   Prompt Preview
                                 </Label>
                                 <Badge variant="outline" className="text-[10px] font-sans opacity-60">
@@ -1726,13 +1726,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 </Badge>
                               </div>
 
-                              <div className="p-3 rounded-lg border border-[#0F172A]/10 dark:border-white/5 bg-white/60 dark:bg-[#111827]/60 space-y-2">
+                              <div className="p-3 rounded-lg border border-[var(--border-subtle)] dark:border-[var(--border-subtle)] bg-white/60 dark:bg-[var(--bg-surface)] space-y-2">
                                 <div className="h-3 w-full bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
                                 <div className="h-3 w-4/5 bg-slate-200/50 dark:bg-white/5 rounded animate-pulse" />
                                 <div className="h-3 w-2/3 bg-slate-200/40 dark:bg-white/5 rounded animate-pulse" />
                               </div>
 
-                              <p className="text-[10px] text-[#0F172A]/50 dark:text-slate-500 font-sans italic text-center">
+                              <p className="text-[10px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)] font-sans italic text-center">
                                 Select a workload preset from the grid above to load and inspect its calibrated benchmark prompt.
                               </p>
                             </div>
@@ -1747,19 +1747,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           : 0;
 
                         return (
-                          <div className="p-3 rounded-xl bg-[#F1F5F9]/50 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1.5">
+                          <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1.5">
                             <div className="flex items-center justify-between">
                               <Label className="text-xs font-semibold flex items-center gap-1.5">
-                                <Sparkles className="h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" />
+                                <Sparkles className="h-3 w-3 text-[var(--brand-primary)]" />
                                 Prompt Preview
                               </Label>
-                              <div className="flex items-center gap-2 text-[10px] font-sans tabular-nums text-[#0F172A]/60 dark:text-slate-400">
+                              <div className="flex items-center gap-2 text-[10px] font-sans tabular-nums text-[var(--text-muted)]">
                                 <span>~{measuredTokens} tokens{config.custom_prompt ? " (Custom)" : " (Calibrated)"}</span>
                                 {config.custom_prompt && (
                                   <button
                                     type="button"
                                     onClick={() => onChange({ ...config, custom_prompt: undefined })}
-                                    className="text-[#2563EB] dark:text-[#60A5FA] hover:underline cursor-pointer font-medium"
+                                    className="text-[var(--brand-primary)] hover:underline cursor-pointer font-medium"
                                   >
                                     Reset
                                   </button>
@@ -1770,7 +1770,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               value={activePromptText}
                               onChange={(e) => onChange({ ...config, custom_prompt: e.target.value })}
                               rows={4}
-                              className="w-full text-xs font-sans p-2 rounded-lg border border-[#0F172A]/15 dark:border-white/10 bg-white dark:bg-[#111827] resize-none focus:border-[#2563EB]"
+                              className="w-full text-xs font-sans p-2 rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] resize-none focus:border-[var(--brand-primary)]"
                             />
                           </div>
                         );
@@ -1779,9 +1779,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     </div>
 
                     {/* Bottom Section: Sub-Step 2B (Sampling & Generation Dynamics) - Full Width */}
-                    <div className="p-5 space-y-4 bg-[#F1F5F9]/20 dark:bg-[#0F172A]/60">
-                      <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                        <span className="text-xs font-bold tracking-tight text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5 font-sans">
+                    <div className="p-5 space-y-4 bg-[var(--bg-surface-subtle)]/20 dark:bg-[var(--bg-surface-subtle)]">
+                      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                        <span className="text-xs font-bold tracking-tight text-[var(--brand-primary)] flex items-center gap-1.5 font-sans">
                           <Sliders className="h-3.5 w-3.5" />
                           2B. Generation Settings
                         </span>
@@ -1793,10 +1793,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       {/* 3-Column Responsive Bento Grid */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                           {/* 1. Sampling Temperature */}
-                          <div className="space-y-2 p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                          <div className="space-y-2 p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
                               <Label className="font-semibold flex items-center gap-1.5">
-                                <Flame className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                                <Flame className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                                 Sampling Temperature
                               </Label>
                               <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
@@ -1819,8 +1819,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onClick={() => onChange({ ...config, temperature: 0.0 })}
                                 className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all cursor-pointer ${
                                   config.temperature === 0.0
-                                    ? "bg-[#2563EB] text-white shadow-2xs font-semibold"
-                                    : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#0F172A]/70 dark:text-slate-400 hover:bg-[#0F172A]/10"
+                                    ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-2xs font-semibold"
+                                    : "bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] hover:bg-[var(--border-subtle)]"
                                 }`}
                               >
                                 0.0 (Deterministic)
@@ -1830,8 +1830,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onClick={() => onChange({ ...config, temperature: 0.7 })}
                                 className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all cursor-pointer ${
                                   config.temperature === 0.7
-                                    ? "bg-[#2563EB] text-white shadow-2xs font-semibold"
-                                    : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#0F172A]/70 dark:text-slate-400 hover:bg-[#0F172A]/10"
+                                    ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-2xs font-semibold"
+                                    : "bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] hover:bg-[var(--border-subtle)]"
                                 }`}
                               >
                                 0.7 (Balanced)
@@ -1841,22 +1841,22 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onClick={() => onChange({ ...config, temperature: 1.0 })}
                                 className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-all cursor-pointer ${
                                   config.temperature === 1.0
-                                    ? "bg-[#2563EB] text-white shadow-2xs font-semibold"
-                                    : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#0F172A]/70 dark:text-slate-400 hover:bg-[#0F172A]/10"
+                                    ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-2xs font-semibold"
+                                    : "bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] hover:bg-[var(--border-subtle)]"
                                 }`}
                               >
                                 1.0 (Creative)
                               </button>
                             </div>
 
-                            <p className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 font-sans leading-tight">
+                            <p className="text-[10px] text-[var(--text-subtle)] font-sans leading-tight">
                               Lower values (0.0) give consistent, deterministic outputs for fair benchmarking.
                             </p>
                           </div>
 
                           {/* 2. Output Token Bound */}
                           {Boolean(config.custom_prompt) || config.workload_preset === "custom" ? (
-                            <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                            <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                               <div className="flex justify-between items-center text-xs">
                                 <Label className="font-semibold">Max Output Tokens</Label>
                                 <Badge variant="outline" className="font-sans tabular-nums text-xs font-medium">
@@ -1870,36 +1870,36 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 value={[config.max_tokens]}
                                 onValueChange={(val) => onChange({ ...config, max_tokens: val[0] })}
                               />
-                              <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#0F172A]/50 dark:text-slate-400">
+                              <div className="flex justify-between text-[10px] font-sans tabular-nums text-[var(--text-subtle)]">
                                 <span>16 tok</span>
                                 <span>256 (Standard)</span>
                                 <span>4096 tok</span>
                               </div>
                             </div>
                           ) : !config.workload_preset ? (
-                            <div className="p-3.5 rounded-xl bg-white/60 dark:bg-[#111827]/60 border border-[#0F172A]/10 space-y-2">
+                            <div className="p-3.5 rounded-xl bg-white/60 dark:bg-[var(--bg-surface)] border border-[var(--border-subtle)] space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-[#0F172A]/70 dark:text-slate-300">Max Output Tokens</span>
+                                <span className="text-xs font-semibold text-[var(--text-body)]">Max Output Tokens</span>
                                 <Badge variant="outline" className="text-[10px] font-sans opacity-60">
                                   Awaiting Preset
                                 </Badge>
                               </div>
                               <div className="h-3.5 w-3/4 bg-slate-200/60 dark:bg-white/5 rounded animate-pulse" />
-                              <p className="text-[10px] text-[#0F172A]/50 dark:text-slate-500 font-sans">
+                              <p className="text-[10px] text-[var(--text-subtle)] dark:text-[var(--text-subtle)] font-sans">
                                 Select a workload preset above to calibrate output token limits.
                               </p>
                             </div>
                           ) : (
-                            <div className="p-3 rounded-xl bg-[#F1F5F9]/70 dark:bg-[#111827] border border-[#0F172A]/10 flex items-center justify-between">
+                            <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] flex items-center justify-between">
                               <div className="space-y-0.5">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-xs font-semibold text-[#0F172A] dark:text-white">Max Output Tokens</span>
+                                  <span className="text-xs font-semibold text-[var(--text-main)]">Max Output Tokens</span>
                                   <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-sans flex items-center gap-1 font-medium">
                                     <Lock className="h-2.5 w-2.5" />
                                     Preset Enforced
                                   </Badge>
                                 </div>
-                                <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans">
+                                <p className="text-[10px] text-[var(--text-muted)] font-sans">
                                   Fixed to {selectedPreset?.genTokens || config.max_tokens} tokens for this preset.
                                 </p>
                               </div>
@@ -1913,7 +1913,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                           {/* 3. SSE Streaming Protocol */}
                           <div className={`flex items-center justify-between p-3 rounded-xl border shadow-2xs transition-colors ${
-                            isStreamLocked ? "bg-[#F1F5F9]/70 dark:bg-[#111827] border-[#0F172A]/10" : "bg-white dark:bg-[#111827] border-[#0F172A]/10"
+                            isStreamLocked ? "bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)]" : "bg-[var(--bg-card)] border-[var(--border-subtle)]"
                           }`}>
                             <div className="space-y-0.5 pr-2">
                               <div className="flex items-center gap-2">
@@ -1921,13 +1921,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   Streaming (SSE)
                                 </Label>
                                 {isStreamLocked && (
-                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border-[var(--brand-primary-border)] font-sans flex items-center gap-1 font-medium">
                                     <Lock className="h-2.5 w-2.5" />
                                     Required
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans">
+                              <p className="text-[10px] text-[var(--text-muted)] font-sans">
                                 {isStreamLocked
                                   ? "Streaming is required to capture Time to First Token (TTFT) and token generation speed."
                                   : "Stream tokens to capture Time to First Token (TTFT) and token jitter."}
@@ -1947,9 +1947,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         config.workload_preset === "agentic_tool_calling" ||
                         config.workload_preset === "tool_calling" ||
                         Boolean(config.json_schema)) && (
-                        <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                        <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                           <div className="flex items-center justify-between">
-                            <Label className="text-xs font-semibold text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5">
+                            <Label className="text-xs font-semibold text-[var(--brand-primary)] flex items-center gap-1.5">
                               <Braces className="h-3.5 w-3.5" />
                               JSON Schema Validation
                             </Label>
@@ -1967,7 +1967,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             value={rawJsonSchema}
                             onChange={(e) => handleJsonSchemaChange(e.target.value)}
                             rows={4}
-                            className="w-full text-[11px] font-mono p-2 rounded-lg border border-[#0F172A]/15 dark:border-white/10 bg-white dark:bg-[#1E293B]"
+                            className="w-full text-[11px] font-mono p-2 rounded-lg border border-[var(--border-medium)] bg-[var(--bg-surface-elevated)]"
                           />
                         </div>
                       )}
@@ -1986,19 +1986,19 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#1E293B] shadow-xs overflow-hidden"
+                  className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-elevated)] shadow-xs overflow-hidden"
                 >
                   {/* Step 3 Unified Master Header */}
-                  <div className="p-4 sm:p-5 border-b border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/40 dark:bg-[#111827]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/40 dark:bg-[var(--bg-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35 shadow-2xs">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)] shadow-2xs">
                         <Zap className="h-4.5 w-4.5" />
                       </div>
                       <div>
-                        <h2 className="text-sm sm:text-base font-bold text-[#0F172A] dark:text-white">
+                        <h2 className="text-sm sm:text-base font-bold text-[var(--text-main)]">
                           Step 3: Traffic & Load
                         </h2>
-                        <p className="text-xs text-[#0F172A]/60 dark:text-slate-400">
+                        <p className="text-xs text-[var(--text-muted)]">
                           Configure concurrency, traffic patterns, and cache behavior.
                         </p>
                       </div>
@@ -2008,7 +2008,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsTrafficModalOpen(true)}
-                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-white dark:bg-[#111827] text-[#0F172A]/80 dark:text-slate-200 hover:text-[#2563EB] dark:hover:text-[#60A5FA] hover:bg-[#2563EB]/5 border border-[#0F172A]/10 dark:border-white/10 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-[var(--bg-card)] text-[var(--text-subheading)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] border border-[var(--border-subtle)] transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Activity className="h-3.5 w-3.5" />
                         <span>Simulate Traffic</span>
@@ -2017,7 +2017,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       <button
                         type="button"
                         onClick={() => handleOpenExpert("traffic-concurrency", "Traffic & Concurrency", "How do I choose the right concurrency worker pool for stress testing?")}
-                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#111827] text-[#2563EB] dark:text-[#60A5FA] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 dark:border-[#3B82F6]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                        className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-[var(--bg-card)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
                         <span>Ask Expert</span>
@@ -2029,8 +2029,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#0F172A]/10 dark:divide-[#F1F5F9]/10">
                     {/* Left Bento Column: Sub-Step 3A (Traffic & Concurrency) */}
                     <div className="p-5 space-y-4">
-                      <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                        <span className="text-xs font-bold tracking-tight text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5 font-sans">
+                      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                        <span className="text-xs font-bold tracking-tight text-[var(--brand-primary)] flex items-center gap-1.5 font-sans">
                           <Target className="h-3.5 w-3.5" />
                           3A. Traffic & Concurrency
                         </span>
@@ -2048,15 +2048,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             onClick={() => onChange({ ...config, test_mode: "requests" })}
                             className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                               isRequestMode
-                                ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/30 shadow-xs"
-                                : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] text-[#0F172A] dark:text-white"
+                                ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/30 shadow-xs"
+                                : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-semibold">Request-Based</span>
-                              {isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" />}
+                              {isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary)]" />}
                             </div>
-                            <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400">
+                            <p className="text-[10px] text-[var(--text-muted)]">
                               Fixed total request count
                             </p>
                           </button>
@@ -2066,15 +2066,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             onClick={() => onChange({ ...config, test_mode: "duration" })}
                             className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                               !isRequestMode
-                                ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/30 shadow-xs"
-                                : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] text-[#0F172A] dark:text-white"
+                                ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/30 shadow-xs"
+                                : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-semibold">Time-Based</span>
-                              {!isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" />}
+                              {!isRequestMode && <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary)]" />}
                             </div>
-                            <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400">
+                            <p className="text-[10px] text-[var(--text-muted)]">
                               Duration in seconds
                             </p>
                           </button>
@@ -2083,7 +2083,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                       {/* Scope Slider */}
                       {isRequestMode ? (
-                        <div className="space-y-1.5 p-3 rounded-xl bg-[#F1F5F9]/60 dark:bg-[#0F172A] border border-[#0F172A]/10">
+                        <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
                           <div className="flex justify-between items-center text-xs">
                             <Label className="font-semibold">Total Requests</Label>
                             <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
@@ -2097,14 +2097,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             value={[config.total_requests || 50]}
                             onValueChange={(val) => onChange({ ...config, total_requests: val[0] })}
                           />
-                          <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#0F172A]/50 dark:text-slate-400">
+                          <div className="flex justify-between text-[10px] font-sans tabular-nums text-[var(--text-subtle)]">
                             <span>5 (Canary)</span>
                             <span>50 (Standard)</span>
                             <span>500 (Batch)</span>
                           </div>
                         </div>
                       ) : (
-                        <div className="space-y-1.5 p-3 rounded-xl bg-[#F1F5F9]/60 dark:bg-[#0F172A] border border-[#0F172A]/10">
+                        <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
                           <div className="flex justify-between items-center text-xs">
                             <Label className="font-semibold">Test Duration</Label>
                             <Badge variant="default" className="font-sans tabular-nums text-xs font-medium">
@@ -2118,7 +2118,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             value={[config.duration_seconds]}
                             onValueChange={(val) => onChange({ ...config, duration_seconds: val[0] })}
                           />
-                          <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#0F172A]/50 dark:text-slate-400">
+                          <div className="flex justify-between text-[10px] font-sans tabular-nums text-[var(--text-subtle)]">
                             <span>5s (Quick)</span>
                             <span>60s (Standard)</span>
                             <span>120s (Soak)</span>
@@ -2127,12 +2127,12 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       )}
 
                       {/* Concurrency Slider */}
-                      <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                      <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                         <div className="flex justify-between items-center text-xs">
                           <div className="flex items-center gap-2">
                             <Label className="font-semibold">Concurrency (Parallel Streams)</Label>
                             {isKneeCurve && (
-                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                              <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border-[var(--brand-primary-border)] font-sans flex items-center gap-1 font-medium">
                                 <Lock className="h-2.5 w-2.5" />
                                 Min 8 (Knee Probe)
                               </Badge>
@@ -2149,9 +2149,9 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           value={[config.concurrency]}
                           onValueChange={(val) => onChange({ ...config, concurrency: val[0] })}
                         />
-                        <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#0F172A]/50 dark:text-slate-400">
+                        <div className="flex justify-between text-[10px] font-sans tabular-nums text-[var(--text-subtle)]">
                           {isKneeCurve ? (
-                            <span className="text-blue-600 dark:text-blue-400 font-medium">
+                            <span className="text-[var(--brand-primary)] font-medium">
                               Knee probe automatically ramps across 1 → 3 → 8 → 16 → 50 streams to discover server inflection points
                             </span>
                           ) : (
@@ -2182,15 +2182,15 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 })}
                                 className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer select-none ${
                                   isSelected
-                                    ? "bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border-[#2563EB]/50 dark:border-[#3B82F6]/50 text-[#2563EB] dark:text-[#60A5FA] ring-1 ring-[#2563EB]/20 shadow-xs"
-                                    : "bg-white dark:bg-[#111827] border-[#0F172A]/10 dark:border-white/10 hover:bg-[#F1F5F9] text-[#0F172A] dark:text-white"
+                                    ? "bg-[var(--brand-primary-light)] border-[var(--brand-primary-border)] text-[var(--brand-primary)] ring-1 ring-[var(--brand-primary)]/20 shadow-xs"
+                                    : "bg-[var(--bg-card)] border-[var(--border-subtle)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-main)]"
                                 }`}
                               >
                                 <div className="flex items-center gap-1.5 mb-0.5">
                                   <Icon className="h-3.5 w-3.5" />
                                   <span className="text-xs truncate font-semibold">{curve.label}</span>
                                 </div>
-                                <p className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 line-clamp-1">{curve.desc}</p>
+                                <p className="text-[10px] text-[var(--text-subtle)] line-clamp-1">{curve.desc}</p>
                               </button>
                             );
                           })}
@@ -2199,10 +2199,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     </div>
 
                     {/* Right Bento Column: Sub-Step 3B (Cache & Warmup) */}
-                    <div className="p-5 space-y-4 bg-[#F1F5F9]/20 dark:bg-[#0F172A]/60 flex flex-col justify-between">
+                    <div className="p-5 space-y-4 bg-[var(--bg-surface-subtle)]/20 dark:bg-[var(--bg-surface-subtle)] flex flex-col justify-between">
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                          <span className="text-xs font-bold tracking-tight text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5 font-sans">
+                        <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                          <span className="text-xs font-bold tracking-tight text-[var(--brand-primary)] flex items-center gap-1.5 font-sans">
                             <Database className="h-3.5 w-3.5" />
                             3B. Cache & Warmup Protocol
                           </span>
@@ -2241,16 +2241,16 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                               </Badge>
                             </div>
 
-                            <p className="text-[11px] text-[#0F172A]/85 dark:text-slate-200 leading-relaxed font-sans">
+                            <p className="text-[11px] text-[var(--text-main)]/85 dark:text-[var(--text-subheading)] leading-relaxed font-sans">
                               Request #1 is dispatched as the cold baseline prefill seed. Subsequent concurrent streams measure warm KV cache hit acceleration and cached TTFT reduction.
                             </p>
 
                             <div className="grid grid-cols-2 gap-2 pt-1 text-[10px] font-sans">
-                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/70 dark:bg-[#111827]/80 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
+                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/70 dark:bg-[var(--bg-surface)] border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
                                 <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600" />
                                 <span>Req #1: Cold Seed Baseline</span>
                               </div>
-                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/70 dark:bg-[#111827]/80 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
+                              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/70 dark:bg-[var(--bg-surface)] border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-medium">
                                 <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-600" />
                                 <span>Reqs #2..N: Warm Cache Hits</span>
                               </div>
@@ -2260,7 +2260,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                         {/* KV Cache Bypass Switch */}
                         <div className={`flex items-center justify-between p-3.5 rounded-xl border shadow-2xs transition-colors ${
-                          isCacheBustLocked ? "bg-[#F1F5F9]/70 dark:bg-[#111827] border-[#0F172A]/10 opacity-85" : "bg-white dark:bg-[#111827] border-[#0F172A]/10"
+                          isCacheBustLocked ? "bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)] opacity-85" : "bg-[var(--bg-card)] border-[var(--border-subtle)]"
                         }`}>
                           <div className="space-y-0.5 pr-2">
                             <div className="flex items-center gap-2">
@@ -2278,13 +2278,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   Enforced ON (Prefill TTFT)
                                 </Badge>
                               ) : isRateLimitPreset ? (
-                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-[var(--text-muted)] border-slate-500/20 font-sans flex items-center gap-1 font-medium">
                                   <Lock className="h-2.5 w-2.5" />
                                   Locked OFF (Rate Limit Probe)
                                 </Badge>
                               ) : null}
                             </div>
-                            <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans">
+                            <p className="text-[10px] text-[var(--text-muted)] font-sans">
                               {isKvCachePreset
                                 ? "Disabled by preset: Prefix cache hit measurement requires identical deterministic token prefixes."
                                 : isPrefillTtftPreset
@@ -2308,7 +2308,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         {/* Cold vs Warm Cache Test Option (Custom or general preset) */}
                         {!isKvCachePreset && (
                           <div className={`flex items-center justify-between p-3.5 rounded-xl border shadow-2xs transition-colors ${
-                            isMeasureCacheSpeedupLocked ? "bg-[#F1F5F9]/70 dark:bg-[#111827] border-[#0F172A]/10 opacity-80" : "bg-white dark:bg-[#111827] border-[#0F172A]/10"
+                            isMeasureCacheSpeedupLocked ? "bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)] opacity-80" : "bg-[var(--bg-card)] border-[var(--border-subtle)]"
                           }`}>
                             <div className="space-y-0.5 pr-2">
                               <div className="flex items-center gap-2">
@@ -2322,7 +2322,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                     Disabled by Prefill TTFT
                                   </Badge>
                                 ) : isRateLimitPreset ? (
-                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                  <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-[var(--text-muted)] border-slate-500/20 font-sans flex items-center gap-1 font-medium">
                                     <Lock className="h-2.5 w-2.5" />
                                     Disabled by Rate Limit Probe
                                   </Badge>
@@ -2333,7 +2333,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   </Badge>
                                 ) : null}
                               </div>
-                              <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans">
+                              <p className="text-[10px] text-[var(--text-muted)] font-sans">
                                 {isPrefillTtftPreset
                                   ? "Disabled: Prefill TTFT isolates pure compute velocity rather than cache hit ratio."
                                   : isRateLimitPreset
@@ -2358,26 +2358,26 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                         {/* Warmup Requests Slider */}
                         <div className={`space-y-2 p-3.5 rounded-xl border shadow-2xs transition-colors ${
-                          isWarmupLocked ? "bg-[#F1F5F9]/70 dark:bg-[#111827] border-[#0F172A]/10 opacity-85" : "bg-white dark:bg-[#111827] border-[#0F172A]/10"
+                          isWarmupLocked ? "bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)] opacity-85" : "bg-[var(--bg-card)] border-[var(--border-subtle)]"
                         }`}>
                           <div className="flex justify-between items-center text-xs">
                             <div className="flex items-center gap-2">
                               <Label className="flex items-center gap-1.5 font-semibold">
-                                <RotateCw className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                                <RotateCw className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                                 Warmup Requests
                               </Label>
                               {isKvCachePreset ? (
-                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border-[var(--brand-primary-border)] font-sans flex items-center gap-1 font-medium">
                                   <Lock className="h-2.5 w-2.5" />
                                   Locked to 0 (Cold Seed Reference)
                                 </Badge>
                               ) : isRateLimitPreset ? (
-                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20 font-sans flex items-center gap-1 font-medium">
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-slate-500/10 text-slate-700 dark:text-[var(--text-muted)] border-slate-500/20 font-sans flex items-center gap-1 font-medium">
                                   <Lock className="h-2.5 w-2.5" />
                                   Locked to 0 (Rate Limit Probe)
                                 </Badge>
                               ) : config.measure_cache_speedup ? (
-                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20 font-sans flex items-center gap-1 font-medium">
+                                <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border-[var(--brand-primary-border)] font-sans flex items-center gap-1 font-medium">
                                   <Lock className="h-2.5 w-2.5" />
                                   Anchored (Req #1 is Cold Seed)
                                 </Badge>
@@ -2395,17 +2395,17 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             value={[isWarmupLocked ? 0 : (config.warmup_requests || 0)]}
                             onValueChange={(val) => onChange({ ...config, warmup_requests: val[0] })}
                           />
-                          <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#0F172A]/50 dark:text-slate-400">
+                          <div className="flex justify-between text-[10px] font-sans tabular-nums text-[var(--text-subtle)]">
                             {isKvCachePreset ? (
-                              <span className="text-blue-600 dark:text-blue-400 font-medium">
+                              <span className="text-[var(--brand-primary)] font-medium">
                                 Warmup bypassed so Request #1 cold baseline is strictly preserved
                               </span>
                             ) : isRateLimitPreset ? (
-                              <span className="text-slate-600 dark:text-slate-400 font-medium">
+                              <span className="text-slate-600 dark:text-[var(--text-muted)] font-medium">
                                 Warmup bypassed to immediately test HTTP 429 quota boundaries
                               </span>
                             ) : config.measure_cache_speedup ? (
-                              <span className="text-blue-600 dark:text-blue-400 font-medium">
+                              <span className="text-[var(--brand-primary)] font-medium">
                                 Warmup bypassed so Request #1 cold baseline is strictly preserved
                               </span>
                             ) : (
@@ -2419,20 +2419,20 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
 
                         {/* Hardware Footprint Telemetry Card */}
-                        <div className="p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 dark:border-white/10 space-y-2 shadow-2xs">
-                          <span className="text-[10px] tracking-wider font-semibold text-[#2563EB] dark:text-[#60A5FA] font-sans block">
+                        <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-2 shadow-2xs">
+                          <span className="text-[10px] tracking-wider font-semibold text-[var(--brand-primary)] font-sans block">
                             Estimated Load & Memory
                           </span>
                           <div className="grid grid-cols-2 gap-2 text-[11px] font-sans">
-                            <div className="p-2 rounded-lg bg-[#F1F5F9]/60 dark:bg-[#1E293B] border border-[#0F172A]/5">
-                              <span className="text-[#0F172A]/50 dark:text-slate-400 block text-[10px]">Estimated Request Rate</span>
-                              <strong className="text-[#0F172A] dark:text-white">
+                            <div className="p-2 rounded-lg bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)]">
+                              <span className="text-[var(--text-subtle)] block text-[10px]">Estimated Request Rate</span>
+                              <strong className="text-[var(--text-main)]">
                                 ~{Math.round(config.concurrency * 1.8 * 60)} RPM
                               </strong>
                             </div>
-                            <div className="p-2 rounded-lg bg-[#F1F5F9]/60 dark:bg-[#1E293B] border border-[#0F172A]/5">
-                              <span className="text-[#0F172A]/50 dark:text-slate-400 block text-[10px]">Est. KV Cache Memory</span>
-                              <strong className="text-[#1D4ED8] dark:text-[#38BDF8]">
+                            <div className="p-2 rounded-lg bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)]">
+                              <span className="text-[var(--text-subtle)] block text-[10px]">Est. KV Cache Memory</span>
+                              <strong className="text-[var(--brand-secondary)]">
                                 ~{(config.concurrency * 0.12).toFixed(1)} GB VRAM
                               </strong>
                             </div>
@@ -2441,14 +2441,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                       </div>
 
                       {/* Step 3 Configured Summary */}
-                      <div className="p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1 mt-3 shadow-2xs">
+                      <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1 mt-3 shadow-2xs">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-[#0F172A] dark:text-white">Active Traffic Profile</span>
-                          <span className="text-[#2563EB] dark:text-[#60A5FA] font-bold font-sans tabular-nums capitalize">
+                          <span className="font-semibold text-[var(--text-main)]">Active Traffic Profile</span>
+                          <span className="text-[var(--brand-primary)] font-bold font-sans tabular-nums capitalize">
                             {config.load_curve.replace("_", " ")}
                           </span>
                         </div>
-                        <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans">
+                        <p className="text-[10px] text-[var(--text-muted)] font-sans">
                           {config.concurrency} concurrent worker streams • {isRequestMode ? `${config.total_requests || 50} total requests` : `${config.duration_seconds}s duration`} • {isKvCachePreset ? "Cold Seed → Warm Hits" : config.cache_bust ? "Cold Prefill Nonce" : "Warm Prefix"}
                         </p>
                       </div>
@@ -2470,18 +2470,18 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   className="space-y-4"
                 >
                   {/* Bento Container for Governance (4A SLOs & 4B Financial Guardrails) */}
-                  <div className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#1E293B] shadow-xs overflow-hidden">
+                  <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-elevated)] shadow-xs overflow-hidden">
                     {/* Step 4 Unified Master Header */}
-                    <div className="p-4 sm:p-5 border-b border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/40 dark:bg-[#111827]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="p-4 sm:p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/40 dark:bg-[var(--bg-surface)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35 shadow-2xs">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)] shadow-2xs">
                           <Gauge className="h-4.5 w-4.5" />
                         </div>
                         <div>
-                          <h2 className="text-sm sm:text-base font-bold text-[#0F172A] dark:text-white">
+                          <h2 className="text-sm sm:text-base font-bold text-[var(--text-main)]">
                             Step 4: Limits & Launch
                           </h2>
-                          <p className="text-xs text-[#0F172A]/60 dark:text-slate-400">
+                          <p className="text-xs text-[var(--text-muted)]">
                             Set latency targets (SLOs), budget limits, and review your benchmark.
                           </p>
                         </div>
@@ -2491,7 +2491,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         <button
                           type="button"
                           onClick={() => setIsDiagnosticsModalOpen(true)}
-                          className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-white dark:bg-[#111827] text-[#0F172A]/80 dark:text-slate-200 hover:text-[#2563EB] dark:hover:text-[#60A5FA] hover:bg-[#2563EB]/5 border border-[#0F172A]/10 dark:border-white/10 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                          className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-medium bg-[var(--bg-card)] text-[var(--text-subheading)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] border border-[var(--border-subtle)] transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                         >
                           <Activity className="h-3.5 w-3.5" />
                           <span>View Diagnostics</span>
@@ -2500,7 +2500,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         <button
                           type="button"
                           onClick={() => handleOpenExpert("slo-goodput", "Latency Targets & SLOs", "What is Goodput and why is it superior to Raw Throughput?")}
-                          className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-white dark:bg-[#111827] text-[#2563EB] dark:text-[#60A5FA] hover:bg-[#2563EB]/10 border border-[#2563EB]/30 dark:border-[#3B82F6]/40 transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                          className="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-semibold bg-[var(--bg-card)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] transition-all cursor-pointer shadow-2xs hover:shadow-xs"
                         >
                           <Sparkles className="h-3.5 w-3.5" />
                           <span>Ask Expert</span>
@@ -2514,8 +2514,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                     <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-[#0F172A]/10 dark:divide-[#F1F5F9]/10">
                       {/* Left Bento Column: Sub-Step 4A (Reliability SLOs) */}
                       <div className="p-5 space-y-4">
-                        <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                          <span className="text-xs font-bold tracking-tight text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5 font-sans">
+                        <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                          <span className="text-xs font-bold tracking-tight text-[var(--brand-primary)] flex items-center gap-1.5 font-sans">
                             <Gauge className="h-3.5 w-3.5" />
                             4A. Latency Limits (SLOs)
                           </span>
@@ -2523,21 +2523,21 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                             <button
                               type="button"
                               onClick={() => handleApplySloPreset("strict")}
-                              className="px-2 py-0.5 rounded text-[10px] font-sans font-medium bg-[#F1F5F9] dark:bg-[#0F172A] hover:bg-[#2563EB]/10 hover:text-[#2563EB] dark:hover:text-[#60A5FA] transition-all cursor-pointer"
+                              className="px-2 py-0.5 rounded text-[10px] font-sans font-medium bg-[var(--bg-surface-subtle)] hover:bg-[var(--brand-primary-light)] hover:text-[var(--brand-primary)] transition-all cursor-pointer"
                             >
                               Strict
                             </button>
                             <button
                               type="button"
                               onClick={() => handleApplySloPreset("interactive")}
-                              className="px-2 py-0.5 rounded text-[10px] font-sans font-medium bg-[#F1F5F9] dark:bg-[#0F172A] hover:bg-[#2563EB]/10 hover:text-[#2563EB] dark:hover:text-[#60A5FA] transition-all cursor-pointer"
+                              className="px-2 py-0.5 rounded text-[10px] font-sans font-medium bg-[var(--bg-surface-subtle)] hover:bg-[var(--brand-primary-light)] hover:text-[var(--brand-primary)] transition-all cursor-pointer"
                             >
                               Standard
                             </button>
                             <button
                               type="button"
                               onClick={() => handleApplySloPreset("batch")}
-                              className="px-2 py-0.5 rounded text-[10px] font-sans font-medium bg-[#F1F5F9] dark:bg-[#0F172A] hover:bg-[#2563EB]/10 hover:text-[#2563EB] dark:hover:text-[#60A5FA] transition-all cursor-pointer"
+                              className="px-2 py-0.5 rounded text-[10px] font-sans font-medium bg-[var(--bg-surface-subtle)] hover:bg-[var(--brand-primary-light)] hover:text-[var(--brand-primary)] transition-all cursor-pointer"
                             >
                               Batch
                             </button>
@@ -2547,10 +2547,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         {/* 2x2 Slider Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {/* Max TTFT */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                          <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
                               <Label className="font-semibold">Max TTFT Target</Label>
-                              <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#2563EB] dark:text-[#60A5FA] font-semibold">
+                              <Badge variant="outline" className="font-sans tabular-nums text-xs text-[var(--brand-primary)] font-semibold">
                                 ≤ {config.slo.max_ttft_ms} ms
                               </Badge>
                             </div>
@@ -2563,14 +2563,14 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_ttft_ms: val[0] } })
                               }
                             />
-                            <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 block">Time to First Token limit</span>
+                            <span className="text-[10px] text-[var(--text-subtle)] block">Time to First Token limit</span>
                           </div>
 
                           {/* Max TPOT */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                          <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
                               <Label className="font-semibold">Max TPOT Target</Label>
-                              <Badge variant="outline" className="font-sans tabular-nums text-xs text-[#1D4ED8] dark:text-[#38BDF8] font-semibold">
+                              <Badge variant="outline" className="font-sans tabular-nums text-xs text-[var(--brand-secondary)] font-semibold">
                                 ≤ {config.slo.max_tpot_ms} ms/tok
                               </Badge>
                             </div>
@@ -2583,11 +2583,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_tpot_ms: val[0] } })
                               }
                             />
-                            <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 block">Time per output token ceiling</span>
+                            <span className="text-[10px] text-[var(--text-subtle)] block">Time per output token ceiling</span>
                           </div>
 
                           {/* Max E2E */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                          <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
                               <Label className="font-semibold">Max Total Duration</Label>
                               <Badge variant="outline" className="font-sans tabular-nums text-xs font-semibold">
@@ -2603,11 +2603,11 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_e2e_ms: val[0] } })
                               }
                             />
-                            <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 block">Total request timeout limit</span>
+                            <span className="text-[10px] text-[var(--text-subtle)] block">Total request timeout limit</span>
                           </div>
 
                           {/* Max Error Rate */}
-                          <div className="space-y-1.5 p-3 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                          <div className="space-y-1.5 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
                               <Label className="font-semibold">Max Error Rate</Label>
                               <Badge variant="outline" className="font-sans tabular-nums text-xs text-rose-700 dark:text-rose-400 font-semibold">
@@ -2623,16 +2623,16 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, slo: { ...config.slo, max_error_rate_pct: Number(val[0].toFixed(1)) } })
                               }
                             />
-                            <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 block">Max allowed 429 and 5xx errors</span>
+                            <span className="text-[10px] text-[var(--text-subtle)] block">Max allowed 429 and 5xx errors</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Right Bento Column: Sub-Step 4B (Budget & Spend Limits) */}
-                      <div className="p-5 space-y-4 bg-[#F1F5F9]/20 dark:bg-[#0F172A]/60 flex flex-col justify-between">
+                      <div className="p-5 space-y-4 bg-[var(--bg-surface-subtle)]/20 dark:bg-[var(--bg-surface-subtle)] flex flex-col justify-between">
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between pb-2 border-b border-[#0F172A]/5 dark:border-white/[0.06]">
-                            <span className="text-xs font-bold tracking-tight text-[#1D4ED8] dark:text-[#38BDF8] flex items-center gap-1.5 font-sans">
+                          <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                            <span className="text-xs font-bold tracking-tight text-[var(--brand-secondary)] flex items-center gap-1.5 font-sans">
                               <DollarSign className="h-3.5 w-3.5" />
                               4B. Budget & Spend Limits
                             </span>
@@ -2642,10 +2642,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
 
                           {/* Token Pricing Rates */}
-                          <div className="rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#111827] p-3 space-y-2.5 shadow-2xs">
+                          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-3 space-y-2.5 shadow-2xs">
                             <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold text-[#0F172A] dark:text-white flex items-center gap-1.5">
-                                <DollarSign className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                              <span className="text-xs font-semibold text-[var(--text-main)] flex items-center gap-1.5">
+                                <DollarSign className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                                 Token Pricing per 1M Tokens (USD)
                               </span>
                               <button
@@ -2655,7 +2655,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                   setCustomPromptPrice(p.toFixed(4));
                                   setCustomCompletionPrice(c.toFixed(4));
                                 }}
-                                className="flex items-center gap-1 text-[10px] text-[#2563EB] dark:text-[#60A5FA] hover:underline font-medium font-sans cursor-pointer"
+                                className="flex items-center gap-1 text-[10px] text-[var(--brand-primary)] hover:underline font-medium font-sans cursor-pointer"
                               >
                                 <RotateCcw className="h-3 w-3" />
                                 Reset to defaults
@@ -2664,28 +2664,28 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                             <div className="grid grid-cols-2 gap-2">
                               <div className="space-y-1">
-                                <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans">Prompt (Input) $/1M</span>
+                                <span className="text-[10px] text-[var(--text-muted)] font-sans">Prompt (Input) $/1M</span>
                                 <div className="relative">
-                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-[#0F172A]/40">$</span>
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-placeholder)]">$</span>
                                   <Input
                                     type="number"
                                     step="0.0001"
                                     value={customPromptPrice}
                                     onChange={(e) => setCustomPromptPrice(e.target.value)}
-                                    className="pl-6 h-8 text-xs font-sans tabular-nums bg-[#F1F5F9]/50 dark:bg-[#1E293B]"
+                                    className="pl-6 h-8 text-xs font-sans tabular-nums bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-elevated)]"
                                   />
                                 </div>
                               </div>
                               <div className="space-y-1">
-                                <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans">Completion (Output) $/1M</span>
+                                <span className="text-[10px] text-[var(--text-muted)] font-sans">Completion (Output) $/1M</span>
                                 <div className="relative">
-                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-[#0F172A]/40">$</span>
+                                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--text-placeholder)]">$</span>
                                   <Input
                                     type="number"
                                     step="0.0001"
                                     value={customCompletionPrice}
                                     onChange={(e) => setCustomCompletionPrice(e.target.value)}
-                                    className="pl-6 h-8 text-xs font-sans tabular-nums bg-[#F1F5F9]/50 dark:bg-[#1E293B]"
+                                    className="pl-6 h-8 text-xs font-sans tabular-nums bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-elevated)]"
                                   />
                                 </div>
                               </div>
@@ -2693,10 +2693,10 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           </div>
 
                           {/* Hard Spend Cap Circuit Breaker */}
-                          <div className="space-y-2 p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 shadow-2xs">
+                          <div className="space-y-2 p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-2xs">
                             <div className="flex justify-between items-center text-xs">
-                              <Label className="flex items-center gap-1.5 font-semibold text-[#0F172A] dark:text-white">
-                                <ShieldAlert className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                              <Label className="flex items-center gap-1.5 font-semibold text-[var(--text-main)]">
+                                <ShieldAlert className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                                 Spend Cap (Circuit Breaker)
                               </Label>
                               <Badge variant="default" className="font-sans tabular-nums text-xs font-semibold">
@@ -2712,7 +2712,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                                 onChange({ ...config, hard_spend_cap: Number(val[0].toFixed(2)) })
                               }
                             />
-                            <div className="flex justify-between text-[10px] font-sans tabular-nums text-[#0F172A]/50 dark:text-slate-400">
+                            <div className="flex justify-between text-[10px] font-sans tabular-nums text-[var(--text-subtle)]">
                               <span>$0.10 (Strict)</span>
                               <span>$2.00 (Standard)</span>
                               <span>$20.00 (Heavy)</span>
@@ -2721,17 +2721,17 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                         </div>
 
                         {/* Financial Safety Guarantee Card */}
-                        <div className="p-3.5 rounded-xl bg-white dark:bg-[#111827] border border-[#2563EB]/20 dark:border-[#3B82F6]/30 space-y-1.5 mt-3 shadow-2xs">
+                        <div className="p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--brand-primary-border)] space-y-1.5 mt-3 shadow-2xs">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-semibold text-[#2563EB] dark:text-[#60A5FA] flex items-center gap-1.5">
-                              <ShieldCheck className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
+                            <span className="font-semibold text-[var(--brand-primary)] flex items-center gap-1.5">
+                              <ShieldCheck className="h-4 w-4 text-[var(--brand-primary)]" />
                               Zero Bill-Shock Guarantee
                             </span>
-                            <span className="text-[#2563EB] dark:text-[#60A5FA] font-bold font-sans tabular-nums">
+                            <span className="text-[var(--brand-primary)] font-bold font-sans tabular-nums">
                               Max {formatUsd(config.hard_spend_cap || 2.0)}
                             </span>
                           </div>
-                          <p className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans leading-tight">
+                          <p className="text-[10px] text-[var(--text-muted)] font-sans leading-tight">
                             Requests continuously track token costs. If cumulative cost reaches your spend cap, the test terminates immediately to prevent unexpected billing.
                           </p>
                         </div>
@@ -2740,25 +2740,25 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   </div>
 
                   {/* Summary & Launch Cockpit */}
-                  <div className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#1E293B] p-4 sm:p-5 shadow-xs space-y-4">
+                  <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface-elevated)] p-4 sm:p-5 shadow-xs space-y-4">
                     {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#0F172A]/10 dark:border-white/10">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border-subtle)]">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)]">
                           <Activity className="h-4 w-4" />
                         </div>
                         <div>
-                          <h3 className="text-xs sm:text-sm font-bold text-[#0F172A] dark:text-white font-sans">
+                          <h3 className="text-xs sm:text-sm font-bold text-[var(--text-main)] font-sans">
                             Benchmark Summary & Launch
                           </h3>
-                          <p className="text-[11px] text-[#0F172A]/60 dark:text-slate-400">
+                          <p className="text-[11px] text-[var(--text-muted)]">
                             Review your settings before starting the live test.
                           </p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Badge variant="default" className="font-medium text-xs gap-1 bg-[#2563EB]/15 text-[#2563EB] dark:bg-[#3B82F6]/20 dark:text-[#60A5FA] border-[#2563EB]/30 dark:border-[#3B82F6]/40">
+                        <Badge variant="default" className="font-medium text-xs gap-1 bg-[var(--brand-primary-light)] text-[var(--brand-primary)] dark:bg-[var(--brand-primary-light)] dark:text-[var(--brand-primary)] border-[var(--brand-primary-border)]">
                           <CheckCircle className="h-3 w-3" />
                           Ready to Launch
                         </Badge>
@@ -2767,143 +2767,143 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
 
                     {/* Quick Glance Compact Summary Bar */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                      <div className="p-3 rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/60 dark:bg-[#111827] space-y-0.5">
-                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 tracking-wider font-sans font-medium">Target Model</span>
-                        <div className="font-sans tabular-nums font-semibold text-xs text-[#2563EB] dark:text-[#60A5FA] truncate">{config.model}</div>
+                      <div className="p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface)] space-y-0.5">
+                        <span className="text-[10px] text-[var(--text-subtle)] tracking-wider font-sans font-medium">Target Model</span>
+                        <div className="font-sans tabular-nums font-semibold text-xs text-[var(--brand-primary)] truncate">{config.model}</div>
                         <div className="flex items-center gap-1.5 pt-0.5">
                           <ProviderLogo vendor={config.vendor} className="h-3.5 w-3.5" />
-                          <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 capitalize font-normal">{config.vendor.replace("_", " ")}</span>
+                          <span className="text-[10px] text-[var(--text-muted)] capitalize font-normal">{config.vendor.replace("_", " ")}</span>
                         </div>
                       </div>
 
-                      <div className="p-3 rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/60 dark:bg-[#111827] space-y-0.5">
-                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 tracking-wider font-sans font-medium">Workload Profile</span>
-                        <div className="font-sans font-semibold text-xs text-[#0F172A] dark:text-white truncate">{selectedPreset ? selectedPreset.name : "Custom / Unset"}</div>
-                        <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans tabular-nums font-normal">~{totalPresetTokens} tokens/turn</span>
+                      <div className="p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface)] space-y-0.5">
+                        <span className="text-[10px] text-[var(--text-subtle)] tracking-wider font-sans font-medium">Workload Profile</span>
+                        <div className="font-sans font-semibold text-xs text-[var(--text-main)] truncate">{selectedPreset ? selectedPreset.name : "Custom / Unset"}</div>
+                        <span className="text-[10px] text-[var(--text-muted)] font-sans tabular-nums font-normal">~{totalPresetTokens} tokens/turn</span>
                       </div>
 
-                      <div className="p-3 rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/60 dark:bg-[#111827] space-y-0.5">
-                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 tracking-wider font-sans font-medium">Concurrency & Scope</span>
-                        <div className="font-sans tabular-nums font-semibold text-xs text-[#0F172A] dark:text-white truncate">{config.concurrency} worker streams</div>
-                        <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-normal">
+                      <div className="p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface)] space-y-0.5">
+                        <span className="text-[10px] text-[var(--text-subtle)] tracking-wider font-sans font-medium">Concurrency & Scope</span>
+                        <div className="font-sans tabular-nums font-semibold text-xs text-[var(--text-main)] truncate">{config.concurrency} worker streams</div>
+                        <span className="text-[10px] text-[var(--text-muted)] font-normal">
                           {isRequestMode ? `${config.total_requests || 50} total reqs` : `${config.duration_seconds}s • ${config.load_curve}`}
                         </span>
                       </div>
 
-                      <div className="p-3 rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/60 dark:bg-[#111827] space-y-0.5">
-                        <span className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 tracking-wider font-sans font-medium">Budget & Cap</span>
-                        <div className="font-sans tabular-nums font-semibold text-xs text-[#2563EB] dark:text-[#60A5FA] truncate">{formatUsd(config.hard_spend_cap)} cap</div>
-                        <span className="text-[10px] text-[#0F172A]/60 dark:text-slate-400 font-sans tabular-nums font-normal">Est: {formatUsd(estCost)}</span>
+                      <div className="p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/60 dark:bg-[var(--bg-surface)] space-y-0.5">
+                        <span className="text-[10px] text-[var(--text-subtle)] tracking-wider font-sans font-medium">Budget & Cap</span>
+                        <div className="font-sans tabular-nums font-semibold text-xs text-[var(--brand-primary)] truncate">{formatUsd(config.hard_spend_cap)} cap</div>
+                        <span className="text-[10px] text-[var(--text-muted)] font-sans tabular-nums font-normal">Est: {formatUsd(estCost)}</span>
                       </div>
                     </div>
 
                     {/* Structured Summary Specification Matrix */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       {/* Box A: Infrastructure & Sampling */}
-                      <div className="rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/30 dark:bg-[#111827] p-3 space-y-2 text-xs">
-                        <div className="flex items-center gap-1.5 pb-1.5 border-b border-[#0F172A]/10 dark:border-white/10 font-semibold text-[#2563EB] dark:text-[#60A5FA]">
+                      <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/30 dark:bg-[var(--bg-surface)] p-3 space-y-2 text-xs">
+                        <div className="flex items-center gap-1.5 pb-1.5 border-b border-[var(--border-subtle)] font-semibold text-[var(--brand-primary)]">
                           <Sliders className="h-3.5 w-3.5" />
                           <span>Target & Sampling</span>
                         </div>
                         <div className="space-y-1 text-[11px] font-sans">
                           <div className="flex justify-between items-center">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Provider:</span>
-                            <span className="font-medium text-[#0F172A] dark:text-white capitalize">{config.vendor.replace("_", " ")}</span>
+                            <span className="text-[var(--text-muted)]">Provider:</span>
+                            <span className="font-medium text-[var(--text-main)] capitalize">{config.vendor.replace("_", " ")}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Model ID:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#2563EB] dark:text-[#60A5FA] truncate max-w-[140px]">{config.model}</span>
+                            <span className="text-[var(--text-muted)]">Model ID:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--brand-primary)] truncate max-w-[140px]">{config.model}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Max Tokens:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">{config.max_tokens}</span>
+                            <span className="text-[var(--text-muted)]">Max Tokens:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">{config.max_tokens}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Temperature:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">{config.temperature}</span>
+                            <span className="text-[var(--text-muted)]">Temperature:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">{config.temperature}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Cache Mode:</span>
-                            <span className="font-medium text-[#0F172A] dark:text-white">{config.cache_bust ? "Cold Nonce" : "Warm Prefix"}</span>
+                            <span className="text-[var(--text-muted)]">Cache Mode:</span>
+                            <span className="font-medium text-[var(--text-main)]">{config.cache_bust ? "Cold Nonce" : "Warm Prefix"}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Box B: Traffic & Execution Strategy */}
-                      <div className="rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/30 dark:bg-[#111827] p-3 space-y-2 text-xs">
-                        <div className="flex items-center gap-1.5 pb-1.5 border-b border-[#0F172A]/10 dark:border-white/10 font-semibold text-[#1D4ED8] dark:text-[#38BDF8]">
+                      <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/30 dark:bg-[var(--bg-surface)] p-3 space-y-2 text-xs">
+                        <div className="flex items-center gap-1.5 pb-1.5 border-b border-[var(--border-subtle)] font-semibold text-[var(--brand-secondary)]">
                           <TrendingUp className="h-3.5 w-3.5" />
                           <span>Traffic & Concurrency</span>
                         </div>
                         <div className="space-y-1 text-[11px] font-sans">
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Test Mode:</span>
-                            <span className="font-sans tabular-nums capitalize font-medium text-[#0F172A] dark:text-white">
+                            <span className="text-[var(--text-muted)]">Test Mode:</span>
+                            <span className="font-sans tabular-nums capitalize font-medium text-[var(--text-main)]">
                               {config.test_mode === "requests" ? "Request Batch" : "Duration"}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Concurrency:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">{config.concurrency} streams</span>
+                            <span className="text-[var(--text-muted)]">Concurrency:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">{config.concurrency} streams</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">
+                            <span className="text-[var(--text-muted)]">
                               {isRequestMode ? "Total Requests:" : "Duration:"}
                             </span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">
                               {isRequestMode ? `${config.total_requests || 50} requests` : `${config.duration_seconds}s`}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Traffic Pattern:</span>
-                            <span className="font-medium text-[#0F172A] dark:text-white capitalize">{config.load_curve.replace("_", " ")}</span>
+                            <span className="text-[var(--text-muted)]">Traffic Pattern:</span>
+                            <span className="font-medium text-[var(--text-main)] capitalize">{config.load_curve.replace("_", " ")}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Warmup Calls:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">{config.warmup_requests || 0} reqs</span>
+                            <span className="text-[var(--text-muted)]">Warmup Calls:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">{config.warmup_requests || 0} reqs</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Box C: Budget & Latency SLO Targets */}
-                      <div className="rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/30 dark:bg-[#111827] p-3 space-y-2 text-xs">
-                        <div className="flex items-center gap-1.5 pb-1.5 border-b border-[#0F172A]/10 dark:border-white/10 font-semibold text-[#2563EB] dark:text-[#60A5FA]">
+                      <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/30 dark:bg-[var(--bg-surface)] p-3 space-y-2 text-xs">
+                        <div className="flex items-center gap-1.5 pb-1.5 border-b border-[var(--border-subtle)] font-semibold text-[var(--brand-primary)]">
                           <Gauge className="h-3.5 w-3.5" />
                           <span>Budget & SLO Targets</span>
                         </div>
                         <div className="space-y-1 text-[11px] font-sans">
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Est. Total Tokens:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#2563EB] dark:text-[#60A5FA]">~{costEstimate?.estimated_total_tokens.toLocaleString() || 0}</span>
+                            <span className="text-[var(--text-muted)]">Est. Total Tokens:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--brand-primary)]">~{costEstimate?.estimated_total_tokens.toLocaleString() || 0}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Projected Spend:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#2563EB] dark:text-[#60A5FA]">{formatUsd(estCost)}</span>
+                            <span className="text-[var(--text-muted)]">Projected Spend:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--brand-primary)]">{formatUsd(estCost)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Max TTFT Target:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">≤ {formatMs(config.slo.max_ttft_ms)}</span>
+                            <span className="text-[var(--text-muted)]">Max TTFT Target:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">≤ {formatMs(config.slo.max_ttft_ms)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Max TPOT Target:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">≤ {formatMs(config.slo.max_tpot_ms)}</span>
+                            <span className="text-[var(--text-muted)]">Max TPOT Target:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">≤ {formatMs(config.slo.max_tpot_ms)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-[#0F172A]/60 dark:text-slate-400">Max Error Rate:</span>
-                            <span className="font-sans tabular-nums font-medium text-[#0F172A] dark:text-white">≤ {formatPct(config.slo.max_error_rate_pct)}</span>
+                            <span className="text-[var(--text-muted)]">Max Error Rate:</span>
+                            <span className="font-sans tabular-nums font-medium text-[var(--text-main)]">≤ {formatPct(config.slo.max_error_rate_pct)}</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Developer Quick Export */}
-                    <div className="p-3.5 rounded-xl border border-[#0F172A]/10 dark:border-white/10 bg-[#F1F5F9]/50 dark:bg-[#111827] flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface)] flex flex-col sm:flex-row items-center justify-between gap-3">
                       <div>
-                        <span className="text-xs font-semibold text-[#0F172A] dark:text-white flex items-center gap-1.5">
-                          <Terminal className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+                        <span className="text-xs font-semibold text-[var(--text-main)] flex items-center gap-1.5">
+                          <Terminal className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                           Developer Quick Export
                         </span>
-                        <p className="text-[10px] text-[#0F172A]/50 dark:text-slate-400 mt-0.5">
+                        <p className="text-[10px] text-[var(--text-subtle)] mt-0.5">
                           Export benchmark configuration for CLI or CI/CD pipelines
                         </p>
                       </div>
@@ -2913,20 +2913,20 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                           variant="outline"
                           size="sm"
                           onClick={handleCopyCli}
-                          className="text-xs font-sans tabular-nums cursor-pointer bg-white dark:bg-[#111827] gap-1.5"
+                          className="text-xs font-sans tabular-nums cursor-pointer bg-[var(--bg-card)] gap-1.5"
                         >
                           <span>Copy CLI</span>
-                          {copiedSnippet === "cli" ? <Check className="h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" /> : <Copy className="h-3 w-3" />}
+                          {copiedSnippet === "cli" ? <Check className="h-3 w-3 text-[var(--brand-primary)]" /> : <Copy className="h-3 w-3" />}
                         </Button>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={handleCopyJson}
-                          className="text-xs font-sans tabular-nums cursor-pointer bg-white dark:bg-[#111827] gap-1.5"
+                          className="text-xs font-sans tabular-nums cursor-pointer bg-[var(--bg-card)] gap-1.5"
                         >
                           <span>Copy JSON</span>
-                          {copiedSnippet === "json" ? <Check className="h-3 w-3 text-[#2563EB] dark:text-[#60A5FA]" /> : <Copy className="h-3 w-3" />}
+                          {copiedSnippet === "json" ? <Check className="h-3 w-3 text-[var(--brand-primary)]" /> : <Copy className="h-3 w-3" />}
                         </Button>
                       </div>
                     </div>
@@ -2949,7 +2949,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
             </AnimatePresence>
 
             {/* Wizard Navigation Controls (Back / Next) */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/90 dark:bg-[#1E293B]/90 backdrop-blur-md border border-[#0F172A]/10 dark:border-white/10 shadow-xs">
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface-elevated)] backdrop-blur-md border border-[var(--border-subtle)] shadow-xs">
               <Button
                 type="button"
                 variant="outline"
@@ -2961,8 +2961,8 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                 <span>Previous Step</span>
               </Button>
 
-              <div className="text-xs font-sans font-medium text-[#0F172A]/60 dark:text-slate-400">
-                Step <strong className="text-[#2563EB] dark:text-[#60A5FA]">{currentStep}</strong> of 4
+              <div className="text-xs font-sans font-medium text-[var(--text-muted)]">
+                Step <strong className="text-[var(--brand-primary)]">{currentStep}</strong> of 4
               </div>
 
               {currentStep < 4 ? (
@@ -2970,13 +2970,13 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
                   type="button"
                   variant="default"
                   onClick={handleNext}
-                  className="rounded-xl px-5 text-xs font-semibold gap-1.5 cursor-pointer bg-[#2563EB] hover:bg-[#1E3A8A] text-white dark:bg-[#3B82F6] dark:hover:bg-[#2563EB] shadow-xs"
+                  className="rounded-xl px-5 text-xs font-semibold gap-1.5 cursor-pointer bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-[var(--text-inverse)] shadow-xs"
                 >
                   <span>Next Step</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               ) : (
-                <div className="text-xs text-[#2563EB] dark:text-[#60A5FA] font-semibold flex items-center gap-1.5">
+                <div className="text-xs text-[var(--brand-primary)] font-semibold flex items-center gap-1.5">
                   <CheckCircle className="h-3.5 w-3.5" />
                   <span>Ready to Launch</span>
                 </div>
@@ -2990,7 +2990,7 @@ export const TestConfigurator: React.FC<TestConfiguratorProps> = ({
           <motion.button
             type="button"
             onClick={() => handleOpenExpert("workload-preset", "Inference Copilot", "How do I optimize my benchmark parameters?")}
-            className="fixed bottom-20 right-6 md:bottom-24 md:right-8 z-30 flex items-center gap-2 py-2.5 px-4 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-xl hover:shadow-2xl border border-white/20 dark:border-white/10 backdrop-blur-md transition-all cursor-pointer group select-none"
+            className="fixed bottom-20 right-6 md:bottom-24 md:right-8 z-30 flex items-center gap-2 py-2.5 px-4 rounded-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-[var(--text-inverse)] shadow-xl hover:shadow-2xl border border-white/20 dark:border-[var(--border-subtle)] backdrop-blur-md transition-all cursor-pointer group select-none"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             title="Open Inference Copilot"

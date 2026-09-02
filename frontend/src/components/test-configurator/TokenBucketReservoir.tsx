@@ -141,7 +141,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
   ]);
 
   return (
-    <div className="rounded-2xl border border-[#0F172A]/10 dark:border-white/10 bg-white dark:bg-[#111827] p-5 sm:p-6 space-y-5 shadow-xs">
+    <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-5 sm:p-6 space-y-5 shadow-xs">
       {/* Header bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -150,7 +150,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-bold text-[#0F172A] dark:text-white">
+              <span className="text-sm font-bold text-[var(--text-main)]">
                 Token Bucket Rate Limiter & Headroom Simulator
               </span>
               <Badge variant="purple" className="text-[10px] font-sans font-medium py-0 px-2">
@@ -160,7 +160,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
                 {rateStatus.label}
               </Badge>
             </div>
-            <p className="text-xs text-[#0F172A]/65 dark:text-white/65 mt-0.5">
+            <p className="text-xs text-[var(--text-muted)] dark:text-white/65 mt-0.5">
               {rateStatus.desc}
             </p>
           </div>
@@ -169,28 +169,28 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
         <div className="text-right flex flex-col items-end">
           <span
             className={`text-sm font-bold font-sans tabular-nums ${
-              isThrottled ? "text-rose-700 dark:text-rose-400" : "text-[#2563EB] dark:text-[#60A5FA]"
+              isThrottled ? "text-rose-700 dark:text-rose-400" : "text-[var(--brand-primary)]"
             }`}
           >
             ~{demandTpm.toLocaleString()} TPM Demand
           </span>
-          <span className="text-[11px] text-[#0F172A]/50 dark:text-slate-400 font-sans tabular-nums">
+          <span className="text-[11px] text-[var(--text-subtle)] font-sans tabular-nums">
             Quota Ceiling: {providerTpmLimit.toLocaleString()} TPM ({providerRpmLimit.toLocaleString()} RPM)
           </span>
         </div>
       </div>
 
       {/* Visual Reservoir Beaker & Physics Controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center p-4 sm:p-5 rounded-2xl bg-[#F1F5F9]/70 dark:bg-[#1E293B] border border-[#0F172A]/10 select-none">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center p-4 sm:p-5 rounded-2xl bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] select-none">
         {/* Left: Animated Glass Reservoir Beaker */}
         <div className="lg:col-span-4 flex flex-col items-center justify-center">
-          <div className="relative w-32 h-36 rounded-b-3xl rounded-t-md border-2 border-[#0F172A]/30 dark:border-white/15 bg-white/60 dark:bg-black/40 overflow-hidden flex flex-col justify-end p-1.5 shadow-inner">
+          <div className="relative w-32 h-36 rounded-b-3xl rounded-t-md border-2 border-[var(--border-subtle)] dark:border-white/15 bg-white/60 dark:bg-black/40 overflow-hidden flex flex-col justify-end p-1.5 shadow-inner">
             {/* Top Refill Inflow Indicator */}
             <div className="absolute top-1.5 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-80">
-              <span className="text-[9px] font-sans font-bold text-blue-600 dark:text-blue-400">
+              <span className="text-[9px] font-sans font-bold text-[var(--brand-primary)]">
                 Refill ({providerTpmLimit.toLocaleString()} TPM)
               </span>
-              <ArrowDown className="h-3.5 w-3.5 text-blue-500 animate-bounce" />
+              <ArrowDown className="h-3.5 w-3.5 text-[var(--brand-primary)] animate-bounce" />
             </div>
 
             {/* Dynamic Liquid Level */}
@@ -203,7 +203,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
                   ? "bg-gradient-to-t from-rose-600 to-rose-400 shadow-rose-500/50 shadow-md"
                   : bucketFillPct < 30
                   ? "bg-gradient-to-t from-amber-600 to-amber-400"
-                  : "bg-gradient-to-t from-[#2563EB] to-blue-500"
+                  : "bg-gradient-to-t from-[var(--brand-primary)] to-[var(--brand-secondary)]"
               }`}
             >
               {/* Fluid Surface Wave Animation */}
@@ -214,7 +214,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
             </motion.div>
           </div>
 
-          <span className="text-[11px] text-[#0F172A]/60 dark:text-slate-400 mt-1.5 font-sans font-semibold">
+          <span className="text-[11px] text-[var(--text-muted)] mt-1.5 font-sans font-semibold">
             Token Bucket Reservoir Buffer
           </span>
         </div>
@@ -222,7 +222,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
         {/* Right: Physics Breakdown & Test Surge Toggle */}
         <div className="lg:col-span-8 space-y-3 text-xs">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-[#0F172A] dark:text-white text-xs">
+            <span className="font-bold text-[var(--text-main)] text-xs">
               Rate Limit Mechanics & Demand Physics
             </span>
             <button
@@ -231,7 +231,7 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
               className={`text-xs font-sans px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs hover:shadow-xs ${
                 isSimulatingBurst
                   ? "bg-rose-100 dark:bg-rose-950/60 border-rose-300 text-rose-800 dark:text-rose-300 font-bold"
-                  : "bg-white dark:bg-[#111827] border-[#0F172A]/20 text-[#0F172A] dark:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B]"
+                  : "bg-[var(--bg-card)] border-[var(--border-subtle)] text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]"
               }`}
             >
               <Zap className="h-3.5 w-3.5 text-amber-500" />
@@ -239,22 +239,22 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
             </button>
           </div>
 
-          <p className="text-xs text-[#0F172A]/75 dark:text-white/75 leading-relaxed font-normal">
-            Providers enforce rate limits via a <strong className="text-[#0F172A] dark:text-white">Token Bucket</strong>. When your active worker streams consume tokens faster than the refill rate, the reservoir buffer empties and responds with <strong className="text-rose-700 dark:text-rose-400">HTTP 429 (Too Many Requests)</strong>.
+          <p className="text-xs text-[var(--text-main)]/75 dark:text-white/75 leading-relaxed font-normal">
+            Providers enforce rate limits via a <strong className="text-[var(--text-main)]">Token Bucket</strong>. When your active worker streams consume tokens faster than the refill rate, the reservoir buffer empties and responds with <strong className="text-rose-700 dark:text-rose-400">HTTP 429 (Too Many Requests)</strong>.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            <div className="p-2.5 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1">
-              <span className="text-[10px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1">
-                <TrendingUp className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+            <div className="p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1">
+              <span className="text-[10px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1">
+                <TrendingUp className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
                 Instantaneous Consumption Drain:
               </span>
-              <div className="font-sans tabular-nums font-bold text-[#2563EB] dark:text-[#60A5FA] text-xs">
+              <div className="font-sans tabular-nums font-bold text-[var(--brand-primary)] text-xs">
                 ~{demandTpm.toLocaleString()} TPM / ~{demandRpm.toLocaleString()} RPM
               </div>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1">
-              <span className="text-[10px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1">
+            <div className="p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1">
+              <span className="text-[10px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1">
                 <Gauge className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                 Continuous Refill Capacity:
               </span>
@@ -268,29 +268,29 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
 
       {/* Telemetry 4-Card Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
-          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5 text-[#2563EB] dark:text-[#60A5FA]" />
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1">
+          <span className="text-[11px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Activity className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
             Concurrency Flow
           </span>
-          <div className="font-sans tabular-nums font-bold text-[#2563EB] dark:text-[#60A5FA] text-xs truncate">
+          <div className="font-sans tabular-nums font-bold text-[var(--brand-primary)] text-xs truncate">
             {concurrency} streams (~{estimatedTurnDurationSec}s/turn)
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
-          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1">
+          <span className="text-[11px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
             Request Rate (RPM)
           </span>
-          <div className={`font-sans tabular-nums font-bold text-xs ${rpmUtilizationPct > 100 ? "text-rose-700 dark:text-rose-400" : "text-[#0F172A] dark:text-white"}`}>
+          <div className={`font-sans tabular-nums font-bold text-xs ${rpmUtilizationPct > 100 ? "text-rose-700 dark:text-rose-400" : "text-[var(--text-main)]"}`}>
             {demandRpm.toLocaleString()} / {providerRpmLimit.toLocaleString()} ({rpmUtilizationPct}%)
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
-          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
-            <Droplets className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1">
+          <span className="text-[11px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+            <Droplets className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
             Token Rate (TPM)
           </span>
           <div className={`font-sans tabular-nums font-bold text-xs ${tpmUtilizationPct > 100 ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400"}`}>
@@ -298,26 +298,26 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
           </div>
         </div>
 
-        <div className="p-3 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#0F172A] border border-[#0F172A]/10 space-y-1">
-          <span className="text-[11px] text-[#0F172A]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
+        <div className="p-3 rounded-xl bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)] space-y-1">
+          <span className="text-[11px] text-[var(--text-main)]/55 dark:text-white/55 font-medium flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
             Throttle Status
           </span>
-          <div className="font-semibold text-[#0F172A] dark:text-white text-xs truncate">
+          <div className="font-semibold text-[var(--text-main)] text-xs truncate">
             {isThrottled ? "429 Backoff Alert" : "Zero Throttling Safe"}
           </div>
         </div>
       </div>
 
       {/* Theoretical Foundations Collapsible Card */}
-      <div className="p-4 rounded-xl bg-[#F1F5F9]/80 dark:bg-[#1E293B] border border-[#0F172A]/10 space-y-3">
+      <div className="p-4 rounded-xl bg-[var(--bg-surface-subtle)]/80 dark:bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] space-y-3">
         <button
           type="button"
           onClick={() => setShowTheoryDetails(!showTheoryDetails)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-[#0F172A] dark:text-white cursor-pointer hover:text-[#2563EB] dark:hover:text-[#60A5FA]"
+          className="w-full flex items-center justify-between text-xs font-semibold text-[var(--text-main)] cursor-pointer hover:text-[var(--brand-primary)]"
         >
           <span className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-[#2563EB] dark:text-[#60A5FA]" />
+            <BookOpen className="h-4 w-4 text-[var(--brand-primary)]" />
             <span>Token Bucket Algorithms & Rate Limiting Mechanics</span>
           </span>
           <ChevronDown className={`h-4 w-4 transition-transform ${showTheoryDetails ? "rotate-180" : ""}`} />
@@ -329,25 +329,25 @@ export const TokenBucketReservoir: React.FC<TokenBucketReservoirProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="space-y-3 pt-2 text-xs border-t border-[#0F172A]/10 dark:border-white/10"
+              className="space-y-3 pt-2 text-xs border-t border-[var(--border-subtle)]"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
-                  <span className="font-semibold text-[#2563EB] dark:text-[#60A5FA]">
+                <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1.5">
+                  <span className="font-semibold text-[var(--brand-primary)]">
                     Token Bucket State Equation:
                   </span>
                   <MathFormula math="B(t) = \min\left(B_{\max}, B(t - \Delta t) + r \cdot \Delta t\right) - \Delta \text{Tokens}" block />
-                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[var(--text-muted)] dark:text-white/65">
                     Where <MathFormula math="r" /> is the token refill rate (TPM/60). If <MathFormula math="B(t) < \text{Tokens}_{\text{req}}" />, provider responds with HTTP 429.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white dark:bg-[#111827] border border-[#0F172A]/10 space-y-1.5">
-                  <span className="font-semibold text-[#1D4ED8] dark:text-[#38BDF8]">
+                <div className="p-3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] space-y-1.5">
+                  <span className="font-semibold text-[var(--brand-secondary)]">
                     Backoff Delay with Jitter Formulation:
                   </span>
                   <MathFormula math="t_{\text{backoff}} = \min\left(t_{\max}, t_0 \cdot 2^{\text{attempt}}\right) + \text{Uniform}(0, J)" block />
-                  <p className="text-[11px] text-[#0F172A]/65 dark:text-white/65">
+                  <p className="text-[11px] text-[var(--text-muted)] dark:text-white/65">
                     Full jitter randomized backoff prevents thundering herd synchronization when recovering from provider quota saturation.
                   </p>
                 </div>

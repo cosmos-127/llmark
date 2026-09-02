@@ -20,7 +20,7 @@ export const LiveStreamWave: React.FC<{ active?: boolean; className?: string }> 
       {bars.map((bar, i) => (
         <motion.div
           key={i}
-          className="w-1 rounded-full bg-[#2563EB]"
+          className="w-1 rounded-full bg-[var(--brand-primary)]"
           animate={
             active
               ? {
@@ -52,12 +52,12 @@ export const LiveStreamWave: React.FC<{ active?: boolean; className?: string }> 
  */
 export const NetworkPulseSvg: React.FC<{ className?: string }> = ({ className = "h-5 w-5" }) => (
   <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <circle cx="12" cy="12" r="3" fill="#2563EB" />
+    <circle cx="12" cy="12" r="3" fill="var(--brand-primary)" />
     <motion.circle
       cx="12"
       cy="12"
       r="6"
-      stroke="#2563EB"
+      stroke="var(--brand-primary)"
       strokeWidth="1.5"
       initial={{ scale: 0.8, opacity: 0.8 }}
       animate={{ scale: 1.4, opacity: 0 }}
@@ -67,7 +67,7 @@ export const NetworkPulseSvg: React.FC<{ className?: string }> = ({ className = 
       cx="12"
       cy="12"
       r="9"
-      stroke="#1D4ED8"
+      stroke="var(--brand-secondary)"
       strokeWidth="1"
       initial={{ scale: 0.8, opacity: 0.6 }}
       animate={{ scale: 1.3, opacity: 0 }}
@@ -89,7 +89,7 @@ export const EmptyStateIllustration: React.FC<{ className?: string }> = ({
       y1="26"
       x2="48"
       y2="26"
-      stroke="#2563EB"
+      stroke="var(--brand-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       initial={{ pathLength: 0, opacity: 0 }}
@@ -101,7 +101,7 @@ export const EmptyStateIllustration: React.FC<{ className?: string }> = ({
       y1="34"
       x2="36"
       y2="34"
-      stroke="#1D4ED8"
+      stroke="var(--brand-secondary)"
       strokeWidth="2"
       strokeLinecap="round"
       initial={{ pathLength: 0, opacity: 0 }}
@@ -112,7 +112,7 @@ export const EmptyStateIllustration: React.FC<{ className?: string }> = ({
       cx="48"
       cy="34"
       r="2"
-      fill="#2563EB"
+      fill="var(--brand-primary)"
       animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     />

@@ -44,10 +44,10 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       label: "DNS Lookup",
       time: dns,
       pct: dnsPct,
-      bgBar: "bg-[#0F172A] dark:bg-[#0F172A]",
-      dotColor: "bg-[#0F172A] dark:bg-[#1E3A8A]",
-      badgeBg: "bg-[#0F172A]/10 dark:bg-[#0F172A]/40 text-[#0F172A] dark:text-[#BAE6FD] border-[#0F172A]/20 dark:border-[#BAE6FD]/30",
-      textColor: "text-[#0F172A] dark:text-[#BAE6FD]",
+      bgBar: "bg-[var(--text-muted)]",
+      dotColor: "bg-[var(--text-muted)]",
+      badgeBg: "bg-[var(--bg-surface-subtle)] text-[var(--text-muted)] border-[var(--border-subtle)]",
+      textColor: "text-[var(--text-muted)]",
       icon: Icons.Globe,
       desc: "Hostname to IP resolution",
       category: "Transport",
@@ -58,10 +58,10 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       label: "TCP Connect",
       time: tcp,
       pct: tcpPct,
-      bgBar: "bg-[#1E3A8A] dark:bg-[#1D4ED8]",
-      dotColor: "bg-[#1E3A8A] dark:bg-[#1D4ED8]",
-      badgeBg: "bg-[#1E3A8A]/10 dark:bg-[#1D4ED8]/40 text-[#1E3A8A] dark:text-[#BAE6FD] border-[#1E3A8A]/20 dark:border-[#BAE6FD]/30",
-      textColor: "text-[#1E3A8A] dark:text-[#BAE6FD]",
+      bgBar: "bg-[var(--brand-secondary)]",
+      dotColor: "bg-[var(--brand-secondary)]",
+      badgeBg: "bg-[var(--brand-secondary-light)] text-[var(--brand-secondary)] border-[var(--brand-secondary-border)]",
+      textColor: "text-[var(--brand-secondary)]",
       icon: Icons.Network,
       desc: "SYN/ACK socket handshake",
       category: "Transport",
@@ -72,10 +72,10 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       label: "TLS Crypto",
       time: tls,
       pct: tlsPct,
-      bgBar: "bg-[#2563EB] dark:bg-[#3B82F6]",
-      dotColor: "bg-[#2563EB] dark:bg-[#3B82F6]",
-      badgeBg: "bg-[#2563EB]/10 dark:bg-[#3B82F6]/40 text-[#2563EB] dark:text-[#38BDF8] border-[#2563EB]/20 dark:border-[#60A5FA]/30",
-      textColor: "text-[#2563EB] dark:text-[#38BDF8]",
+      bgBar: "bg-[var(--brand-primary)]",
+      dotColor: "bg-[var(--brand-primary)]",
+      badgeBg: "bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border-[var(--brand-primary-border)]",
+      textColor: "text-[var(--brand-primary)]",
       icon: Icons.Shield,
       desc: "TLS 1.3 session crypto",
       category: "Transport",
@@ -86,10 +86,10 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       label: "Server Prefill (TTFT)",
       time: serverPrefill,
       pct: prefillPct,
-      bgBar: "bg-[#3B82F6] dark:bg-[#60A5FA]",
-      dotColor: "bg-[#3B82F6] dark:bg-[#60A5FA]",
-      badgeBg: "bg-[#3B82F6]/10 dark:bg-[#60A5FA]/40 text-[#3B82F6] dark:text-[#60A5FA] border-[#3B82F6]/20 dark:border-[#3B82F6]/30",
-      textColor: "text-[#3B82F6] dark:text-[#60A5FA]",
+      bgBar: "bg-[var(--brand-primary)]",
+      dotColor: "bg-[var(--brand-primary)]",
+      badgeBg: "bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border-[var(--brand-primary-border)]",
+      textColor: "text-[var(--brand-primary)]",
       icon: Icons.Cpu,
       desc: "Prompt encode & KV init",
       category: "GPU Compute",
@@ -100,10 +100,10 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
       label: "Stream Decode",
       time: decodeStream,
       pct: decodePct,
-      bgBar: "bg-[#38BDF8] dark:bg-[#93C5FD]",
-      dotColor: "bg-[#38BDF8] dark:bg-[#93C5FD]",
-      badgeBg: "bg-[#38BDF8]/10 dark:bg-[#93C5FD]/40 text-[#2563EB] dark:text-white border-[#38BDF8]/20 dark:border-white/15",
-      textColor: "text-[#2563EB] dark:text-white",
+      bgBar: "bg-[var(--brand-secondary)]",
+      dotColor: "bg-[var(--brand-secondary)]",
+      badgeBg: "bg-[var(--brand-secondary-light)] text-[var(--brand-secondary)] border-[var(--brand-secondary-border)]",
+      textColor: "text-[var(--brand-secondary)]",
       icon: Icons.Zap,
       desc: "Autoregressive token decode",
       category: "GPU Compute",
@@ -112,33 +112,33 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
 
   return (
     <TooltipProvider>
-      <Card className="w-full flex flex-col justify-between overflow-hidden shadow-xs border-[#0F172A]/10 dark:border-white/10">
+      <Card className="w-full flex flex-col justify-between overflow-hidden shadow-xs border-[var(--border-subtle)]">
         <CardHeader className="p-5 pb-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 text-[#2563EB] dark:text-[#60A5FA] border border-[#2563EB]/25 dark:border-[#3B82F6]/35">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-primary-light)] text-[var(--brand-primary)] border border-[var(--brand-primary-border)]">
                 <NetworkPulseSvg className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle className="text-sm font-semibold text-[#0F172A] dark:text-white font-sans">
+                <CardTitle className="text-sm font-semibold text-[var(--text-main)] font-sans">
                   Latency Waterfall Profiler
                 </CardTitle>
-                <CardDescription className="text-xs text-[#0F172A]/60 dark:text-slate-400 font-sans">
+                <CardDescription className="text-xs text-[var(--text-muted)] font-sans">
                   Microsecond socket connection latency isolated from remote GPU inference prefill & token decode
                 </CardDescription>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10">
-                <span className="text-[11px] text-[#0F172A]/60 dark:text-slate-400 font-sans">Transport:</span>
-                <span className="font-semibold text-[#0F172A] dark:text-white tabular-nums">{formatMs(handshakeTotal)}</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
+                <span className="text-[11px] text-[var(--text-muted)] font-sans">Transport:</span>
+                <span className="font-semibold text-[var(--text-main)] tabular-nums">{formatMs(handshakeTotal)}</span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F1F5F9] dark:bg-[#0F172A] border border-[#0F172A]/10 dark:border-white/10">
-                <span className="text-[11px] text-[#0F172A]/60 dark:text-slate-400 font-sans">GPU Inference:</span>
-                <span className="font-semibold text-[#2563EB] dark:text-[#60A5FA] tabular-nums">{formatMs(inferenceTotal)}</span>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-surface-subtle)] border border-[var(--border-subtle)]">
+                <span className="text-[11px] text-[var(--text-muted)] font-sans">GPU Inference:</span>
+                <span className="font-semibold text-[var(--brand-primary)] tabular-nums">{formatMs(inferenceTotal)}</span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#2563EB]/10 dark:bg-[#3B82F6]/15 border border-[#2563EB]/20 dark:border-[#3B82F6]/30 text-[#2563EB] dark:text-[#60A5FA]">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--brand-primary-light)] border border-[var(--brand-primary-border)] text-[var(--brand-primary)]">
                 <span className="text-[11px] font-sans">End-to-End:</span>
                 <span className="font-bold tabular-nums">{formatMs(total)}</span>
               </div>
@@ -149,7 +149,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
         <CardContent className="p-5 pt-3 space-y-6">
           {/* Continuous Proportional Waterfall Segment Bar */}
           <div className="space-y-2">
-            <div className="h-8 w-full rounded-xl bg-[#F1F5F9] dark:bg-[#0F172A] flex overflow-hidden border border-[#0F172A]/10 dark:border-white/10 shadow-inner p-1 gap-1">
+            <div className="h-8 w-full rounded-xl bg-[var(--bg-surface-subtle)] flex overflow-hidden border border-[var(--border-subtle)] shadow-inner p-1 gap-1">
               {stages.map((stage, idx) => {
                 const StageIcon = stage.icon;
                 const isHighlighted = activeHoverId === stage.id;
@@ -185,7 +185,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                     </TooltipTrigger>
                     <TooltipContent side="top" className="font-sans text-xs">
                       <p className="font-semibold">{stage.label} — {formatMs(stage.time)} ({stage.pct}%)</p>
-                      <p className="text-[#0F172A]/70 dark:text-slate-300 text-[11px]">{stage.desc}</p>
+                      <p className="text-[var(--text-body)] text-[11px]">{stage.desc}</p>
                     </TooltipContent>
                   </Tooltip>
                 );
@@ -193,7 +193,7 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
             </div>
 
             {/* Scale timeline labels */}
-            <div className="flex items-center justify-between text-[11px] text-[#0F172A]/60 dark:text-slate-400 font-sans tabular-nums px-1">
+            <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)] font-sans tabular-nums px-1">
               <span>0 ms (Client TCP open)</span>
               <span>Handshake edge: ~{formatMs(handshakeTotal)}</span>
               <span>TTFT: ~{formatMs(rawTtft)}</span>
@@ -215,36 +215,36 @@ export const WaterfallBar: React.FC<WaterfallBarProps> = ({ waterfall }) => {
                   onMouseLeave={() => setActiveHoverId(null)}
                   className={`rounded-xl p-3.5 border transition-all duration-200 font-sans shadow-2xs cursor-pointer flex flex-col justify-between gap-2.5 ${
                     isCardHighlighted
-                      ? "bg-white dark:bg-[#111827] border-[#2563EB] dark:border-[#3B82F6] shadow-md -translate-y-1"
+                      ? "bg-[var(--bg-card)] border-[var(--brand-primary)] shadow-md -translate-y-1"
                       : isCardFaded
-                      ? "bg-[#F1F5F9]/50 dark:bg-[#0F172A]/50 border-[#0F172A]/5 dark:border-white/5 opacity-55"
-                      : "bg-[#F1F5F9]/80 dark:bg-[#0F172A] border-[#0F172A]/10 dark:border-white/10 hover:bg-white dark:hover:bg-[#1E293B] hover:border-[#2563EB]/35 dark:hover:border-[#3B82F6]/40"
+                      ? "bg-[var(--bg-surface-subtle)]/50 dark:bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)] dark:border-[var(--border-subtle)] opacity-55"
+                      : "bg-[var(--bg-surface-subtle)] border-[var(--border-subtle)] hover:bg-white dark:hover:bg-[var(--bg-surface-hover)] hover:border-[var(--brand-primary-border)]"
                   }`}
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between gap-1">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className={`h-2 w-2 rounded-full ${st.dotColor} shrink-0`} />
-                        <span className="text-[#0F172A]/80 dark:text-slate-200 font-medium text-xs truncate">
+                        <span className="text-[var(--text-subheading)] font-medium text-xs truncate">
                           {st.label}
                         </span>
                       </div>
-                      <span className="text-[11px] font-sans font-medium tabular-nums text-[#0F172A]/50 dark:text-slate-400">
+                      <span className="text-[11px] font-sans font-medium tabular-nums text-[var(--text-subtle)]">
                         #{st.step}
                       </span>
                     </div>
 
                     <div className="flex items-baseline justify-between pt-1">
-                      <div className="text-base font-bold font-sans tabular-nums tracking-tight text-[#0F172A] dark:text-white">
+                      <div className="text-base font-bold font-sans tabular-nums tracking-tight text-[var(--text-main)]">
                         {formatMs(st.time)}
                       </div>
-                      <span className="text-[10px] font-sans font-medium capitalize text-[#0F172A]/50 dark:text-slate-400">
+                      <span className="text-[10px] font-sans font-medium capitalize text-[var(--text-subtle)]">
                         {st.category}
                       </span>
                     </div>
                   </div>
 
-                  <p className="text-xs text-[#0F172A]/60 dark:text-slate-400 line-clamp-1 border-t border-[#0F172A]/5 dark:border-white/[0.06] pt-1.5">
+                  <p className="text-xs text-[var(--text-muted)] line-clamp-1 border-t border-[var(--border-subtle)] pt-1.5">
                     {st.desc}
                   </p>
                 </div>

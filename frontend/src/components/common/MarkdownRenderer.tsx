@@ -81,7 +81,7 @@ export const renderKatexInline = (math: string): string => {
         throwOnError: false,
       });
     } catch {
-      return `<code class="px-1.5 py-0.5 rounded font-mono text-[11px] bg-[#2563EB]/10 dark:bg-[#60A5FA]/10 text-[#2563EB] dark:text-[#60A5FA] font-semibold">${escapeHtml(cleaned)}</code>`;
+      return `<code class="px-1.5 py-0.5 rounded font-mono text-[11px] bg-[var(--brand-primary-light)] text-[var(--brand-primary)] font-semibold">${escapeHtml(cleaned)}</code>`;
     }
   }
 };
@@ -102,7 +102,7 @@ export const renderKatexBlock = (math: string): string => {
         throwOnError: false,
       });
     } catch {
-      return `<pre class="my-2 p-2.5 rounded-xl bg-[#F1F5F9]/70 dark:bg-[#0F172A] font-mono text-xs text-center text-[#2563EB] dark:text-[#60A5FA] overflow-x-auto whitespace-pre-wrap">${escapeHtml(cleaned)}</pre>`;
+      return `<pre class="my-2 p-2.5 rounded-xl bg-[var(--bg-surface-subtle)]/70 dark:bg-[var(--bg-surface-subtle)] font-mono text-xs text-center text-[var(--brand-primary)] overflow-x-auto whitespace-pre-wrap">${escapeHtml(cleaned)}</pre>`;
     }
   }
 };
@@ -118,10 +118,10 @@ const CodeBlock: React.FC<{ code: string; language?: string }> = ({ code, langua
   };
 
   return (
-    <div className="my-2.5 rounded-xl border border-[#0F172A]/15 dark:border-white/10 bg-[#0F172A] dark:bg-[#0B0F17] text-[#F1F5F9] overflow-hidden text-xs shadow-xs">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#1E293B] dark:bg-[#0B0F17] border-b border-[#0F172A]/10 dark:border-white/[0.08] text-[10px] text-[#F1F5F9]/60 dark:text-slate-400">
+    <div className="my-2.5 rounded-xl border border-[var(--border-medium)] bg-[var(--bg-surface-subtle)] dark:bg-[var(--bg-app)] text-[var(--text-main)] overflow-hidden text-xs shadow-xs">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--bg-surface-elevated)] dark:bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] text-[10px] text-[var(--text-main)]/60 dark:text-[var(--text-muted)]">
         <div className="flex items-center gap-1.5">
-          <Terminal className="h-3 w-3 text-[#2563EB] dark:text-[#3B82F6]" />
+          <Terminal className="h-3 w-3 text-[var(--brand-primary)]" />
           <span className="font-mono uppercase">{language || "text"}</span>
         </div>
         <button
@@ -142,7 +142,7 @@ const CodeBlock: React.FC<{ code: string; language?: string }> = ({ code, langua
           )}
         </button>
       </div>
-      <pre className="p-3 font-mono text-[11px] overflow-x-auto leading-relaxed text-[#F1F5F9]/90 dark:text-slate-200 whitespace-pre">
+      <pre className="p-3 font-mono text-[11px] overflow-x-auto leading-relaxed text-[var(--text-main)]/90 dark:text-[var(--text-subheading)] whitespace-pre">
         {code}
       </pre>
     </div>
@@ -219,7 +219,7 @@ export const renderInlineFormatting = (text: string): React.ReactNode[] => {
     if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
       const inner = part.slice(2, -2);
       return (
-        <strong key={idx} className="font-bold text-[#0F172A] dark:text-white">
+        <strong key={idx} className="font-bold text-[var(--text-main)]">
           {renderInlineFormatting(inner)}
         </strong>
       );
@@ -231,7 +231,7 @@ export const renderInlineFormatting = (text: string): React.ReactNode[] => {
       return (
         <code
           key={idx}
-          className="px-1.5 py-0.5 rounded-md font-mono text-[11px] bg-[#0F172A]/10 dark:bg-[#F1F5F9]/10 text-[#2563EB] dark:text-[#38BDF8] font-semibold border border-[#0F172A]/10 dark:border-white/10"
+          className="px-1.5 py-0.5 rounded-md font-mono text-[11px] bg-[var(--border-subtle)] dark:bg-[var(--bg-surface-subtle)]/10 text-[var(--brand-primary)] dark:text-[var(--brand-secondary)] font-semibold border border-[var(--border-subtle)]"
         >
           {inner}
         </code>
@@ -249,7 +249,7 @@ export const renderInlineFormatting = (text: string): React.ReactNode[] => {
           href={linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-0.5 text-[#2563EB] dark:text-[#60A5FA] underline underline-offset-2 hover:opacity-80 transition-opacity"
+          className="inline-flex items-center gap-0.5 text-[var(--brand-primary)] underline underline-offset-2 hover:opacity-80 transition-opacity"
         >
           <span>{linkText}</span>
           <ExternalLink className="h-2.5 w-2.5 inline opacity-70" />
@@ -264,7 +264,7 @@ export const renderInlineFormatting = (text: string): React.ReactNode[] => {
     ) {
       const inner = part.slice(1, -1);
       return (
-        <em key={idx} className="italic text-[#0F172A]/90 dark:text-white/90">
+        <em key={idx} className="italic text-[var(--text-main)]/90 dark:text-white/90">
           {renderInlineFormatting(inner)}
         </em>
       );
@@ -299,7 +299,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
   const flushList = () => {
     if (inList && listItems.length > 0) {
       elements.push(
-        <ul key={`list-${elements.length}`} className="my-2 space-y-1 pl-4 list-disc marker:text-[#2563EB]/70 dark:marker:text-[#60A5FA]/70 text-xs leading-relaxed text-[#0F172A]/90 dark:text-neutral-200">
+        <ul key={`list-${elements.length}`} className="my-2 space-y-1 pl-4 list-disc marker:text-[var(--brand-primary)]/70 dark:marker:text-[var(--brand-primary)]/70 text-xs leading-relaxed text-[var(--text-main)]/90 dark:text-neutral-200">
           {listItems.map((item, i) => (
             <li key={i}>
               {item}
@@ -329,7 +329,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-200/60 dark:divide-neutral-800/60 bg-white dark:bg-[#0B0F17]">
+            <tbody className="divide-y divide-neutral-200/60 dark:divide-neutral-800/60 bg-[var(--bg-card)]">
               {bodyRows.map((row, rowIdx) => (
                 <tr key={rowIdx} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-900/40 transition-colors">
                   {row.map((cell, cellIdx) => (
@@ -523,7 +523,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
       elements.push(
         <h4
           key={`h4-${elements.length}`}
-          className="text-[11px] font-semibold tracking-wider uppercase text-[#2563EB] dark:text-[#60A5FA] pt-3 pb-1 border-b border-neutral-200/50 dark:border-neutral-800/60 flex items-center gap-1.5"
+          className="text-[11px] font-semibold tracking-wider uppercase text-[var(--brand-primary)] pt-3 pb-1 border-b border-neutral-200/50 dark:border-neutral-800/60 flex items-center gap-1.5"
         >
           {renderInlineFormatting(trimmed.slice(4))}
         </h4>
@@ -536,7 +536,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
       elements.push(
         <h3
           key={`h3-${elements.length}`}
-          className="text-xs font-semibold text-[#0F172A] dark:text-neutral-100 pt-3.5 pb-1 border-b border-neutral-200/40 dark:border-neutral-800/50"
+          className="text-xs font-semibold text-[var(--text-main)] dark:text-neutral-100 pt-3.5 pb-1 border-b border-neutral-200/40 dark:border-neutral-800/50"
         >
           {renderInlineFormatting(trimmed.slice(3))}
         </h3>
@@ -549,7 +549,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
       elements.push(
         <h2
           key={`h2-${elements.length}`}
-          className="text-sm font-bold text-[#0F172A] dark:text-white pt-4 pb-1.5"
+          className="text-sm font-bold text-[var(--text-main)] pt-4 pb-1.5"
         >
           {renderInlineFormatting(trimmed.slice(2))}
         </h2>
@@ -580,7 +580,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
       elements.push(
         <div
           key={`quote-${elements.length}`}
-          className="my-2 pl-3 py-1 border-l-2 border-[#2563EB] dark:border-[#3B82F6] text-xs text-neutral-600 dark:text-neutral-300 italic bg-neutral-50/60 dark:bg-neutral-900/30 rounded-r-md"
+          className="my-2 pl-3 py-1 border-l-2 border-[var(--brand-primary)] text-xs text-neutral-600 dark:text-neutral-300 italic bg-neutral-50/60 dark:bg-neutral-900/30 rounded-r-md"
         >
           {renderInlineFormatting(quoteText)}
         </div>
@@ -597,7 +597,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, cla
     // 14. Standard Paragraph
     flushList();
     elements.push(
-      <p key={`p-${elements.length}`} className="my-1 text-xs text-[#0F172A]/90 dark:text-neutral-200/90 leading-relaxed font-sans">
+      <p key={`p-${elements.length}`} className="my-1 text-xs text-[var(--text-main)]/90 dark:text-neutral-200/90 leading-relaxed font-sans">
         {renderInlineFormatting(trimmed)}
       </p>
     );

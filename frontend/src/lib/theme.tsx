@@ -141,7 +141,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
             className={cn(
               "p-1 rounded-md transition-all cursor-pointer",
               theme === "dark"
-                ? "bg-[var(--brand-primary)] text-white shadow-xs font-medium"
+                ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs font-medium"
                 : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
             )}
             title="Dark mode"
@@ -169,7 +169,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         onClick={() => setTheme("dark")}
         className={cn(
           "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-          theme === "dark" ? "bg-[var(--brand-primary)] text-white shadow-xs" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+          theme === "dark" ? "bg-[var(--brand-primary)] text-[var(--text-inverse)] shadow-xs" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
         )}
       >
         <Moon className="h-3.5 w-3.5" />
