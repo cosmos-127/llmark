@@ -124,8 +124,9 @@ app.include_router(expert.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["health"])
+@app.get(f"{settings.API_V1_STR}/health", tags=["health"])
 async def health_check() -> dict:
-    """Root health check endpoint."""
+    """Root health check endpoint for cold-start wakeups, monitoring, and readiness."""
     return {
         "status": "healthy",
         "service": "LLMark Backend",

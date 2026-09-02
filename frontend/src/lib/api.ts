@@ -158,6 +158,19 @@ export const api = {
     }
     return res.json();
   },
+
+  async checkHealth(): Promise<{ status: string; service: string; version: string }> {
+    const res = await fetch(getApiUrl("/health"), {
+      method: "GET",
+      cache: "no-store",
+    }).catch(async () => {
+      return fetch(getApiUrl("/api/health"), { cache: "no-store" });
+    });
+    if (!res.ok) {
+      throw new Error(`Health check failed with status: ${res.status}`);
+    }
+    return res.json();
+  },
 };
 
 

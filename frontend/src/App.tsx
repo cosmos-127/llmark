@@ -10,6 +10,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { ThemeProvider } from "./lib/theme";
 import { NavTab } from "./lib/types";
 import { LLMarkLogo } from "./components/common/BrandLogos";
+import { triggerBackendWarmup, useBackendWarmup } from "./hooks/useBackendWarmup";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,9 +26,15 @@ export function App() {
   const [historyInitialView, setHistoryInitialView] = useState<"history" | "roi">("history");
   const [historySelectedRunId, setHistorySelectedRunId] = useState<string | null>(null);
 
-  // Automatically scroll to top whenever navigating between pages / views
+  // Initialize background backend warmup
+  useBackendWarmup(true);
+
+  // Automatically scroll to top and warm up backend when navigating (especially to Studio)
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    if (activeTab === "benchmark") {
+      triggerBackendWarmup();
+    }
   }, [activeTab]);
 
   const handleNavigateToHistory = (view?: "history" | "roi", runId?: string) => {
