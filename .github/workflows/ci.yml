@@ -1,0 +1,89 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend Lint, Typecheck & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run Ruff Lint & Format Check
+        run: |
+          cd backend
+          ruff check .
+          ruff format --check .
+
+      - name: Run Mypy Typecheck
+        run: |
+          cd backend
+          mypy app
+
+      - name: Run Pytest Suite
+        run: |
+          pytest backend/tests/unit -v
+
+      - name: Run Headless CLI Canary Test
+        run: |
+          python backend/app/cli.py run \
+            --vendor mock \
+            --model gpt-4o \
+            --preset chat_interactive \
+            --concurrency 2 \
+            --duration 3 \
+            --fail-under-goodput 50.0 \
+            --output-md canary_report.md
+
+      - name: Upload Canary Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-report
+          path: canary_report.md
+          if-no-files-found: ignore
+
+  frontend:
+    name: Frontend Build & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend bundle
+        run: |
+          cd frontend
+          npm run build
